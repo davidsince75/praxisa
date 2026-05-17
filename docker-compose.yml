@@ -1,0 +1,62 @@
+version: '3.9'
+
+# Local development stack — mirrors Railway EU production topology
+# No real PII in local dev. Use the synthetic data seeder (pnpm seed).
+#
+# Services:
+#   postgres  — PostgreSQL 16 with pgvector, citext, pg_trgm, uuid-ossp
+#   redis     — Redis 7 (session tokens, rate-limit counters, BullMQ)
+#   mailpit   — Local SMTP/web UI for catching outbound emails (no real sending)
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: praxisa-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: praxisa_dev
+      POSTGRES_USER: praxisa
+      POSTGRES_PASSWORD: praxisa_dev_password   # local dev only — not a real secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/docker/postgres-init.sql:/docker-entrypoint-initdb.d/01-extensions.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U praxisa -d praxisa_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: praxisa-redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: praxisa-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP — point BREVO_SMTP_HOST=localhost:1025 in local .env
+      - "8025:8025"   # Web UI — open http://localhost:8025 to view caught emails
+    environment:
+      MP_MAX_MESSAGES: 500
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local

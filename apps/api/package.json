@@ -1,0 +1,47 @@
+{
+  "name": "@praxisa/api",
+  "version": "0.0.1",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:unit": "vitest run --reporter=verbose src/**/*.test.ts",
+    "test:integration": "vitest run --reporter=verbose src/**/*.integration.test.ts",
+    "test:watch": "vitest watch",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@fastify/cors": "^9.0.0",
+    "@fastify/helmet": "^11.0.0",
+    "@fastify/jwt": "^8.0.0",
+    "@fastify/rate-limit": "^9.0.0",
+    "@fastify/swagger": "^8.0.0",
+    "@opentelemetry/api": "^1.8.0",
+    "@opentelemetry/sdk-node": "^0.51.0",
+    "@opentelemetry/auto-instrumentations-node": "^0.46.0",
+    "bullmq": "^5.0.0",
+    "drizzle-orm": "^0.30.0",
+    "fastify": "^4.27.0",
+    "ioredis": "^5.3.0",
+    "pg": "^8.11.0",
+    "pino": "^9.0.0",
+    "zod": "^3.23.0",
+    "@praxisa/shared-types": "workspace:*",
+    "@praxisa/policy-engine": "workspace:*",
+    "@praxisa/audit-sdk": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.0",
+    "drizzle-kit": "^0.20.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.5.0",
+    "@vitest/coverage-v8": "^1.5.0"
+  }
+}

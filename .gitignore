@@ -1,0 +1,55 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+
+# Environment — NEVER commit real values
+.env
+.env.*
+!.env.example
+
+# Secrets — values never committed
+infra/secrets/*.pem
+infra/secrets/*.key
+infra/secrets/*.json
+!infra/secrets/.gitkeep
+
+# Coverage & test artifacts
+coverage/
+.nyc_output/
+test-results/
+playwright-report/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Docker
+docker-compose.override.yml
+
+# Terraform state — state must be in remote backend, never local
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/.terraform/
+infra/terraform/.terraform.lock.hcl
+
+# Migration batches (contain raw source data with PII)
+data-migration/batches/*.xlsx
+data-migration/batches/*.csv
+data-migration/batches/*.xls
+data-migration/profiles/*.csv

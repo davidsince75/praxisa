@@ -1,0 +1,199 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '9'
+
+jobs:
+  # ── 1. Static checks ──────────────────────────────────────────────────────────
+  static:
+    name: Lint, types, boundaries
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript strict check
+        run: pnpm typecheck
+
+      - name: ESLint (lint + import boundaries)
+        run: pnpm lint
+
+      - name: Prettier format check
+        run: pnpm exec prettier --check .
+
+  # ── 2. Security scans ─────────────────────────────────────────────────────────
+  security:
+    name: Security scans
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # trufflehog needs full history
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Dependency vulnerability audit
+        run: pnpm audit --audit-level=high
+
+      - name: Secrets scan (trufflehog)
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: ${{ github.event.repository.default_branch }}
+          head: HEAD
+          extra_args: --only-verified
+
+  # ── 3. Unit + integration tests ───────────────────────────────────────────────
+  test:
+    name: Tests (unit + integration)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: praxisa_test
+          POSTGRES_USER: praxisa
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+        ports:
+          - 6379:6379
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Enable PostgreSQL extensions
+        run: |
+          PGPASSWORD=test_password psql -h localhost -U praxisa -d praxisa_test -c "
+            CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";
+            CREATE EXTENSION IF NOT EXISTS citext;
+            CREATE EXTENSION IF NOT EXISTS pg_trgm;
+            CREATE EXTENSION IF NOT EXISTS vector;
+          "
+
+      - name: Run unit tests with coverage
+        run: pnpm test:unit
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY_TEST }}
+          JWT_SIGNING_KEY_PUBLIC: ${{ secrets.JWT_SIGNING_KEY_PUBLIC_TEST }}
+
+      - name: Enforce coverage threshold (80% domain layer)
+        run: pnpm exec vitest run --coverage --coverage.thresholds.statements=80
+        env:
+          NODE_ENV: test
+          DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_test
+          REDIS_URL: redis://localhost:6379
+          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY_TEST }}
+          JWT_SIGNING_KEY_PUBLIC: ${{ secrets.JWT_SIGNING_KEY_PUBLIC_TEST }}
+
+  # ── 4. Migration validation ───────────────────────────────────────────────────
+  migrations:
+    name: Migration validation
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_DB: praxisa_migration_test
+          POSTGRES_USER: praxisa
+          POSTGRES_PASSWORD: test_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Enable PostgreSQL extensions
+        run: |
+          PGPASSWORD=test_password psql -h localhost -U praxisa -d praxisa_migration_test -c "
+            CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";
+            CREATE EXTENSION IF NOT EXISTS citext;
+            CREATE EXTENSION IF NOT EXISTS pg_trgm;
+            CREATE EXTENSION IF NOT EXISTS vector;
+          "
+
+      - name: Run migrations against clean schema
+        run: pnpm db:migrate
+        env:
+          DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_migration_test
+
+      - name: Check for migration drift
+        run: pnpm db:generate --check
+        env:
+          DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_migration_test
