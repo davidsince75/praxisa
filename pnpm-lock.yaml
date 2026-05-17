@@ -118,6 +118,9 @@ importers:
         specifier: workspace:*
         version: link:../policy-engine
     devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.41
       typescript:
         specifier: ^5.4.0
         version: 5.9.3
@@ -127,6 +130,9 @@ importers:
 
   packages/policy-engine:
     devDependencies:
+      '@types/node':
+        specifier: ^20.0.0
+        version: 20.19.41
       typescript:
         specifier: ^5.4.0
         version: 5.9.3

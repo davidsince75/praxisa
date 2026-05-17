@@ -11,6 +11,7 @@
     "test:unit": "vitest run --reporter=verbose"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "typescript": "^5.4.0",
     "vitest": "^1.5.0"
   }
