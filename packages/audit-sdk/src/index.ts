@@ -98,8 +98,9 @@ export async function emitEvent(input: AuditEventInput): Promise<AuditEvent> {
 export class InMemoryAuditSink implements AuditSink {
   public events: AuditEvent[] = [];
 
-  async write(event: AuditEvent): Promise<void> {
+  write(event: AuditEvent): Promise<void> {
     this.events.push(event);
+    return Promise.resolve();
   }
 
   clear(): void {

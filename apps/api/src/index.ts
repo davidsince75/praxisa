@@ -21,8 +21,8 @@ await app.register(cors, { origin: config.corsOrigins, credentials: true });
 await app.register(rateLimit, { max: 100, timeWindow: '1 minute', redis: undefined });
 
 // ── Health endpoints ───────────────────────────────────────────────────────────
-app.get('/health', { logLevel: 'silent' }, async () => ({ status: 'ok', version: process.env['npm_package_version'] ?? '0.0.1' }));
-app.get('/ready', { logLevel: 'silent' }, async () => ({ status: 'ready' }));
+app.get('/health', { logLevel: 'silent' }, () => ({ status: 'ok', version: process.env['npm_package_version'] ?? '0.0.1' }));
+app.get('/ready', { logLevel: 'silent' }, () => ({ status: 'ready' }));
 
 // ── Module routes (registered here as modules are built) ──────────────────────
 // app.register(authRoutes, { prefix: '/v1/auth' });

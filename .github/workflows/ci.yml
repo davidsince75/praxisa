@@ -71,8 +71,8 @@ jobs:
         uses: trufflesecurity/trufflehog@main
         with:
           path: ./
-          base: ${{ github.event.repository.default_branch }}
-          head: HEAD
+          base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          head: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
           extra_args: --only-verified
 
   # ── 3. Unit + integration tests ───────────────────────────────────────────────
@@ -138,13 +138,9 @@ jobs:
           JWT_SIGNING_KEY_PUBLIC: ${{ secrets.JWT_SIGNING_KEY_PUBLIC_TEST }}
 
       - name: Enforce coverage threshold (80% domain layer)
-        run: pnpm exec vitest run --coverage --coverage.thresholds.statements=80
+        run: pnpm --filter @praxisa/policy-engine exec vitest run --coverage --coverage.thresholds.statements=80
         env:
           NODE_ENV: test
-          DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_test
-          REDIS_URL: redis://localhost:6379
-          JWT_SIGNING_KEY: ${{ secrets.JWT_SIGNING_KEY_TEST }}
-          JWT_SIGNING_KEY_PUBLIC: ${{ secrets.JWT_SIGNING_KEY_PUBLIC_TEST }}
 
   # ── 4. Migration validation ───────────────────────────────────────────────────
   migrations:

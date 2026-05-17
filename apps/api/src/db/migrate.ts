@@ -15,4 +15,4 @@ await migrate(db, { migrationsFolder: new URL('./migrations', import.meta.url).p
 
 await pool.end();
 
-console.log('Migrations applied successfully.');
+process.stdout.write('Migrations applied successfully.\n');
