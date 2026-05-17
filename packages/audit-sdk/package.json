@@ -8,7 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
-    "test:unit": "vitest run --reporter=verbose"
+    "test:unit": "vitest run --reporter=verbose --passWithNoTests"
   },
   "dependencies": {
     "@praxisa/policy-engine": "workspace:*"

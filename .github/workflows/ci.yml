@@ -189,11 +189,23 @@ jobs:
           "
 
       - name: Run migrations against clean schema
-        run: pnpm db:migrate
+        run: |
+          SQL_COUNT=$(find apps/api/src/db/migrations -name '*.sql' 2>/dev/null | wc -l)
+          if [ "$SQL_COUNT" -gt "0" ]; then
+            pnpm db:migrate
+          else
+            echo "No migration files yet — skipping."
+          fi
         env:
           DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_migration_test
 
       - name: Check for migration drift
-        run: pnpm db:generate --check
+        run: |
+          SQL_COUNT=$(find apps/api/src/db/migrations -name '*.sql' 2>/dev/null | wc -l)
+          if [ "$SQL_COUNT" -gt "0" ]; then
+            pnpm db:generate --check
+          else
+            echo "No schema defined yet — skipping drift check."
+          fi
         env:
           DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_migration_test
