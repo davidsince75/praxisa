@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 # Local development stack — mirrors Railway EU production topology
 # No real PII in local dev. Use the synthetic data seeder (pnpm seed).
@@ -16,7 +16,7 @@ services:
     environment:
       POSTGRES_DB: praxisa_dev
       POSTGRES_USER: praxisa
-      POSTGRES_PASSWORD: praxisa_dev_password   # local dev only — not a real secret
+      POSTGRES_PASSWORD: praxisa_dev_password # local dev only — not a real secret
     ports:
       - "5432:5432"
     volumes:
@@ -48,8 +48,8 @@ services:
     container_name: praxisa-mailpit
     restart: unless-stopped
     ports:
-      - "1025:1025"   # SMTP — point BREVO_SMTP_HOST=localhost:1025 in local .env
-      - "8025:8025"   # Web UI — open http://localhost:8025 to view caught emails
+      - "1025:1025" # SMTP — point BREVO_SMTP_HOST=localhost:1025 in local .env
+      - "8025:8025" # Web UI — open http://localhost:8025 to view caught emails
     environment:
       MP_MAX_MESSAGES: 500
       MP_SMTP_AUTH_ACCEPT_ANY: 1

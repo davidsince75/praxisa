@@ -9,19 +9,20 @@
 
 ## Decision Register
 
-| Decision | ADR | Vendor | Free Tier | EU Residency | DPA Required | DPA Status | ROPA Entry |
-|---|---|---|---|---|---|---|---|
-| Cloud provider | ADR-001 | Railway (EU West / Amsterdam) | Yes (trial credit) | Yes | Yes | Pending — DM to obtain | Pending — GR |
-| Object storage | ADR-001 (note) | Cloudflare R2 (EU) | Yes (10 GB / 1M reads) | Yes (EU localization) | Yes | Pending — DM to obtain | Pending — GR |
-| Redis | ADR-001 (note) | Railway managed Redis | Yes (included) | Yes (EU West) | Covered by Railway DPA | — | — |
-| Secret store | ADR-002 | Doppler (EU region) | Yes (Developer plan) | Yes | Yes | Pending — DM to obtain | Pending — GR |
-| Email provider | ADR-003 | Brevo (Paris, France) | Yes (300/day) | Yes (French company) | Yes (self-service EU) | Pending — GR to confirm | Pending — GR |
+| Decision       | ADR            | Vendor                        | Free Tier              | EU Residency          | DPA Required           | DPA Status              | ROPA Entry   |
+| -------------- | -------------- | ----------------------------- | ---------------------- | --------------------- | ---------------------- | ----------------------- | ------------ |
+| Cloud provider | ADR-001        | Railway (EU West / Amsterdam) | Yes (trial credit)     | Yes                   | Yes                    | Pending — DM to obtain  | Pending — GR |
+| Object storage | ADR-001 (note) | Cloudflare R2 (EU)            | Yes (10 GB / 1M reads) | Yes (EU localization) | Yes                    | Pending — DM to obtain  | Pending — GR |
+| Redis          | ADR-001 (note) | Railway managed Redis         | Yes (included)         | Yes (EU West)         | Covered by Railway DPA | —                       | —            |
+| Secret store   | ADR-002        | Doppler (EU region)           | Yes (Developer plan)   | Yes                   | Yes                    | Pending — DM to obtain  | Pending — GR |
+| Email provider | ADR-003        | Brevo (Paris, France)         | Yes (300/day)          | Yes (French company)  | Yes (self-service EU)  | Pending — GR to confirm | Pending — GR |
 
 ---
 
 ## Outstanding Actions Before Gate A (D10 / D11)
 
 ### David Muller
+
 - [ ] Create Railway account → provision EU West project → enable pgvector on managed Postgres → provision Redis → obtain Railway DPA
 - [ ] Create Cloudflare R2 bucket (EU jurisdiction) → obtain Cloudflare DPA
 - [ ] Create Doppler account → configure EU region → create `praxisa` project with `staging` / `production` configs → install Railway sync → obtain Doppler DPA
@@ -30,6 +31,7 @@
 - [ ] Write secret rotation runbook: `/docs/runbooks/secret-rotation.md`
 
 ### Gerome Ricour
+
 - [ ] Review Railway DPA → sign off that it satisfies GDPR sub-processor requirements
 - [ ] Add all five vendors to ROPA as sub-processors (Railway, Cloudflare R2, Doppler, Brevo)
 - [ ] Confirm Brevo is listed in Praxisa's privacy notice
@@ -39,11 +41,11 @@
 
 ## Backlog Task Cross-Reference
 
-| Backlog Task | Covered By |
-|---|---|
-| D10 — Provision EU staging and production landing zones | Railway ADR-001 + actions above |
-| D11 — Enable secrets management, KMS, and centralized audit logging | Doppler ADR-002 + actions above |
-| D05 — GDPR baseline matrix (processors) | Brevo ADR-003 + ROPA entries for all vendors |
+| Backlog Task                                                        | Covered By                                   |
+| ------------------------------------------------------------------- | -------------------------------------------- |
+| D10 — Provision EU staging and production landing zones             | Railway ADR-001 + actions above              |
+| D11 — Enable secrets management, KMS, and centralized audit logging | Doppler ADR-002 + actions above              |
+| D05 — GDPR baseline matrix (processors)                             | Brevo ADR-003 + ROPA entries for all vendors |
 
 ---
 

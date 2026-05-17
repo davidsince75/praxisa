@@ -1,16 +1,16 @@
-import Fastify from 'fastify';
-import cors from '@fastify/cors';
-import helmet from '@fastify/helmet';
-import rateLimit from '@fastify/rate-limit';
-import { loadConfig } from './shared/config.js';
-import { createLogger } from './shared/logger.js';
+import Fastify from "fastify";
+import cors from "@fastify/cors";
+import helmet from "@fastify/helmet";
+import rateLimit from "@fastify/rate-limit";
+import { loadConfig } from "./shared/config.js";
+import { createLogger } from "./shared/logger.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
 
 const app = Fastify({
   loggerInstance: logger,
-  requestIdHeader: 'x-request-id',
+  requestIdHeader: "x-request-id",
   genReqId: () => crypto.randomUUID(),
   trustProxy: true,
 });
@@ -18,11 +18,18 @@ const app = Fastify({
 // ── Security middleware ────────────────────────────────────────────────────────
 await app.register(helmet, { contentSecurityPolicy: false });
 await app.register(cors, { origin: config.corsOrigins, credentials: true });
-await app.register(rateLimit, { max: 100, timeWindow: '1 minute', redis: undefined });
+await app.register(rateLimit, {
+  max: 100,
+  timeWindow: "1 minute",
+  redis: undefined,
+});
 
 // ── Health endpoints ───────────────────────────────────────────────────────────
-app.get('/health', { logLevel: 'silent' }, () => ({ status: 'ok', version: process.env['npm_package_version'] ?? '0.0.1' }));
-app.get('/ready', { logLevel: 'silent' }, () => ({ status: 'ready' }));
+app.get("/health", { logLevel: "silent" }, () => ({
+  status: "ok",
+  version: process.env["npm_package_version"] ?? "0.0.1",
+}));
+app.get("/ready", { logLevel: "silent" }, () => ({ status: "ready" }));
 
 // ── Module routes (registered here as modules are built) ──────────────────────
 // app.register(authRoutes, { prefix: '/v1/auth' });
@@ -37,9 +44,12 @@ app.get('/ready', { logLevel: 'silent' }, () => ({ status: 'ready' }));
 
 // ── Start ──────────────────────────────────────────────────────────────────────
 try {
-  await app.listen({ port: config.port, host: '0.0.0.0' });
-  logger.info({ port: config.port, env: config.nodeEnv }, 'Praxisa API started');
+  await app.listen({ port: config.port, host: "0.0.0.0" });
+  logger.info(
+    { port: config.port, env: config.nodeEnv },
+    "Praxisa API started",
+  );
 } catch (err) {
-  logger.error(err, 'Failed to start server');
+  logger.error(err, "Failed to start server");
   process.exit(1);
 }

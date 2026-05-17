@@ -1,13 +1,13 @@
 # ADR-002: Secret Store — Doppler
 
-| Field | Value |
-|---|---|
-| Status | Accepted |
-| Date | 2026-05-17 |
-| Decider | David Muller |
-| Stakeholder | Gerome Ricour |
+| Field       | Value           |
+| ----------- | --------------- |
+| Status      | Accepted        |
+| Date        | 2026-05-17      |
+| Decider     | David Muller    |
+| Stakeholder | Gerome Ricour   |
 | Review Gate | Gate A (Day 30) |
-| Supersedes | — |
+| Supersedes  | —               |
 
 ---
 
@@ -39,23 +39,25 @@ For the demo and staging phase, a free tier is required.
 
 ## Alternatives Considered
 
-| Option | Free Tier | EU Residency | Self-Hosted Option | Reason Rejected |
-|---|---|---|---|---|
-| **HashiCorp Vault (self-hosted)** | Yes (open source) | Yes (you control) | Yes | Adds operational overhead (managing Vault HA, unsealing, backups) that is disproportionate for a single-developer demo. Remain viable for production if Doppler becomes unsuitable. |
-| **Infisical** | Yes (cloud free tier) | Yes (EU region) | Yes | Functionally comparable to Doppler; Railway native sync is marginally better documented for Doppler at this time. Revisit if Doppler free plan limits are hit. |
-| **AWS Secrets Manager** | No meaningful free tier | Yes | No | Cost and AWS dependency not justified at demo stage. |
-| **Committed `.env` files** | N/A | N/A | N/A | Explicitly prohibited by build manual §03. Not an option. |
+| Option                            | Free Tier               | EU Residency      | Self-Hosted Option | Reason Rejected                                                                                                                                                                     |
+| --------------------------------- | ----------------------- | ----------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **HashiCorp Vault (self-hosted)** | Yes (open source)       | Yes (you control) | Yes                | Adds operational overhead (managing Vault HA, unsealing, backups) that is disproportionate for a single-developer demo. Remain viable for production if Doppler becomes unsuitable. |
+| **Infisical**                     | Yes (cloud free tier)   | Yes (EU region)   | Yes                | Functionally comparable to Doppler; Railway native sync is marginally better documented for Doppler at this time. Revisit if Doppler free plan limits are hit.                      |
+| **AWS Secrets Manager**           | No meaningful free tier | Yes               | No                 | Cost and AWS dependency not justified at demo stage.                                                                                                                                |
+| **Committed `.env` files**        | N/A                     | N/A               | N/A                | Explicitly prohibited by build manual §03. Not an option.                                                                                                                           |
 
 ---
 
 ## Consequences
 
 **Accepted trade-offs:**
+
 - Doppler Developer plan is limited to 1 user. When a second team member is added, upgrade to Team plan (~$6/user/month) is required.
 - Doppler is a third-party SaaS. A DPA must be obtained before any production secrets (particularly those that could decrypt personal data, such as DB credentials or JWT signing keys) are stored.
 - If Doppler experiences an outage, application startups will fail until secrets are available. Mitigation: Railway's environment variable cache means running containers are unaffected; only new deploys fail. Accept this risk at demo/staging scale.
 
 **Actions required before Gate A (D11):**
+
 - [ ] David Muller: Create Doppler account. Configure EU data region. Create `praxisa` project with `staging` and `production` configs.
 - [ ] David Muller: Install Doppler Railway integration. Verify secrets inject correctly into a test Railway service before first real credential is stored.
 - [ ] David Muller: Obtain Doppler DPA — available at [doppler.com/legal/dpa](https://www.doppler.com/legal/dpa). Confirm EU processing.

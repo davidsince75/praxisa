@@ -1,13 +1,13 @@
 # ADR-003: Transactional Email Provider — Brevo
 
-| Field | Value |
-|---|---|
-| Status | Accepted |
-| Date | 2026-05-17 |
-| Decider | David Muller |
-| Stakeholder | Gerome Ricour |
+| Field       | Value           |
+| ----------- | --------------- |
+| Status      | Accepted        |
+| Date        | 2026-05-17      |
+| Decider     | David Muller    |
+| Stakeholder | Gerome Ricour   |
 | Review Gate | Gate A (Day 30) |
-| Supersedes | — |
+| Supersedes  | —               |
 
 ---
 
@@ -39,23 +39,25 @@ The build manual (§05, §14) requires a transactional email provider for the `c
 
 ## Alternatives Considered
 
-| Option | HQ / Data Location | SCC Required | Free Tier | Reason Rejected |
-|---|---|---|---|---|
-| **Resend** | USA (Delaware) | Yes — TIA required | Yes (100/day) | US-headquartered; SCC + transfer impact assessment required. Lower free tier volume. |
-| **Postmark** | USA | Yes — TIA required | Yes (100/month trial) | US-headquartered; trial only, not ongoing free tier. |
-| **Mailgun** | USA (Rackspace) | Yes — TIA required | No ongoing free tier | US-headquartered; no free tier for ongoing use. |
-| **Amazon SES (EU)** | AWS EU Frankfurt | Formal SCC review needed | Near-free ($0.10/1k) | Adds AWS dependency; SCC chain for AWS EU still requires TIA under Schrems II analysis. Operational overhead disproportionate for demo scale. |
-| **Mailtrap (sandbox only)** | EU | N/A | Yes | Sandbox/testing tool only — cannot send real emails to students. Appropriate for local dev email catching but not for staging/production. |
+| Option                      | HQ / Data Location | SCC Required             | Free Tier             | Reason Rejected                                                                                                                               |
+| --------------------------- | ------------------ | ------------------------ | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Resend**                  | USA (Delaware)     | Yes — TIA required       | Yes (100/day)         | US-headquartered; SCC + transfer impact assessment required. Lower free tier volume.                                                          |
+| **Postmark**                | USA                | Yes — TIA required       | Yes (100/month trial) | US-headquartered; trial only, not ongoing free tier.                                                                                          |
+| **Mailgun**                 | USA (Rackspace)    | Yes — TIA required       | No ongoing free tier  | US-headquartered; no free tier for ongoing use.                                                                                               |
+| **Amazon SES (EU)**         | AWS EU Frankfurt   | Formal SCC review needed | Near-free ($0.10/1k)  | Adds AWS dependency; SCC chain for AWS EU still requires TIA under Schrems II analysis. Operational overhead disproportionate for demo scale. |
+| **Mailtrap (sandbox only)** | EU                 | N/A                      | Yes                   | Sandbox/testing tool only — cannot send real emails to students. Appropriate for local dev email catching but not for staging/production.     |
 
 ---
 
 ## Consequences
 
 **Accepted trade-offs:**
+
 - Brevo free tier is capped at 300 emails/day. At current scale (~158 students), this is sufficient for demo and early staging. If volume exceeds this (e.g., bulk enrollment notifications), upgrade to Starter plan (~€19/month). This threshold must be monitored.
 - Brevo's template editor uses its own variable syntax (`{{ params.variable_name }}`). The `comms` module adapter must translate between the internal `message_templates` schema and Brevo's template format. This is an adapter responsibility — the domain layer is unaware of Brevo's syntax.
 
 **Actions required before Gate A:**
+
 - [ ] David Muller: Create Brevo account. Select EU data region during account setup. Obtain API key and store in Doppler (`BREVO_API_KEY`).
 - [ ] David Muller: Confirm Brevo DPA is accepted (available at [brevo.com/legal/termsofuse](https://www.brevo.com/legal/termsofuse) — DPA is incorporated for EU customers).
 - [ ] David Muller: Configure sender domain (SPF, DKIM, DMARC) before first email is sent from staging. Do not send from unverified domain.

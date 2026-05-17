@@ -26,7 +26,12 @@ export interface CursorPage<T> {
 
 // ── User / roles ───────────────────────────────────────────────────────────────
 
-export type UserRole = 'student' | 'instructor' | 'admin' | 'gdpr_officer' | 'migration_lead';
+export type UserRole =
+  | "student"
+  | "instructor"
+  | "admin"
+  | "gdpr_officer"
+  | "migration_lead";
 
 export interface UserDto {
   id: string;
@@ -37,26 +42,39 @@ export interface UserDto {
 
 // ── DSR ────────────────────────────────────────────────────────────────────────
 
-export type DsrType = 'access' | 'erasure' | 'rectification' | 'portability' | 'objection';
+export type DsrType =
+  | "access"
+  | "erasure"
+  | "rectification"
+  | "portability"
+  | "objection";
 
 export type DsrStatus =
-  | 'open'
-  | 'in_progress'
-  | 'waiting_on_data_subject'
-  | 'suspended'
-  | 'completed'
-  | 'rejected';
+  | "open"
+  | "in_progress"
+  | "waiting_on_data_subject"
+  | "suspended"
+  | "completed"
+  | "rejected";
 
 export interface DsrDto {
   id: string;
   type: DsrType;
   status: DsrStatus;
   submittedAt: string;
-  dueBefore: string;   // 30 days from submittedAt — enforced by GDPR Art. 12
+  dueBefore: string; // 30 days from submittedAt — enforced by GDPR Art. 12
   completedAt: string | null;
 }
 
 // ── AI capability tiers ────────────────────────────────────────────────────────
 
-export type AiCapability = 'student_qa' | 'admin_intent' | 'admin_draft' | 'instructor_assessment';
-export type AiApprovalState = 'auto_approved' | 'pending_review' | 'approved' | 'rejected';
+export type AiCapability =
+  | "student_qa"
+  | "admin_intent"
+  | "admin_draft"
+  | "instructor_assessment";
+export type AiApprovalState =
+  | "auto_approved"
+  | "pending_review"
+  | "approved"
+  | "rejected";

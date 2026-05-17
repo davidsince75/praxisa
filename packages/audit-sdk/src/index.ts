@@ -8,11 +8,11 @@
  * Minimum required fields per build manual §08.
  */
 
-import type { PolicyResult } from '@praxisa/policy-engine';
+import type { PolicyResult } from "@praxisa/policy-engine";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-export type DataClassification = 'pii:direct' | 'pii:pseudonymous' | 'non-pii';
+export type DataClassification = "pii:direct" | "pii:pseudonymous" | "non-pii";
 
 export interface AuditEventInput {
   /** User or system that triggered the action */
@@ -78,7 +78,7 @@ export function initAuditSdk(sink: AuditSink): void {
 export async function emitEvent(input: AuditEventInput): Promise<AuditEvent> {
   if (!_sink) {
     throw new Error(
-      'audit-sdk: sink not initialised. Call initAuditSdk(sink) at application startup before emitting events.',
+      "audit-sdk: sink not initialised. Call initAuditSdk(sink) at application startup before emitting events.",
     );
   }
 
@@ -108,6 +108,6 @@ export class InMemoryAuditSink implements AuditSink {
   }
 
   findByType(eventType: string): AuditEvent[] {
-    return this.events.filter(e => e.eventType === eventType);
+    return this.events.filter((e) => e.eventType === eventType);
   }
 }
