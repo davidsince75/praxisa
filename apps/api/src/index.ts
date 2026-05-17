@@ -7,6 +7,7 @@ import { loadConfig } from "./shared/config.js";
 import { createLogger } from "./shared/logger.js";
 import { dbPlugin } from "./db/index.js";
 import { authPlugin } from "./modules/auth/index.js";
+import { learningPlugin } from "./modules/learning/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -37,5 +38,16 @@ await app.register(dbPlugin, { databaseUrl: config.databaseUrl });
 
 // ── Domain modules ─────────────────────────────────────────────────────────────
 await app.register(authPlugin, { prefix: "/v1/auth", config });
+await app.register(learningPlugin, { prefix: "/v1" });
 
-// ── Health endpoints ─────────────────────────────────────────────────────────�
+// ── Health endpoints ───────────────────────────────────────────────────────────
+app.get("/health", (_request, reply) => {
+  reply.send({ status: "ok" });
+});
+
+app.get("/ready", (_request, reply) => {
+  reply.send({ status: "ok" });
+});
+
+// ── Start ──────────────────────────────────────────────────────────────────────
+await app.listen({ port: config.port, host: "0.0.0.0" });
