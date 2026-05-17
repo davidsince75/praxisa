@@ -9,7 +9,7 @@ const config = loadConfig();
 const logger = createLogger(config.logLevel);
 
 const app = Fastify({
-  logger,
+  loggerInstance: logger,
   requestIdHeader: 'x-request-id',
   genReqId: () => crypto.randomUUID(),
   trustProxy: true,
