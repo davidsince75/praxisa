@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc --build",
     "test": "vitest run --passWithNoTests",
     "test:unit": "vitest run --reporter=verbose --passWithNoTests src/**/*.test.ts",
     "test:integration": "vitest run --reporter=verbose src/**/*.integration.test.ts",

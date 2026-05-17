@@ -1,5 +1,5 @@
 import fp from "fastify-plugin";
-import type { DoneFn, FastifyInstance } from "fastify";
+import type { FastifyInstance } from "fastify";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import * as schema from "./schema/index.js";
@@ -11,7 +11,7 @@ interface DbPluginOptions {
 }
 
 export const dbPlugin = fp(
-  (fastify: FastifyInstance, opts: DbPluginOptions, done: DoneFn) => {
+  (fastify: FastifyInstance, opts: DbPluginOptions, done: (err?: Error) => void) => {
     const pool = new Pool({ connectionString: opts.databaseUrl, max: 20 });
     const db = drizzle(pool, { schema });
 

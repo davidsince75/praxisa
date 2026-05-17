@@ -1,6 +1,5 @@
 import fp from "fastify-plugin";
 import type {
-  DoneFn,
   FastifyInstance,
   FastifyReply,
   FastifyRequest,
@@ -27,7 +26,7 @@ interface AuthPluginOptions {
 }
 
 export const authPlugin = fp(
-  (fastify: FastifyInstance, opts: AuthPluginOptions, done: DoneFn) => {
+  (fastify: FastifyInstance, opts: AuthPluginOptions, done: (err?: Error) => void) => {
     const { config } = opts;
 
     // ── authenticate preHandler ──────────────────────────────────────────────
