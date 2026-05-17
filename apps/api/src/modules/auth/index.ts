@@ -1,5 +1,10 @@
 import fp from "fastify-plugin";
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type {
+  DoneFn,
+  FastifyInstance,
+  FastifyReply,
+  FastifyRequest,
+} from "fastify";
 import { eq } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
 import { users } from "../../db/schema/index.js";
@@ -22,7 +27,7 @@ interface AuthPluginOptions {
 }
 
 export const authPlugin = fp(
-  async (fastify: FastifyInstance, opts: AuthPluginOptions) => {
+  (fastify: FastifyInstance, opts: AuthPluginOptions, done: DoneFn) => {
     const { config } = opts;
 
     // ── authenticate preHandler ──────────────────────────────────────────────
@@ -198,6 +203,7 @@ export const authPlugin = fp(
         return reply.send({ user });
       },
     );
+    done();
   },
   { name: "auth", dependencies: ["db"] },
 );
