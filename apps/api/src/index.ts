@@ -12,11 +12,11 @@ import { learningPlugin } from "./modules/learning/index.js";
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
 
-// ── Audit SDK ──────────────────────────────────────────────────────────────────
+// Audit SDK
 // TODO: replace InMemoryAuditSink with DrizzleAuditSink once audit_events table exists
 initAuditSdk(new InMemoryAuditSink());
 
-// ── App ────────────────────────────────────────────────────────────────────────
+// App
 const app = Fastify({
   loggerInstance: logger,
   requestIdHeader: "x-request-id",
@@ -24,7 +24,7 @@ const app = Fastify({
   trustProxy: true,
 });
 
-// ── Security middleware ────────────────────────────────────────────────────────
+// Security middleware
 await app.register(helmet, { contentSecurityPolicy: false });
 await app.register(cors, { origin: config.corsOrigins, credentials: true });
 await app.register(rateLimit, {
@@ -33,21 +33,21 @@ await app.register(rateLimit, {
   redis: undefined,
 });
 
-// ── DB ─────────────────────────────────────────────────────────────────────────
+// DB
 await app.register(dbPlugin, { databaseUrl: config.databaseUrl });
 
-// ── Domain modules ─────────────────────────────────────────────────────────────
+// Domain modules
 await app.register(authPlugin, { prefix: "/v1/auth", config });
 await app.register(learningPlugin, { prefix: "/v1" });
 
-// ── Health endpoints ───────────────────────────────────────────────────────────
+// Health endpoints
 app.get("/health", (_request, reply) => {
-  reply.send({ status: "ok" });
+  return reply.send({ status: "ok" });
 });
 
 app.get("/ready", (_request, reply) => {
-  reply.send({ status: "ok" });
+  return reply.send({ status: "ok" });
 });
 
-// ── Start ──────────────────────────────────────────────────────────────────────
+// Start
 await app.listen({ port: config.port, host: "0.0.0.0" });

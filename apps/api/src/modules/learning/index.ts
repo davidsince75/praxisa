@@ -154,28 +154,7 @@ export const learningPlugin = fp(
           .where(eq(courseModules.courseId, courseId))
           .orderBy(asc(courseModules.position));
 
-        const lessonRows = await fastify.db
-          .select()
-          .from(lessons)
-          .where(eq(lessons.moduleId, courseModules.id))
-          .orderBy(asc(lessons.position));
-
-        // Build tree: attach lessons to their module
-        const moduleIds = mods.map((m) => m.id);
-        const allLessons =
-          moduleIds.length > 0
-            ? await fastify.db
-                .select()
-                .from(lessons)
-                .where(
-                  moduleIds.length === 1
-                    ? eq(lessons.moduleId, moduleIds[0]!)
-                    : eq(lessons.moduleId, lessons.moduleId), // fallback — replaced below
-                )
-                .orderBy(asc(lessons.position))
-            : [];
-
-        // Fetch lessons properly using individual queries (avoid IN without drizzle inArray)
+        // Fetch lessons per module
         const lessonsByModule: Record<string, (typeof lessons.$inferSelect)[]> =
           {};
         for (const mod of mods) {
@@ -939,11 +918,9 @@ export const learningPlugin = fp(
           return reply.status(403).send({ error: "Forbidden" });
         }
         if (enrolment.status !== "active") {
-          return reply
-            .status(409)
-            .send({
-              error: "Cannot update progress on a non-active enrolment",
-            });
+          return reply.status(409).send({
+            error: "Cannot update progress on a non-active enrolment",
+          });
         }
 
         const parse = upsertProgressSchema.safeParse(request.body);

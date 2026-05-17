@@ -97,7 +97,7 @@ export async function findExistingEnrolment(
  * Compute overall course completion percentage for an enrolment.
  * Returns 0–100.
  */
-export function computeCompletion(progress: Array<{ status: string }>): number {
+export function computeCompletion(progress: { status: string }[]): number {
   if (progress.length === 0) return 0;
   const done = progress.filter((p) => p.status === "completed").length;
   return Math.round((done / progress.length) * 100);
