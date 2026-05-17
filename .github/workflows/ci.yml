@@ -199,7 +199,7 @@ jobs:
         run: |
           SQL_COUNT=$(find apps/api/src/db/migrations -name '*.sql' 2>/dev/null | wc -l)
           if [ "$SQL_COUNT" -gt "0" ]; then
-            pnpm db:generate --check
+            pnpm --filter @praxisa/api exec drizzle-kit check
           else
             echo "No schema defined yet — skipping drift check."
           fi

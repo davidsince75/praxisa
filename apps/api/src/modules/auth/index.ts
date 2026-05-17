@@ -1,9 +1,5 @@
 import fp from "fastify-plugin";
-import type {
-  FastifyInstance,
-  FastifyReply,
-  FastifyRequest,
-} from "fastify";
+import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { eq } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
 import { users } from "../../db/schema/index.js";
@@ -26,7 +22,11 @@ interface AuthPluginOptions {
 }
 
 export const authPlugin = fp(
-  (fastify: FastifyInstance, opts: AuthPluginOptions, done: (err?: Error) => void) => {
+  (
+    fastify: FastifyInstance,
+    opts: AuthPluginOptions,
+    done: (err?: Error) => void,
+  ) => {
     const { config } = opts;
 
     // ── authenticate preHandler ──────────────────────────────────────────────

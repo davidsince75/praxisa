@@ -95,9 +95,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -109,12 +107,7 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "instructor",
-        "student",
-        "migration_lead"
-      ]
+      "values": ["admin", "instructor", "student", "migration_lead"]
     }
   },
   "schemas": {},

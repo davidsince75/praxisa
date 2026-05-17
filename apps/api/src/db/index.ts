@@ -11,7 +11,11 @@ interface DbPluginOptions {
 }
 
 export const dbPlugin = fp(
-  (fastify: FastifyInstance, opts: DbPluginOptions, done: (err?: Error) => void) => {
+  (
+    fastify: FastifyInstance,
+    opts: DbPluginOptions,
+    done: (err?: Error) => void,
+  ) => {
     const pool = new Pool({ connectionString: opts.databaseUrl, max: 20 });
     const db = drizzle(pool, { schema });
 
