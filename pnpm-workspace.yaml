@@ -2,6 +2,7 @@ packages:
   - "apps/*"
   - "packages/*"
 allowBuilds:
+  "@node-rs/argon2": true
   es5-ext: true
   esbuild: true
   msgpackr-extract: true
