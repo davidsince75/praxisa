@@ -23,8 +23,8 @@ COPY packages/shared-types ./packages/shared-types
 COPY packages/policy-engine ./packages/policy-engine
 
 RUN pnpm --filter @praxisa/shared-types build && \
-    pnpm --filter @praxisa/audit-sdk build && \
     pnpm --filter @praxisa/policy-engine build && \
+    pnpm --filter @praxisa/audit-sdk build && \
     pnpm --filter @praxisa/api build
 
 # ── Stage 3: production runtime ────────────────────────────────────────────────
