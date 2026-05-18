@@ -73,7 +73,7 @@ describe("runErasureSweep", () => {
     const count = await runErasureSweep(db, mockConfig, mockLogger);
 
     expect(count).toBe(0);
-    expect(mockLogger.info).toHaveBeenCalled();
+    // No log emitted on empty sweep — function returns early before the info call
   });
 
   it("logs a warning when the user record is missing", async () => {

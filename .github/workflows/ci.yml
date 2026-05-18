@@ -204,4 +204,4 @@ jobs:
             echo "No schema defined yet — skipping drift check."
           fi
         env:
-          DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_migration_test
+          DATABASE_URL: postgresql://praxisa:test_password@localhost:543
