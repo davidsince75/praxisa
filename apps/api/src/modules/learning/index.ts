@@ -9,6 +9,7 @@ import {
   exercises,
   lessonProgress,
   lessons,
+  users,
 } from "../../db/schema/index.js";
 import {
   createCourseSchema,
@@ -771,6 +772,28 @@ export const learningPlugin = fp(
           sourceIp: request.ip,
         });
 
+        // Send enrolment confirmation — fire-and-forget
+        fastify.db
+          .select({
+            email: users.email,
+            firstName: users.firstName,
+          })
+          .from(users)
+          .where(eq(users.id, targetStudentId))
+          .limit(1)
+          .then((rows) => {
+            const student = rows[0];
+            if (student) {
+              return fastify.comms.sendEnrolmentConfirmation(
+                { email: student.email, firstName: student.firstName },
+                { id: course.id, title: course.title },
+              );
+            }
+          })
+          .catch((err: unknown) => {
+            fastify.log.error({ err }, "Failed to send enrolment confirmation");
+          });
+
         return reply.status(201).send({ enrolment });
       },
     );
@@ -962,6 +985,45 @@ export const learningPlugin = fp(
               requestId: request.id,
               sourceIp: request.ip,
             });
+
+            // Send course completion email — fire-and-forget
+            fastify.db
+              .select({
+                email: users.email,
+                firstName: users.firstName,
+              })
+              .from(users)
+              .where(eq(users.id, enrolment.studentId))
+              .limit(1)
+              .then((rows) => {
+                const student = rows[0];
+                if (student) {
+                  // Fetch course title
+                  return fastify.db
+                    .select({ title: courses.title })
+                    .from(courses)
+                    .where(eq(courses.id, enrolment.courseId))
+                    .limit(1)
+                    .then((courseRows) => {
+                      const course = courseRows[0];
+                      if (course) {
+                        return fastify.comms.sendCourseCompletionEmail(
+                          {
+                            email: student.email,
+                            firstName: student.firstName,
+                          },
+                          course.title,
+                        );
+                      }
+                    });
+                }
+              })
+              .catch((err: unknown) => {
+                fastify.log.error(
+                  { err },
+                  "Failed to send course completion email",
+                );
+              });
           }
         }
 
@@ -971,5 +1033,5 @@ export const learningPlugin = fp(
 
     done();
   },
-  { name: "learning", dependencies: ["db", "auth"] },
+  { name: "learning", dependencies: ["db", "auth", "comms"] },
 );

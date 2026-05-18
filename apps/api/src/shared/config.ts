@@ -13,6 +13,12 @@ const configSchema = z.object({
     privateKey: z.string().min(1),
     publicKey: z.string().min(1),
   }),
+  comms: z.object({
+    brevoApiKey: z.string().min(1),
+    senderEmail: z.string().email(),
+    senderName: z.string().min(1),
+  }),
+  appBaseUrl: z.string().url().default("http://localhost:5173"),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -26,7 +32,7 @@ export function loadConfig(): AppConfig {
     databaseUrl: process.env["DATABASE_URL"],
     redisUrl: process.env["REDIS_URL"],
     jwt: {
-      // Doppler stores keys as base64-encoded PEM — decode at startup
+      // Doppler stores keys as base64-encoded PEM -- decode at startup
       privateKey: process.env["JWT_SIGNING_KEY"]
         ? Buffer.from(process.env["JWT_SIGNING_KEY"], "base64").toString(
             "utf-8",
@@ -38,6 +44,12 @@ export function loadConfig(): AppConfig {
           )
         : "",
     },
+    comms: {
+      brevoApiKey: process.env["BREVO_API_KEY"],
+      senderEmail: process.env["BREVO_SENDER_EMAIL"],
+      senderName: process.env["BREVO_SENDER_NAME"],
+    },
+    appBaseUrl: process.env["APP_BASE_URL"],
   });
 
   if (!result.success) {

@@ -6,6 +6,7 @@ import { initAuditSdk, InMemoryAuditSink } from "@praxisa/audit-sdk";
 import { loadConfig } from "./shared/config.js";
 import { createLogger } from "./shared/logger.js";
 import { dbPlugin } from "./db/index.js";
+import { commsPlugin } from "./modules/comms/index.js";
 import { authPlugin } from "./modules/auth/index.js";
 import { learningPlugin } from "./modules/learning/index.js";
 
@@ -35,6 +36,14 @@ await app.register(rateLimit, {
 
 // DB
 await app.register(dbPlugin, { databaseUrl: config.databaseUrl });
+
+// Comms
+await app.register(commsPlugin, {
+  brevoApiKey: config.comms.brevoApiKey,
+  senderEmail: config.comms.senderEmail,
+  senderName: config.comms.senderName,
+  appBaseUrl: config.appBaseUrl,
+});
 
 // Domain modules
 await app.register(authPlugin, { prefix: "/v1/auth", config });

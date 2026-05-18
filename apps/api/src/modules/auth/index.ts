@@ -1,21 +1,26 @@
 import fp from "fastify-plugin";
-import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { eq } from "drizzle-orm";
-import { emitEvent } from "@praxisa/audit-sdk";
 import { users } from "../../db/schema/index.js";
-import type { AppConfig } from "../../shared/config.js";
+import { emitEvent } from "@praxisa/audit-sdk";
 import {
   hashPassword,
-  signToken,
   verifyPassword,
+  signToken,
   verifyToken,
+  signEmailToken,
+  verifyEmailToken,
 } from "./service.js";
 import {
-  loginBodySchema,
   registerBodySchema,
-  type AuthResponse,
-  type JwtPayload,
+  loginBodySchema,
+  verifyEmailBodySchema,
+  resendVerificationBodySchema,
+  forgotPasswordBodySchema,
+  resetPasswordBodySchema,
 } from "./types.js";
+import type { JwtPayload } from "./types.js";
+import type { AppConfig } from "../../shared/config.js";
 
 interface AuthPluginOptions {
   config: AppConfig;
@@ -29,182 +34,370 @@ export const authPlugin = fp(
   ) => {
     const { config } = opts;
 
-    // ── authenticate preHandler ──────────────────────────────────────────────
+    // ── Authenticate decorator ─────────────────────────────────────────────────
 
-    async function authenticate(
-      request: FastifyRequest,
-      reply: FastifyReply,
-    ): Promise<void> {
-      const authHeader = request.headers.authorization;
-      if (!authHeader?.startsWith("Bearer ")) {
-        await reply.status(401).send({ error: "Unauthorized" });
-        return;
-      }
-      try {
-        request.jwtPayload = await verifyToken(
-          authHeader.slice(7),
-          config.jwt.publicKey,
+    fastify.decorate(
+      "authenticate",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const auth = request.headers.authorization;
+        if (!auth?.startsWith("Bearer ")) {
+          return reply.status(401).send({ error: "Unauthorized" });
+        }
+        try {
+          request.jwtPayload = await verifyToken(
+            auth.slice(7),
+            config.jwt.publicKey,
+          );
+        } catch {
+          return reply.status(401).send({ error: "Invalid or expired token" });
+        }
+      },
+    );
+
+    // ── POST /register ─────────────────────────────────────────────────────────
+
+    fastify.post(
+      "/register",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const parse = registerBodySchema.safeParse(request.body);
+        if (!parse.success) {
+          return reply.status(400).send({ error: parse.error.flatten() });
+        }
+        const body = parse.data;
+
+        const existing = await fastify.db
+          .select({ id: users.id })
+          .from(users)
+          .where(eq(users.email, body.email))
+          .limit(1);
+        if (existing.length > 0) {
+          return reply.status(409).send({ error: "Email already registered" });
+        }
+
+        const passwordHash = await hashPassword(body.password);
+        const inserted = await fastify.db
+          .insert(users)
+          .values({
+            email: body.email,
+            firstName: body.firstName,
+            lastName: body.lastName,
+            passwordHash,
+            role: body.role,
+          })
+          .returning();
+
+        const user = inserted[0];
+        if (user === undefined) throw new Error("Insert returned no rows");
+
+        await emitEvent({
+          actorUserId: user.id,
+          eventType: "auth.user.registered",
+          entityType: "user",
+          entityId: user.id,
+          dataClassification: "pii:direct",
+          requestId: request.id,
+          sourceIp: request.ip,
+        });
+
+        // Send verification email — fire-and-forget (don't fail registration)
+        const token = await signEmailToken(
+          user.id,
+          "email_verify",
+          config.jwt.privateKey,
         );
-      } catch {
-        await reply.status(401).send({ error: "Invalid or expired token" });
-      }
-    }
+        fastify.comms
+          .sendVerificationEmail(
+            { email: user.email, firstName: user.firstName },
+            token,
+          )
+          .catch((err: unknown) => {
+            fastify.log.error({ err }, "Failed to send verification email");
+          });
 
-    fastify.decorate("authenticate", authenticate);
+        const jwtToken = await signToken(
+          { sub: user.id, role: user.role, email: user.email },
+          config.jwt.privateKey,
+        );
 
-    // ── POST /register ───────────────────────────────────────────────────────
+        return reply.status(201).send({
+          token: jwtToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          },
+        });
+      },
+    );
 
-    fastify.post("/register", async (request, reply) => {
-      const parse = registerBodySchema.safeParse(request.body);
-      if (!parse.success) {
-        return reply.status(400).send({ error: parse.error.flatten() });
-      }
-      const body = parse.data;
+    // ── POST /login ────────────────────────────────────────────────────────────
 
-      const existing = await fastify.db
-        .select({ id: users.id })
-        .from(users)
-        .where(eq(users.email, body.email))
-        .limit(1);
+    fastify.post(
+      "/login",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const parse = loginBodySchema.safeParse(request.body);
+        if (!parse.success) {
+          return reply.status(400).send({ error: parse.error.flatten() });
+        }
+        const body = parse.data;
 
-      if (existing.length > 0) {
-        return reply.status(409).send({ error: "Email already registered" });
-      }
+        const rows = await fastify.db
+          .select()
+          .from(users)
+          .where(eq(users.email, body.email))
+          .limit(1);
 
-      const passwordHash = await hashPassword(body.password);
+        const user = rows[0];
 
-      const returned = await fastify.db
-        .insert(users)
-        .values({
-          email: body.email,
-          passwordHash,
-          role: body.role,
-          firstName: body.firstName,
-          lastName: body.lastName,
-        })
-        .returning();
+        // Always run argon2 to prevent email enumeration via timing
+        const dummyHash = "$argon2id$v=19$m=65536,t=3,p=4$dummy$dummy";
+        const valid = user
+          ? await verifyPassword(user.passwordHash, body.password)
+          : await verifyPassword(dummyHash, body.password).then(() => false);
 
-      const user = returned[0];
-      if (user === undefined) {
-        throw new Error("Insert returned no rows");
-      }
+        if (!user || !valid) {
+          return reply.status(401).send({ error: "Invalid credentials" });
+        }
+        if (!user.isActive) {
+          return reply.status(403).send({ error: "Account disabled" });
+        }
 
-      await emitEvent({
-        actorUserId: user.id,
-        eventType: "auth.register",
-        entityType: "user",
-        entityId: user.id,
-        dataClassification: "pii:direct",
-        requestId: request.id,
-        sourceIp: request.ip,
-      });
+        await fastify.db
+          .update(users)
+          .set({ lastLoginAt: new Date() })
+          .where(eq(users.id, user.id));
 
-      const token = await signToken(
-        { sub: user.id, role: user.role, email: user.email },
-        config.jwt.privateKey,
-      );
+        await emitEvent({
+          actorUserId: user.id,
+          eventType: "auth.user.login",
+          entityType: "user",
+          entityId: user.id,
+          dataClassification: "pii:direct",
+          requestId: request.id,
+          sourceIp: request.ip,
+        });
 
-      return reply.status(201).send({
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-      } satisfies AuthResponse);
-    });
+        const token = await signToken(
+          { sub: user.id, role: user.role, email: user.email },
+          config.jwt.privateKey,
+        );
 
-    // ── POST /login ──────────────────────────────────────────────────────────
+        return reply.send({
+          token,
+          user: {
+            id: user.id,
+            email: user.email,
+            role: user.role,
+            firstName: user.firstName,
+            lastName: user.lastName,
+          },
+        });
+      },
+    );
 
-    fastify.post("/login", async (request, reply) => {
-      const parse = loginBodySchema.safeParse(request.body);
-      if (!parse.success) {
-        return reply.status(400).send({ error: parse.error.flatten() });
-      }
-      const body = parse.data;
-
-      const results = await fastify.db
-        .select()
-        .from(users)
-        .where(eq(users.email, body.email))
-        .limit(1);
-
-      const user = results[0];
-
-      // Always run argon2 to prevent email enumeration via timing
-      if (user === undefined || !user.isActive || user.deletedAt !== null) {
-        await hashPassword(body.password); // constant-time equaliser
-        return reply.status(401).send({ error: "Invalid credentials" });
-      }
-
-      const valid = await verifyPassword(user.passwordHash, body.password);
-      if (!valid) {
-        return reply.status(401).send({ error: "Invalid credentials" });
-      }
-
-      await fastify.db
-        .update(users)
-        .set({ lastLoginAt: new Date() })
-        .where(eq(users.id, user.id));
-
-      await emitEvent({
-        actorUserId: user.id,
-        eventType: "auth.login",
-        entityType: "user",
-        entityId: user.id,
-        dataClassification: "pii:direct",
-        requestId: request.id,
-        sourceIp: request.ip,
-      });
-
-      const token = await signToken(
-        { sub: user.id, role: user.role, email: user.email },
-        config.jwt.privateKey,
-      );
-
-      return reply.send({
-        token,
-        user: {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          firstName: user.firstName,
-          lastName: user.lastName,
-        },
-      } satisfies AuthResponse);
-    });
-
-    // ── GET /me ──────────────────────────────────────────────────────────────
+    // ── GET /me ────────────────────────────────────────────────────────────────
 
     fastify.get(
       "/me",
-      { preHandler: [authenticate] },
-      async (request, reply) => {
-        const results = await fastify.db
+      { preHandler: [fastify.authenticate] },
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const { sub } = request.jwtPayload;
+
+        const rows = await fastify.db
           .select({
             id: users.id,
             email: users.email,
             role: users.role,
             firstName: users.firstName,
             lastName: users.lastName,
+            emailVerified: users.emailVerified,
           })
           .from(users)
-          .where(eq(users.id, request.jwtPayload.sub))
+          .where(eq(users.id, sub))
           .limit(1);
 
-        const user = results[0];
+        const user = rows[0];
         if (user === undefined) {
           return reply.status(404).send({ error: "User not found" });
         }
-
         return reply.send({ user });
       },
     );
+
+    // ── POST /verify-email ─────────────────────────────────────────────────────
+
+    fastify.post(
+      "/verify-email",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const parse = verifyEmailBodySchema.safeParse(request.body);
+        if (!parse.success) {
+          return reply.status(400).send({ error: parse.error.flatten() });
+        }
+
+        let userId: string;
+        try {
+          userId = await verifyEmailToken(
+            parse.data.token,
+            "email_verify",
+            config.jwt.publicKey,
+          );
+        } catch {
+          return reply.status(400).send({ error: "Invalid or expired token" });
+        }
+
+        await fastify.db
+          .update(users)
+          .set({ emailVerified: true })
+          .where(eq(users.id, userId));
+
+        await emitEvent({
+          actorUserId: userId,
+          eventType: "auth.user.email_verified",
+          entityType: "user",
+          entityId: userId,
+          dataClassification: "pii:direct",
+          requestId: request.id,
+          sourceIp: request.ip,
+        });
+
+        return reply.send({ ok: true });
+      },
+    );
+
+    // ── POST /resend-verification ──────────────────────────────────────────────
+
+    fastify.post(
+      "/resend-verification",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const parse = resendVerificationBodySchema.safeParse(request.body);
+        if (!parse.success) {
+          return reply.status(400).send({ error: parse.error.flatten() });
+        }
+
+        const rows = await fastify.db
+          .select({
+            id: users.id,
+            firstName: users.firstName,
+            email: users.email,
+            emailVerified: users.emailVerified,
+          })
+          .from(users)
+          .where(eq(users.email, parse.data.email))
+          .limit(1);
+
+        const user = rows[0];
+
+        // Always return 200 to prevent email enumeration
+        if (user && !user.emailVerified) {
+          const token = await signEmailToken(
+            user.id,
+            "email_verify",
+            config.jwt.privateKey,
+          );
+          fastify.comms
+            .sendVerificationEmail(
+              { email: user.email, firstName: user.firstName },
+              token,
+            )
+            .catch((err: unknown) => {
+              fastify.log.error({ err }, "Failed to resend verification email");
+            });
+        }
+
+        return reply.send({ ok: true });
+      },
+    );
+
+    // ── POST /forgot-password ──────────────────────────────────────────────────
+
+    fastify.post(
+      "/forgot-password",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const parse = forgotPasswordBodySchema.safeParse(request.body);
+        if (!parse.success) {
+          return reply.status(400).send({ error: parse.error.flatten() });
+        }
+
+        const rows = await fastify.db
+          .select({
+            id: users.id,
+            firstName: users.firstName,
+            email: users.email,
+            isActive: users.isActive,
+          })
+          .from(users)
+          .where(eq(users.email, parse.data.email))
+          .limit(1);
+
+        const user = rows[0];
+
+        // Always return 200 to prevent email enumeration
+        if (user?.isActive) {
+          const token = await signEmailToken(
+            user.id,
+            "pwd_reset",
+            config.jwt.privateKey,
+          );
+          fastify.comms
+            .sendPasswordResetEmail(
+              { email: user.email, firstName: user.firstName },
+              token,
+            )
+            .catch((err: unknown) => {
+              fastify.log.error({ err }, "Failed to send password reset email");
+            });
+        }
+
+        return reply.send({ ok: true });
+      },
+    );
+
+    // ── POST /reset-password ───────────────────────────────────────────────────
+
+    fastify.post(
+      "/reset-password",
+      async (request: FastifyRequest, reply: FastifyReply) => {
+        const parse = resetPasswordBodySchema.safeParse(request.body);
+        if (!parse.success) {
+          return reply.status(400).send({ error: parse.error.flatten() });
+        }
+
+        let userId: string;
+        try {
+          userId = await verifyEmailToken(
+            parse.data.token,
+            "pwd_reset",
+            config.jwt.publicKey,
+          );
+        } catch {
+          return reply.status(400).send({ error: "Invalid or expired token" });
+        }
+
+        const passwordHash = await hashPassword(parse.data.password);
+        await fastify.db
+          .update(users)
+          .set({ passwordHash })
+          .where(eq(users.id, userId));
+
+        await emitEvent({
+          actorUserId: userId,
+          eventType: "auth.user.password_reset",
+          entityType: "user",
+          entityId: userId,
+          dataClassification: "pii:direct",
+          requestId: request.id,
+          sourceIp: request.ip,
+        });
+
+        return reply.send({ ok: true });
+      },
+    );
+
     done();
   },
-  { name: "auth", dependencies: ["db"] },
+  { name: "auth", dependencies: ["db", "comms"] },
 );
 
 // ── Fastify type augmentation ──────────────────────────────────────────────────

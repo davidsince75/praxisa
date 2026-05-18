@@ -5,6 +5,10 @@ import type { JwtPayload } from "./types.js";
 const ALGORITHM = "RS256";
 const TOKEN_TTL = "8h";
 
+// ── Email-purpose token purposes ───────────────────────────────────────────────
+
+export type EmailTokenPurpose = "email_verify" | "pwd_reset";
+
 // ── Password ───────────────────────────────────────────────────────────────────
 
 /**
@@ -67,4 +71,50 @@ export async function verifyToken(
     role: (payload["role"] ?? "student") as JwtPayload["role"],
     email: (payload["email"] ?? "") as string,
   };
+}
+
+// ── Short-lived email-purpose tokens ───────────────────────────────────────────
+
+const EMAIL_TOKEN_TTL: Record<EmailTokenPurpose, string> = {
+  email_verify: "24h",
+  pwd_reset: "30m",
+};
+
+/**
+ * Sign a short-lived RS256 token for email verification or password reset.
+ * The `purpose` claim prevents cross-use between the two flows.
+ */
+export async function signEmailToken(
+  userId: string,
+  purpose: EmailTokenPurpose,
+  privateKeyPem: string,
+): Promise<string> {
+  const privateKey = await importPKCS8(privateKeyPem, ALGORITHM);
+  return new SignJWT({ purpose })
+    .setProtectedHeader({ alg: ALGORITHM })
+    .setSubject(userId)
+    .setIssuedAt()
+    .setExpirationTime(EMAIL_TOKEN_TTL[purpose])
+    .sign(privateKey);
+}
+
+/**
+ * Verify a short-lived email-purpose token and return the userId.
+ * Throws if the token is expired, invalid, or has the wrong purpose.
+ */
+export async function verifyEmailToken(
+  token: string,
+  purpose: EmailTokenPurpose,
+  publicKeyPem: string,
+): Promise<string> {
+  const publicKey = await importSPKI(publicKeyPem, ALGORITHM);
+  const { payload } = await jwtVerify(token, publicKey, {
+    algorithms: [ALGORITHM],
+  });
+
+  if (payload["purpose"] !== purpose) {
+    throw new Error("Token purpose mismatch");
+  }
+
+  return payload.sub ?? "";
 }

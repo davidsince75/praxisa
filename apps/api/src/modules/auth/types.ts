@@ -26,8 +26,34 @@ export const loginBodySchema = z.object({
   password: z.string().min(1).max(128),
 });
 
+export const verifyEmailBodySchema = z.object({
+  token: z.string().min(1),
+});
+
+export const resendVerificationBodySchema = z.object({
+  email: z
+    .string()
+    .email()
+    .transform((s) => s.toLowerCase().trim()),
+});
+
+export const forgotPasswordBodySchema = z.object({
+  email: z
+    .string()
+    .email()
+    .transform((s) => s.toLowerCase().trim()),
+});
+
+export const resetPasswordBodySchema = z.object({
+  token: z.string().min(1),
+  password: z.string().min(12).max(128),
+});
+
 export type RegisterBody = z.infer<typeof registerBodySchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;
+export type VerifyEmailBody = z.infer<typeof verifyEmailBodySchema>;
+export type ForgotPasswordBody = z.infer<typeof forgotPasswordBodySchema>;
+export type ResetPasswordBody = z.infer<typeof resetPasswordBodySchema>;
 
 // ── JWT payload ────────────────────────────────────────────────────────────────
 
