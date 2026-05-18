@@ -86,5 +86,6 @@ module.exports = {
     "*.js",
     "!.eslintrc.js",
     "**/drizzle.config.ts",
+    "**/vitest.config.ts",
   ],
 };

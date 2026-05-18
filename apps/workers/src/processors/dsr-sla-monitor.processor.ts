@@ -1,6 +1,6 @@
 import { Worker } from "bullmq";
 import type { Job, ConnectionOptions } from "bullmq";
-import { and, eq, lt, inArray } from "drizzle-orm";
+import { and, lt, inArray } from "drizzle-orm";
 import type { Logger } from "pino";
 import type { WorkerDb } from "../db.js";
 import type { WorkerConfig } from "../config.js";
