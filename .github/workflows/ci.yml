@@ -227,15 +227,17 @@ jobs:
           railway up \
             --service api \
             --detach \
-            --environment staging
+            --environment ${{ vars.RAILWAY_ENVIRONMENT || 'staging' }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
 
       - name: Deploy workers service
         run: |
           railway up \
             --service workers \
             --detach \
-            --environment staging
+            --environment ${{ vars.RAILWAY_ENVIRONMENT || 'staging' }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
