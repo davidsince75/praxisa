@@ -226,6 +226,7 @@ jobs:
         run: |
           railway up \
             --service api \
+            --dockerfile apps/api/Dockerfile \
             --detach \
             --environment ${{ vars.RAILWAY_ENVIRONMENT || 'staging' }}
         env:
@@ -236,6 +237,7 @@ jobs:
         run: |
           railway up \
             --service workers \
+            --dockerfile apps/workers/Dockerfile \
             --detach \
             --environment ${{ vars.RAILWAY_ENVIRONMENT || 'staging' }}
         env:
