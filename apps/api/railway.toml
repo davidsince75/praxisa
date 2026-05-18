@@ -1,0 +1,20 @@
+# Railway service config for the Praxisa API.
+# In the Railway dashboard: set Root Directory = / (repo root) and
+# point this service at this file via Build > Dockerfile Path.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/api/Dockerfile"
+watchPatterns = [
+  "apps/api/**",
+  "packages/audit-sdk/**",
+  "packages/shared-types/**",
+  "packages/policy-engine/**",
+]
+
+[deploy]
+region = "eu-west"
+healthcheckPath = "/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
