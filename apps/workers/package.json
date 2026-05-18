@@ -1,0 +1,31 @@
+{
+  "name": "@praxisa/workers",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --build",
+    "test": "vitest run --passWithNoTests",
+    "test:unit": "vitest run --reporter=verbose --passWithNoTests src/**/*.test.ts"
+  },
+  "dependencies": {
+    "bullmq": "^5.0.0",
+    "drizzle-orm": "^0.45.2",
+    "ioredis": "^5.3.0",
+    "pg": "^8.11.0",
+    "pino": "^9.0.0",
+    "zod": "^3.23.0",
+    "@praxisa/audit-sdk": "workspace:*",
+    "@praxisa/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5.4.0",
+    "vitest": "^1.5.0"
+  }
+}

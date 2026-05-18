@@ -1,9 +1,20 @@
 {
   "files": [],
   "references": [
-    { "path": "packages/shared-types" },
-    { "path": "packages/policy-engine" },
-    { "path": "packages/audit-sdk" },
-    { "path": "apps/api" }
+    {
+      "path": "packages/shared-types"
+    },
+    {
+      "path": "packages/policy-engine"
+    },
+    {
+      "path": "packages/audit-sdk"
+    },
+    {
+      "path": "apps/api"
+    },
+    {
+      "path": "apps/workers"
+    }
   ]
 }
