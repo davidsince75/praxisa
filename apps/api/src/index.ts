@@ -10,6 +10,7 @@ import { commsPlugin } from "./modules/comms/index.js";
 import { authPlugin } from "./modules/auth/index.js";
 import { learningPlugin } from "./modules/learning/index.js";
 import { gdprPlugin } from "./modules/gdpr/index.js";
+import { migrationPlugin } from "./modules/migration/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -50,6 +51,7 @@ await app.register(commsPlugin, {
 await app.register(authPlugin, { prefix: "/v1/auth", config });
 await app.register(learningPlugin, { prefix: "/v1" });
 await app.register(gdprPlugin, { prefix: "/v1" });
+await app.register(migrationPlugin, { prefix: "/v1" });
 
 // Health endpoints
 app.get("/health", (_request, reply) => {
