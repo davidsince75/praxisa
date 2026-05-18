@@ -95,9 +95,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -200,12 +198,8 @@
           "tableFrom": "courses",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "instructor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["instructor_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -215,9 +209,7 @@
         "courses_slug_unique": {
           "name": "courses_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -282,12 +274,8 @@
           "tableFrom": "course_modules",
           "tableTo": "courses",
           "schemaTo": "public",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["course_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -383,12 +371,8 @@
           "tableFrom": "lessons",
           "tableTo": "course_modules",
           "schemaTo": "public",
-          "columnsFrom": [
-            "module_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["module_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -477,12 +461,8 @@
           "tableFrom": "exercises",
           "tableTo": "lessons",
           "schemaTo": "public",
-          "columnsFrom": [
-            "lesson_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lesson_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -577,12 +557,8 @@
           "tableFrom": "enrolments",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "student_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["student_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -591,12 +567,8 @@
           "tableFrom": "enrolments",
           "tableTo": "courses",
           "schemaTo": "public",
-          "columnsFrom": [
-            "course_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["course_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -605,12 +577,8 @@
           "tableFrom": "enrolments",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "enrolled_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["enrolled_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -620,10 +588,7 @@
         "enrolments_student_course_unique": {
           "name": "enrolments_student_course_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "student_id",
-            "course_id"
-          ]
+          "columns": ["student_id", "course_id"]
         }
       },
       "policies": {},
@@ -702,12 +667,8 @@
           "tableFrom": "lesson_progress",
           "tableTo": "enrolments",
           "schemaTo": "public",
-          "columnsFrom": [
-            "enrolment_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["enrolment_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -716,12 +677,8 @@
           "tableFrom": "lesson_progress",
           "tableTo": "lessons",
           "schemaTo": "public",
-          "columnsFrom": [
-            "lesson_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["lesson_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -731,10 +688,7 @@
         "lesson_progress_enrolment_lesson_unique": {
           "name": "lesson_progress_enrolment_lesson_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "enrolment_id",
-            "lesson_id"
-          ]
+          "columns": ["enrolment_id", "lesson_id"]
         }
       },
       "policies": {},
@@ -813,12 +767,8 @@
           "tableFrom": "gdpr_requests",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -827,12 +777,8 @@
           "tableFrom": "gdpr_requests",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "completed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["completed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -935,12 +881,8 @@
           "tableFrom": "migration_batches",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "imported_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["imported_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1022,12 +964,8 @@
           "tableFrom": "migration_rows",
           "tableTo": "migration_batches",
           "schemaTo": "public",
-          "columnsFrom": [
-            "batch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["batch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1036,12 +974,8 @@
           "tableFrom": "migration_rows",
           "tableTo": "users",
           "schemaTo": "public",
-          "columnsFrom": [
-            "target_user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["target_user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1115,12 +1049,8 @@
           "tableFrom": "migration_issues",
           "tableTo": "migration_batches",
           "schemaTo": "public",
-          "columnsFrom": [
-            "batch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["batch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -1129,12 +1059,8 @@
           "tableFrom": "migration_issues",
           "tableTo": "migration_rows",
           "schemaTo": "public",
-          "columnsFrom": [
-            "row_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["row_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -1150,80 +1076,42 @@
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "instructor",
-        "student",
-        "migration_lead"
-      ]
+      "values": ["admin", "instructor", "student", "migration_lead"]
     },
     "public.course_status": {
       "name": "course_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "published",
-        "archived"
-      ]
+      "values": ["draft", "published", "archived"]
     },
     "public.content_type": {
       "name": "content_type",
       "schema": "public",
-      "values": [
-        "video",
-        "text",
-        "pdf",
-        "audio",
-        "live"
-      ]
+      "values": ["video", "text", "pdf", "audio", "live"]
     },
     "public.exercise_type": {
       "name": "exercise_type",
       "schema": "public",
-      "values": [
-        "quiz",
-        "assignment",
-        "reflection"
-      ]
+      "values": ["quiz", "assignment", "reflection"]
     },
     "public.enrolment_status": {
       "name": "enrolment_status",
       "schema": "public",
-      "values": [
-        "active",
-        "completed",
-        "cancelled",
-        "paused",
-        "expired"
-      ]
+      "values": ["active", "completed", "cancelled", "paused", "expired"]
     },
     "public.progress_status": {
       "name": "progress_status",
       "schema": "public",
-      "values": [
-        "not_started",
-        "in_progress",
-        "completed"
-      ]
+      "values": ["not_started", "in_progress", "completed"]
     },
     "public.gdpr_request_type": {
       "name": "gdpr_request_type",
       "schema": "public",
-      "values": [
-        "erasure",
-        "export",
-        "rectification"
-      ]
+      "values": ["erasure", "export", "rectification"]
     },
     "public.gdpr_request_status": {
       "name": "gdpr_request_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "in_progress",
-        "completed",
-        "rejected"
-      ]
+      "values": ["pending", "in_progress", "completed", "rejected"]
     },
     "public.migration_batch_status": {
       "name": "migration_batch_status",
@@ -1240,20 +1128,12 @@
     "public.migration_row_status": {
       "name": "migration_row_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "accepted",
-        "rejected",
-        "loaded"
-      ]
+      "values": ["pending", "accepted", "rejected", "loaded"]
     },
     "public.migration_issue_severity": {
       "name": "migration_issue_severity",
       "schema": "public",
-      "values": [
-        "error",
-        "warning"
-      ]
+      "values": ["error", "warning"]
     }
   },
   "schemas": {},
