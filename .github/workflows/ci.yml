@@ -224,9 +224,19 @@ jobs:
 
       - name: Deploy API service
         run: |
+          # Write a root railway.toml pointing at the API Dockerfile
+          cat > railway.toml << 'EOF'
+          [build]
+          builder = "DOCKERFILE"
+          dockerfilePath = "apps/api/Dockerfile"
+          [deploy]
+          healthcheckPath = "/health"
+          healthcheckTimeout = 60
+          restartPolicyType = "ON_FAILURE"
+          restartPolicyMaxRetries = 3
+          EOF
           railway up \
             --service api \
-            --dockerfile apps/api/Dockerfile \
             --detach \
             --environment ${{ vars.RAILWAY_ENVIRONMENT || 'staging' }}
         env:
@@ -235,9 +245,17 @@ jobs:
 
       - name: Deploy workers service
         run: |
+          # Overwrite railway.toml for the workers service
+          cat > railway.toml << 'EOF'
+          [build]
+          builder = "DOCKERFILE"
+          dockerfilePath = "apps/workers/Dockerfile"
+          [deploy]
+          restartPolicyType = "ON_FAILURE"
+          restartPolicyMaxRetries = 3
+          EOF
           railway up \
             --service workers \
-            --dockerfile apps/workers/Dockerfile \
             --detach \
             --environment ${{ vars.RAILWAY_ENVIRONMENT || 'staging' }}
         env:
