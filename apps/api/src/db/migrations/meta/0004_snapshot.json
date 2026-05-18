@@ -1,0 +1,51 @@
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "prevId": "65eca0ca-88e6-4e0f-be9d-a5f43c64e769",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.material_embeddings": {
+      "name": "material_embeddings",
+      "schema": "",
+      "columns": {
+        "id": { "name": "id", "type": "uuid", "primaryKey": true, "notNull": true, "default": "gen_random_uuid()" },
+        "lesson_id": { "name": "lesson_id", "type": "uuid", "primaryKey": false, "notNull": true },
+        "chunk_index": { "name": "chunk_index", "type": "integer", "primaryKey": false, "notNull": true },
+        "chunk_text": { "name": "chunk_text", "type": "text", "primaryKey": false, "notNull": true },
+        "embedding": { "name": "embedding", "type": "vector(1024)", "primaryKey": false, "notNull": true },
+        "created_at": { "name": "created_at", "type": "timestamp with time zone", "primaryKey": false, "notNull": true, "default": "now()" }
+      },
+      "indexes": {
+        "material_embeddings_embedding_idx": {
+          "name": "material_embeddings_embedding_idx",
+          "columns": [{ "expression": "embedding", "isExpression": false, "asc": true, "nulls": "last" }],
+          "isUnique": false,
+          "method": "ivfflat"
+        },
+        "material_embeddings_lesson_id_idx": {
+          "name": "material_embeddings_lesson_id_idx",
+          "columns": [{ "expression": "lesson_id", "isExpression": false, "asc": true, "nulls": "last" }],
+          "isUnique": false,
+          "method": "btree"
+        }
+      },
+      "foreignKeys": {
+        "material_embeddings_lesson_id_lessons_id_fk": {
+          "name": "material_embeddings_lesson_id_lessons_id_fk",
+          "tableFrom": "material_embeddings",
+          "tableTo": "lessons",
+          "columnsFrom": ["lesson_id"],
+          "columnsTo": ["id"],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "_meta": { "schemas": {}, "tables": {}, "columns": {} }
+}

@@ -19,6 +19,7 @@ const configSchema = z.object({
     senderName: z.string().min(1),
   }),
   appBaseUrl: z.string().url().default("http://localhost:5173"),
+  mistralApiKey: z.string().min(1).optional(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -32,7 +33,6 @@ export function loadConfig(): AppConfig {
     databaseUrl: process.env["DATABASE_URL"],
     redisUrl: process.env["REDIS_URL"],
     jwt: {
-      // Doppler stores keys as base64-encoded PEM -- decode at startup
       privateKey: process.env["JWT_SIGNING_KEY"]
         ? Buffer.from(process.env["JWT_SIGNING_KEY"], "base64").toString(
             "utf-8",
@@ -50,6 +50,7 @@ export function loadConfig(): AppConfig {
       senderName: process.env["BREVO_SENDER_NAME"],
     },
     appBaseUrl: process.env["APP_BASE_URL"],
+    mistralApiKey: process.env["MISTRAL_API_KEY"],
   });
 
   if (!result.success) {
