@@ -2,7 +2,8 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
-import { initAuditSdk, InMemoryAuditSink } from "@praxisa/audit-sdk";
+import { initAuditSdk } from "@praxisa/audit-sdk";
+import { DrizzleAuditSink } from "./db/audit-sink.js";
 import { loadConfig } from "./shared/config.js";
 import { createLogger } from "./shared/logger.js";
 import { dbPlugin } from "./db/index.js";
@@ -16,10 +17,6 @@ import { aiPlugin } from "./modules/ai/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
-
-// Audit SDK
-// TODO: replace InMemoryAuditSink with DrizzleAuditSink once audit_events table exists
-initAuditSdk(new InMemoryAuditSink());
 
 // App
 const app = Fastify({
@@ -63,6 +60,9 @@ await app.register(aiPlugin, {
     ? { mistralApiKey: config.mistralApiKey }
     : {}),
 });
+
+// Audit SDK — wired after DB plugin so app.db is available
+initAuditSdk(new DrizzleAuditSink(app.db));
 
 // Health endpoints
 app.get("/health", (_request, reply) => {
