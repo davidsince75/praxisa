@@ -75,13 +75,3 @@ app.get("/ready", (_request, reply) => {
 
 // Start
 await app.listen({ port: config.port, host: "0.0.0.0" });
-reply) => {
-  return reply.send({ status: "ok" });
-});
-
-app.get("/ready", (_request, reply) => {
-  return reply.send({ status: "ok" });
-});
-
-// Start
-await app.listen({ port: config.port, host: "0.0.0.0" });
