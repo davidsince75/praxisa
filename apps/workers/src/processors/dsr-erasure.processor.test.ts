@@ -29,7 +29,7 @@ const mockLogger = {
 // ── eraseUserPii ───────────────────────────────────────────────────────────────
 
 describe("eraseUserPii", () => {
-  it("calls db.update with the correct anonymised fields", async () => {
+  it("anonymises user PII fields and nulls consent source_ip", async () => {
     const mockSet = vi.fn().mockReturnThis();
     const mockWhere = vi.fn().mockResolvedValue([]);
     const mockUpdate = vi.fn().mockReturnValue({ set: mockSet });
@@ -39,8 +39,12 @@ describe("eraseUserPii", () => {
 
     await eraseUserPii(db, "user-123");
 
-    expect(mockUpdate).toHaveBeenCalledOnce();
-    expect(mockSet).toHaveBeenCalledWith(
+    // Two updates: users table + policy_consents table
+    expect(mockUpdate).toHaveBeenCalledTimes(2);
+
+    // First call: zero user PII
+    expect(mockSet).toHaveBeenNthCalledWith(
+      1,
       expect.objectContaining({
         email: "erased_user-123@praxisa.invalid",
         firstName: "[Erased]",
@@ -49,6 +53,9 @@ describe("eraseUserPii", () => {
         isActive: false,
       }),
     );
+
+    // Second call: null out consent source_ip (belt-and-suspenders pseudonymisation)
+    expect(mockSet).toHaveBeenNthCalledWith(2, { sourceIp: null });
   });
 });
 
