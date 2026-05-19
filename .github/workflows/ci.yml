@@ -224,17 +224,7 @@ jobs:
 
       - name: Deploy API service
         run: |
-          # Write a root railway.toml pointing at the API Dockerfile
-          cat > railway.toml << 'EOF'
-          [build]
-          builder = "DOCKERFILE"
-          dockerfilePath = "apps/api/Dockerfile"
-          [deploy]
-          healthcheckPath = "/health"
-          healthcheckTimeout = 60
-          restartPolicyType = "ON_FAILURE"
-          restartPolicyMaxRetries = 3
-          EOF
+          printf '[build]\nbuilder = "DOCKERFILE"\ndockerfilePath = "apps/api/Dockerfile"\n[deploy]\nhealthcheckPath = "/health"\nhealthcheckTimeout = 60\nrestartPolicyType = "ON_FAILURE"\nrestartPolicyMaxRetries = 3\n' > railway.toml
           railway up \
             --service api \
             --detach \
@@ -245,15 +235,7 @@ jobs:
 
       - name: Deploy workers service
         run: |
-          # Overwrite railway.toml for the workers service
-          cat > railway.toml << 'EOF'
-          [build]
-          builder = "DOCKERFILE"
-          dockerfilePath = "apps/workers/Dockerfile"
-          [deploy]
-          restartPolicyType = "ON_FAILURE"
-          restartPolicyMaxRetries = 3
-          EOF
+          printf '[build]\nbuilder = "DOCKERFILE"\ndockerfilePath = "apps/workers/Dockerfile"\n[deploy]\nrestartPolicyType = "ON_FAILURE"\nrestartPolicyMaxRetries = 3\n' > railway.toml
           railway up \
             --service workers \
             --detach \
