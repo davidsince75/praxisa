@@ -40,6 +40,7 @@ WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/workers/package.json ./apps/workers/
+COPY apps/api/package.json ./apps/api/
 COPY packages/audit-sdk/package.json ./packages/audit-sdk/
 COPY packages/shared-types/package.json ./packages/shared-types/
 COPY packages/policy-engine/package.json ./packages/policy-engine/
