@@ -4,6 +4,7 @@
  *
  * Usage: pnpm db:migrate
  */
+import { fileURLToPath } from "url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Pool } from "pg";
@@ -20,7 +21,7 @@ await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
 await db.execute(sql`CREATE EXTENSION IF NOT EXISTS vector`);
 
 await migrate(db, {
-  migrationsFolder: new URL("./migrations", import.meta.url).pathname,
+  migrationsFolder: fileURLToPath(new URL("./migrations", import.meta.url)),
 });
 
 await pool.end();
