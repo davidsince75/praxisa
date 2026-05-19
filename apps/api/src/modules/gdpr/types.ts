@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { POLICY_TYPES } from "../../db/schema/index.js";
 
 export const rectifyBodySchema = z
   .object({
@@ -17,5 +18,11 @@ export const completeRequestBodySchema = z.object({
   notes: z.string().max(1000).optional(),
 });
 
+export const recordConsentBodySchema = z.object({
+  policyType: z.enum(POLICY_TYPES),
+  policyVersion: z.string().min(1).max(100),
+});
+
 export type RectifyBody = z.infer<typeof rectifyBodySchema>;
 export type CompleteRequestBody = z.infer<typeof completeRequestBodySchema>;
+export type RecordConsentBody = z.infer<typeof recordConsentBodySchema>;

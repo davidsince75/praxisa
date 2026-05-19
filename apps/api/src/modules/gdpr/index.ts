@@ -1,15 +1,17 @@
 import type { FastifyInstance } from "fastify";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
 import {
   enrolments,
   gdprRequests,
   lessonProgress,
+  policyConsents,
   users,
 } from "../../db/schema/index.js";
 import {
   completeRequestBodySchema,
   completeRequestParamsSchema,
+  recordConsentBodySchema,
   rectifyBodySchema,
 } from "./types.js";
 
@@ -27,7 +29,7 @@ export const gdprPlugin = (
     async (request, reply) => {
       const { sub } = request.jwtPayload;
 
-      const [userRows, enrolmentRows] = await Promise.all([
+      const [userRows, enrolmentRows, consentRows] = await Promise.all([
         fastify.db
           .select({
             id: users.id,
@@ -49,6 +51,15 @@ export const gdprPlugin = (
           .where(
             and(eq(enrolments.studentId, sub), isNull(enrolments.deletedAt)),
           ),
+        fastify.db
+          .select({
+            policyType: policyConsents.policyType,
+            policyVersion: policyConsents.policyVersion,
+            acceptedAt: policyConsents.acceptedAt,
+          })
+          .from(policyConsents)
+          .where(eq(policyConsents.userId, sub))
+          .orderBy(desc(policyConsents.acceptedAt)),
       ]);
 
       const user = userRows[0];
@@ -84,6 +95,7 @@ export const gdprPlugin = (
         user,
         enrolments: enrolmentRows,
         lessonProgress: progressRows,
+        policyConsents: consentRows,
       });
     },
   );
@@ -330,6 +342,85 @@ export const gdprPlugin = (
       });
 
       return reply.send({ completed: updated.length, requests: updated });
+    },
+  );
+
+  // ── POST /gdpr/consents ────────────────────────────────────────────────────
+  // Record the authenticated user's acceptance of a versioned policy.
+  // Append-only — calling this multiple times creates multiple records,
+  // which is correct (each acceptance is a distinct event).
+
+  fastify.post(
+    "/gdpr/consents",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { sub } = request.jwtPayload;
+
+      const parse = recordConsentBodySchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+      const { policyType, policyVersion } = parse.data;
+      const now = new Date();
+
+      const inserted = await fastify.db
+        .insert(policyConsents)
+        .values({
+          userId: sub,
+          policyType,
+          policyVersion,
+          acceptedAt: now,
+          requestId: request.id,
+          sourceIp: request.ip ?? null,
+        })
+        .returning();
+
+      const consent = inserted[0];
+      if (consent === undefined) {
+        throw new Error("Insert returned no rows");
+      }
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "gdpr.consent.recorded",
+        entityType: "policy_consent",
+        entityId: consent.id,
+        dataClassification: "pii:direct",
+        requestId: request.id,
+        sourceIp: request.ip,
+        metadata: { policyType, policyVersion },
+      });
+
+      return reply.status(201).send({
+        id: consent.id,
+        policyType: consent.policyType,
+        policyVersion: consent.policyVersion,
+        acceptedAt: consent.acceptedAt,
+      });
+    },
+  );
+
+  // ── GET /gdpr/consents/me ──────────────────────────────────────────────────
+  // Return the authenticated user's full consent history, newest first.
+
+  fastify.get(
+    "/gdpr/consents/me",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { sub } = request.jwtPayload;
+
+      const rows = await fastify.db
+        .select({
+          id: policyConsents.id,
+          policyType: policyConsents.policyType,
+          policyVersion: policyConsents.policyVersion,
+          acceptedAt: policyConsents.acceptedAt,
+        })
+        .from(policyConsents)
+        .where(eq(policyConsents.userId, sub))
+        .orderBy(desc(policyConsents.acceptedAt));
+
+      return reply.send({ consents: rows });
     },
   );
 
