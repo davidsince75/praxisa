@@ -1,6 +1,7 @@
 import { pino } from "pino";
 import { Redis } from "ioredis";
-import { initAuditSdk, InMemoryAuditSink } from "@praxisa/audit-sdk";
+import { initAuditSdk } from "@praxisa/audit-sdk";
+import { DrizzleAuditSink } from "./audit-sink.js";
 import { loadConfig } from "./config.js";
 import { createDb, closeDb } from "./db.js";
 import {
@@ -23,14 +24,14 @@ const logger = pino({
     : {}),
 });
 
-// Audit SDK — same in-memory sink as API until DrizzleAuditSink is wired up
-initAuditSdk(new InMemoryAuditSink());
-
 // Redis connection (shared by BullMQ queues and workers)
 const connection = new Redis(config.redisUrl, { maxRetriesPerRequest: null });
 
 // Database
 const db = createDb(config.databaseUrl);
+
+// Audit SDK — wired after DB is ready so all emitEvent() calls persist
+initAuditSdk(new DrizzleAuditSink(db));
 
 // Queues (needed to schedule repeatable jobs)
 const sweepQueue = createDsrSweepQueue(connection);
