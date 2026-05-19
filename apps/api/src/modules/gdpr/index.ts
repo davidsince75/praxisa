@@ -1,7 +1,9 @@
 import type { FastifyInstance } from "fastify";
 import { and, desc, eq, isNull } from "drizzle-orm";
+import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
 import {
+  auditEvents,
   enrolments,
   gdprRequests,
   lessonProgress,
@@ -421,6 +423,106 @@ export const gdprPlugin = (
         .orderBy(desc(policyConsents.acceptedAt));
 
       return reply.send({ consents: rows });
+    },
+  );
+
+  // ── GET /gdpr/users/:userId/export ────────────────────────────────────────
+  // Admin-only. Returns a complete data package for any user, for use by the
+  // DPO when responding to formal Subject Access Requests (Art. 15 GDPR).
+  // Includes: user record, enrolments, lesson progress, consent history,
+  // and the last 500 audit events attributed to this user.
+
+  fastify.get(
+    "/gdpr/users/:userId/export",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const paramsParse = z
+        .object({ userId: z.string().uuid() })
+        .safeParse(request.params);
+      if (!paramsParse.success) {
+        return reply.status(400).send({ error: paramsParse.error.flatten() });
+      }
+      const { userId } = paramsParse.data;
+
+      const [userRows, enrolmentRows, consentRows, auditRows] =
+        await Promise.all([
+          fastify.db.select().from(users).where(eq(users.id, userId)).limit(1),
+          fastify.db
+            .select()
+            .from(enrolments)
+            .where(eq(enrolments.studentId, userId)),
+          fastify.db
+            .select({
+              id: policyConsents.id,
+              policyType: policyConsents.policyType,
+              policyVersion: policyConsents.policyVersion,
+              acceptedAt: policyConsents.acceptedAt,
+              // source_ip intentionally omitted — may be null post-erasure
+            })
+            .from(policyConsents)
+            .where(eq(policyConsents.userId, userId))
+            .orderBy(desc(policyConsents.acceptedAt)),
+          fastify.db
+            .select({
+              id: auditEvents.id,
+              eventAt: auditEvents.eventAt,
+              eventType: auditEvents.eventType,
+              entityType: auditEvents.entityType,
+              entityId: auditEvents.entityId,
+              dataClassification: auditEvents.dataClassification,
+              requestId: auditEvents.requestId,
+              metadata: auditEvents.metadata,
+            })
+            .from(auditEvents)
+            .where(eq(auditEvents.actorUserId, userId))
+            .orderBy(desc(auditEvents.eventAt))
+            .limit(500),
+        ]);
+
+      const user = userRows[0];
+      if (user === undefined) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
+      const enrolmentIds = enrolmentRows.map((e) => e.id);
+      const progressRows =
+        enrolmentIds.length > 0
+          ? await Promise.all(
+              enrolmentIds.map((eid) =>
+                fastify.db
+                  .select()
+                  .from(lessonProgress)
+                  .where(eq(lessonProgress.enrolmentId, eid)),
+              ),
+            ).then((results) => results.flat())
+          : [];
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "gdpr.sar.admin_export",
+        entityType: "user",
+        entityId: userId,
+        dataClassification: "pii:direct",
+        requestId: request.id,
+        sourceIp: request.ip,
+        metadata: { requestedBy: sub },
+      });
+
+      return reply.send({
+        exportedAt: new Date().toISOString(),
+        requestedBy: sub,
+        subject: { userId },
+        user,
+        enrolments: enrolmentRows,
+        lessonProgress: progressRows,
+        policyConsents: consentRows,
+        auditEvents: auditRows,
+      });
     },
   );
 

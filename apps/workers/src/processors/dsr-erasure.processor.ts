@@ -17,6 +17,7 @@ import {
   gdprRequests,
   enrolments,
   lessonProgress,
+  policyConsents,
 } from "../../../api/src/db/schema/index.js";
 
 const BREVO_SMTP_URL = "https://api.brevo.com/v3/smtp/email";
@@ -82,6 +83,14 @@ export async function eraseUserPii(
       updatedAt: new Date(),
     })
     .where(eq(users.id, userId));
+
+  // Null out source_ip on consent records — belt-and-suspenders pseudonymisation.
+  // The records themselves are retained: they are the company's evidence of lawful
+  // basis under Art. 6 GDPR and are exempt from erasure under Art. 17(3)(b).
+  await db
+    .update(policyConsents)
+    .set({ sourceIp: null })
+    .where(eq(policyConsents.userId, userId));
 }
 
 /**
@@ -151,7 +160,7 @@ export async function runErasureSweep(
       // Send confirmation email BEFORE zeroing (so we still have the address)
       await sendErasureConfirmation(config, originalEmail, originalFirstName);
 
-      // Zero all PII
+      // Zero all PII (also nulls consent source_ip)
       await eraseUserPii(db, req.userId);
 
       // Hard-delete lesson progress (no PII, but reduces re-identification risk)
@@ -160,21 +169,37 @@ export async function runErasureSweep(
         .from(enrolments)
         .where(eq(enrolments.studentId, req.userId));
 
+      let deletedProgressCount = 0;
       if (userEnrolments.length > 0) {
         const enrolmentIds = userEnrolments.map((e: { id: string }) => e.id);
-        await db
+        const deleted = await db
           .delete(lessonProgress)
-          .where(inArray(lessonProgress.enrolmentId, enrolmentIds));
+          .where(inArray(lessonProgress.enrolmentId, enrolmentIds))
+          .returning({ id: lessonProgress.id });
+        deletedProgressCount = deleted.length;
       }
 
-      // Mark request completed
+      // Count consent records retained for the completion notes
+      const retainedConsents = await db
+        .select({ id: policyConsents.id })
+        .from(policyConsents)
+        .where(eq(policyConsents.userId, req.userId));
+
+      // Mark request completed with a structured retention summary
+      const retentionSummary = [
+        `Erased: users PII (email, name, password)`,
+        `Hard-deleted: lesson_progress (${String(deletedProgressCount)} rows)`,
+        `Retained (Art. 17(3)(b)): policy_consents (${String(retainedConsents.length)} rows, source_ip nulled)`,
+        `Retained (Art. 17(3)(b)): audit_events (immutable compliance log)`,
+      ].join("; ");
+
       await db
         .update(gdprRequests)
         .set({
           status: "completed",
           completedAt: new Date(),
           completedBy: null,
-          notes: "Auto-completed by erasure worker",
+          notes: `Auto-completed by erasure worker. ${retentionSummary}`,
           updatedAt: new Date(),
         })
         .where(eq(gdprRequests.id, req.id));
@@ -187,10 +212,14 @@ export async function runErasureSweep(
         dataClassification: "pii:direct",
         requestId: req.id,
         sourceIp: "worker",
+        metadata: {
+          deletedProgressRows: deletedProgressCount,
+          retainedConsentRows: retainedConsents.length,
+        },
       });
 
       logger.info(
-        { requestId: req.id, userId: req.userId },
+        { requestId: req.id, userId: req.userId, deletedProgressCount },
         "DSR erasure completed",
       );
       processed++;
