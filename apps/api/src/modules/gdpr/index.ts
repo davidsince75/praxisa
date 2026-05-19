@@ -1,4 +1,3 @@
-import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
 import { and, eq, isNull } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
@@ -14,7 +13,7 @@ import {
   rectifyBodySchema,
 } from "./types.js";
 
-export const gdprPlugin = fp(
+export const gdprPlugin = (
   (fastify: FastifyInstance, _opts: unknown, done: (err?: Error) => void) => {
     // ── GET /gdpr/export ───────────────────────────────────────────────────────
     // Authenticated user downloads a structured JSON copy of all their data.
@@ -334,6 +333,4 @@ export const gdprPlugin = fp(
     );
 
     done();
-  },
-  { name: "gdpr", dependencies: ["db", "auth"] },
-);
+  });

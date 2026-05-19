@@ -1,4 +1,3 @@
-import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { and, eq, inArray } from "drizzle-orm";
 import { randomBytes } from "node:crypto";
@@ -30,7 +29,7 @@ function requireRole(
 
 // ── Plugin ─────────────────────────────────────────────────────────────────────
 
-export const migrationPlugin = fp(
+export const migrationPlugin = (
   (fastify: FastifyInstance, _opts: unknown, done: (err?: Error) => void) => {
     // ── POST /migration/batches ────────────────────────────────────────────────
     // Upload a batch of raw rows for validation.
@@ -466,6 +465,4 @@ export const migrationPlugin = fp(
     );
 
     done();
-  },
-  { name: "migration", dependencies: ["db", "auth"] },
-);
+  });

@@ -7,6 +7,7 @@ import { loadConfig } from "./shared/config.js";
 import { createLogger } from "./shared/logger.js";
 import { dbPlugin } from "./db/index.js";
 import { commsPlugin } from "./modules/comms/index.js";
+import { authDecoratorPlugin } from "./modules/auth/decorator.js";
 import { authPlugin } from "./modules/auth/index.js";
 import { learningPlugin } from "./modules/learning/index.js";
 import { gdprPlugin } from "./modules/gdpr/index.js";
@@ -48,6 +49,9 @@ await app.register(commsPlugin, {
   appBaseUrl: config.appBaseUrl,
 });
 
+// Auth decorator (fp-scoped — must precede all route plugins that use authenticate)
+await app.register(authDecoratorPlugin, { config });
+
 // Domain modules
 await app.register(authPlugin, { prefix: "/v1/auth", config });
 await app.register(learningPlugin, { prefix: "/v1" });
@@ -62,6 +66,16 @@ await app.register(aiPlugin, {
 
 // Health endpoints
 app.get("/health", (_request, reply) => {
+  return reply.send({ status: "ok" });
+});
+
+app.get("/ready", (_request, reply) => {
+  return reply.send({ status: "ok" });
+});
+
+// Start
+await app.listen({ port: config.port, host: "0.0.0.0" });
+reply) => {
   return reply.send({ status: "ok" });
 });
 

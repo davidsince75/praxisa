@@ -1,4 +1,3 @@
-import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
 import { and, asc, eq, isNull, ne } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
@@ -35,7 +34,7 @@ import {
   upsertLessonProgress,
 } from "./service.js";
 
-export const learningPlugin = fp(
+export const learningPlugin = (
   (fastify: FastifyInstance, _opts: unknown, done: (err?: Error) => void) => {
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -1032,6 +1031,4 @@ export const learningPlugin = fp(
     );
 
     done();
-  },
-  { name: "learning", dependencies: ["db", "auth", "comms"] },
-);
+  });

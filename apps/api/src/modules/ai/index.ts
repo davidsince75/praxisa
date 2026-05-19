@@ -1,4 +1,3 @@
-import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { emitEvent } from "@praxisa/audit-sdk";
 import { hasClinicalIntent, hasPii } from "./safety.js";
@@ -18,7 +17,7 @@ interface AiPluginOptions {
   mistralApiKey?: string;
 }
 
-export const aiPlugin = fp(
+export const aiPlugin = (
   (
     fastify: FastifyInstance,
     opts: AiPluginOptions,
@@ -190,6 +189,4 @@ export const aiPlugin = fp(
     );
 
     done();
-  },
-  { name: "ai", dependencies: ["db", "auth"] },
-);
+  });
