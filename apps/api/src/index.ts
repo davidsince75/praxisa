@@ -2,10 +2,12 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
+import { sql } from "drizzle-orm";
 import { initAuditSdk } from "@praxisa/audit-sdk";
 import { DrizzleAuditSink } from "./db/audit-sink.js";
 import { loadConfig } from "./shared/config.js";
 import { createLogger } from "./shared/logger.js";
+import { redisPlugin } from "./shared/redis.js";
 import { dbPlugin } from "./db/index.js";
 import { commsPlugin } from "./modules/comms/index.js";
 import { authDecoratorPlugin } from "./modules/auth/decorator.js";
@@ -27,13 +29,16 @@ const app = Fastify({
   trustProxy: true,
 });
 
+// Redis (fp-scoped — must precede rate-limit so app.redis is decorated first)
+await app.register(redisPlugin, { redisUrl: config.redisUrl });
+
 // Security middleware
 await app.register(helmet, { contentSecurityPolicy: false });
 await app.register(cors, { origin: config.corsOrigins, credentials: true });
 await app.register(rateLimit, {
   max: 100,
   timeWindow: "1 minute",
-  redis: undefined,
+  redis: app.redis,
 });
 
 // DB
@@ -71,8 +76,15 @@ app.get("/health", (_request, reply) => {
   return reply.send({ status: "ok" });
 });
 
-app.get("/ready", (_request, reply) => {
-  return reply.send({ status: "ok" });
+app.get("/ready", async (_request, reply) => {
+  try {
+    await app.db.execute(sql`SELECT 1`);
+    await app.redis.ping();
+    return reply.send({ status: "ok" });
+  } catch (err: unknown) {
+    app.log.error({ err }, "Readiness check failed");
+    return reply.status(503).send({ status: "error" });
+  }
 });
 
 // Start
