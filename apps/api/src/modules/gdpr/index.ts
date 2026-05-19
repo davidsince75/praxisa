@@ -371,7 +371,7 @@ export const gdprPlugin = (
           policyVersion,
           acceptedAt: now,
           requestId: request.id,
-          sourceIp: request.ip ?? null,
+          sourceIp: request.ip,
         })
         .returning();
 
