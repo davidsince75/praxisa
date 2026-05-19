@@ -3,8 +3,8 @@ import type { ConnectionOptions } from "bullmq";
 
 // ── Queue names ────────────────────────────────────────────────────────────────
 
-export const QUEUE_DSR_SWEEP = "dsr:sweep";
-export const QUEUE_DSR_SLA_MONITOR = "dsr:sla-monitor";
+export const QUEUE_DSR_SWEEP = "dsr-sweep";
+export const QUEUE_DSR_SLA_MONITOR = "dsr-sla-monitor";
 
 // ── Job data types ─────────────────────────────────────────────────────────────
 
