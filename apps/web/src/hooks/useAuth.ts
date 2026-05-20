@@ -26,7 +26,10 @@ export function useAuth() {
 
   const login = useCallback(
     async (email: string, password: string): Promise<void> => {
-      const res = await api.post<LoginResponse>("/auth/login", { email, password });
+      const res = await api.post<LoginResponse>("/auth/login", {
+        email,
+        password,
+      });
       setToken(res.token);
       localStorage.setItem("praxisa_user", JSON.stringify(res.user));
       setUser(res.user);

@@ -56,13 +56,13 @@ railway logs --service workers --environment <env> | grep "DSR erasure"
 
 Look for the `err` field on the failure log line. Common errors:
 
-| Error | Likely cause |
-|-------|-------------|
-| `Brevo error 4xx` | Invalid/expired Brevo API key or rate limit hit |
-| `Brevo error 5xx` | Brevo transient outage — safe to retry |
-| `connection refused` / `ECONNREFUSED` | DB or Redis unreachable |
-| `duplicate key value violates unique constraint` | Erased email already exists — double-processing |
-| `emitEvent failed` | Audit SDK error — check `audit_events` table write permissions |
+| Error                                            | Likely cause                                                   |
+| ------------------------------------------------ | -------------------------------------------------------------- |
+| `Brevo error 4xx`                                | Invalid/expired Brevo API key or rate limit hit                |
+| `Brevo error 5xx`                                | Brevo transient outage — safe to retry                         |
+| `connection refused` / `ECONNREFUSED`            | DB or Redis unreachable                                        |
+| `duplicate key value violates unique constraint` | Erased email already exists — double-processing                |
+| `emitEvent failed`                               | Audit SDK error — check `audit_events` table write permissions |
 
 ### 2. Confirm the request state
 

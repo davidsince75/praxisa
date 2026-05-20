@@ -14,7 +14,7 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   if (isAuthenticated) {
-    void navigate("/", { replace: true });
+    navigate("/", { replace: true });
     return null;
   }
 
@@ -24,11 +24,9 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      void navigate("/", { replace: true });
+      navigate("/", { replace: true });
     } catch (err: unknown) {
-      setError(
-        err instanceof Error ? err.message : "Identifiants incorrects",
-      );
+      setError(err instanceof Error ? err.message : "Identifiants incorrects");
     } finally {
       setLoading(false);
     }
@@ -47,7 +45,12 @@ export function LoginPage() {
           </p>
         </div>
 
-        <form onSubmit={(e) => { void handleSubmit(e); }} className="space-y-4">
+        <form
+          onSubmit={(e) => {
+            void handleSubmit(e);
+          }}
+          className="space-y-4"
+        >
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
@@ -56,7 +59,9 @@ export function LoginPage() {
               autoComplete="email"
               required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-teal"
               placeholder="admin@praxisa.fr"
             />
@@ -70,7 +75,9 @@ export function LoginPage() {
               autoComplete="current-password"
               required
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+              }}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-teal"
             />
           </div>

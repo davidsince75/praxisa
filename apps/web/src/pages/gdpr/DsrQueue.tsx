@@ -52,47 +52,55 @@ export function DsrQueuePage() {
       {/* Filters */}
       <div className="flex gap-3 flex-wrap">
         <div className="flex gap-1">
-          {(["all", "pending", "in_progress", "completed", "rejected"] as const).map(
-            (s) => (
-              <button
-                key={s}
-                onClick={() => setStatusFilter(s)}
-                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  statusFilter === s
-                    ? "bg-dark text-white"
-                    : "bg-white border border-rule text-meta hover:text-dark"
-                }`}
-              >
-                {s === "all" ? "Tous" : STATUS_LABELS[s]}
-              </button>
-            ),
-          )}
+          {(
+            ["all", "pending", "in_progress", "completed", "rejected"] as const
+          ).map((s) => (
+            <button
+              key={s}
+              onClick={() => {
+                setStatusFilter(s);
+              }}
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                statusFilter === s
+                  ? "bg-dark text-white"
+                  : "bg-white border border-rule text-meta hover:text-dark"
+              }`}
+            >
+              {s === "all" ? "Tous" : STATUS_LABELS[s]}
+            </button>
+          ))}
         </div>
         <div className="flex gap-1">
-          {(["all", "erasure", "access", "portability", "rectification"] as const).map(
-            (t) => (
-              <button
-                key={t}
-                onClick={() => setTypeFilter(t)}
-                className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
-                  typeFilter === t
-                    ? "bg-teal text-white"
-                    : "bg-white border border-rule text-meta hover:text-dark"
-                }`}
-              >
-                {t === "all" ? "Tous types" : TYPE_LABELS[t]}
-              </button>
-            ),
-          )}
+          {(
+            [
+              "all",
+              "erasure",
+              "access",
+              "portability",
+              "rectification",
+            ] as const
+          ).map((t) => (
+            <button
+              key={t}
+              onClick={() => {
+                setTypeFilter(t);
+              }}
+              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+                typeFilter === t
+                  ? "bg-teal text-white"
+                  : "bg-white border border-rule text-meta hover:text-dark"
+              }`}
+            >
+              {t === "all" ? "Tous types" : TYPE_LABELS[t]}
+            </button>
+          ))}
         </div>
       </div>
 
       {/* Table */}
       <Card>
         <CardContent className="p-0">
-          {isLoading && (
-            <p className="text-meta text-sm p-6">Chargement…</p>
-          )}
+          {isLoading && <p className="text-meta text-sm p-6">Chargement…</p>}
           {!isLoading && filtered.length === 0 && (
             <p className="text-meta text-sm p-6">Aucune demande.</p>
           )}
@@ -108,12 +116,16 @@ export function DsrQueuePage() {
                       <span className="text-sm font-bold text-dark capitalize">
                         {TYPE_LABELS[req.type]}
                       </span>
-                      <Badge variant={req.status}>{STATUS_LABELS[req.status]}</Badge>
+                      <Badge variant={req.status}>
+                        {STATUS_LABELS[req.status]}
+                      </Badge>
                     </div>
                     <p className="text-xs text-meta font-mono">{req.userId}</p>
                   </div>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-meta">{formatDate(req.createdAt)}</span>
+                    <span className="text-xs text-meta">
+                      {formatDate(req.createdAt)}
+                    </span>
                     <ChevronRight
                       size={14}
                       className="text-meta group-hover:text-teal transition-colors"
@@ -128,7 +140,9 @@ export function DsrQueuePage() {
 
       <p className="text-xs text-meta">
         {filtered.length} résultat{filtered.length !== 1 ? "s" : ""}
-        {data !== undefined ? ` sur ${String(data.requests.length)} chargés` : ""}
+        {data !== undefined
+          ? ` sur ${String(data.requests.length)} chargés`
+          : ""}
       </p>
     </div>
   );

@@ -26,4 +26,4 @@ await migrate(db, {
 
 await pool.end();
 
-process.stdout.write("Migrations applied successfully.\n");
+process.stdout.write("Migration complete.\n");

@@ -3,7 +3,12 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Download } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type { SarExport, DsrListResponse } from "@/lib/api.js";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card.js";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.js";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
 import { formatDate } from "@/lib/utils.js";
@@ -45,7 +50,9 @@ export function DsrDetailPage() {
 
   const completeMutation = useMutation({
     mutationFn: (targetUserId: string) =>
-      api.patch(`/gdpr/requests/${targetUserId}/complete`, { notes: "Completed via admin dashboard" }),
+      api.patch(`/gdpr/requests/${targetUserId}/complete`, {
+        notes: "Completed via admin dashboard",
+      }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: ["dsr"] });
     },
@@ -67,7 +74,10 @@ export function DsrDetailPage() {
   if (sarLoading) {
     return (
       <div className="space-y-4">
-        <Link to="/gdpr" className="flex items-center gap-2 text-xs text-meta hover:text-dark">
+        <Link
+          to="/gdpr"
+          className="flex items-center gap-2 text-xs text-meta hover:text-dark"
+        >
           <ArrowLeft size={14} /> Retour
         </Link>
         <p className="text-meta text-sm">Chargement…</p>
@@ -78,7 +88,10 @@ export function DsrDetailPage() {
   if (sarData === undefined) {
     return (
       <div className="space-y-4">
-        <Link to="/gdpr" className="flex items-center gap-2 text-xs text-meta hover:text-dark">
+        <Link
+          to="/gdpr"
+          className="flex items-center gap-2 text-xs text-meta hover:text-dark"
+        >
           <ArrowLeft size={14} /> Retour
         </Link>
         <p className="text-meta text-sm">Utilisateur introuvable.</p>
@@ -138,8 +151,14 @@ export function DsrDetailPage() {
             <CardContent className="space-y-3 text-sm">
               <Row label="Inscriptions" value={sarData.enrolments.length} />
               <Row label="Progression" value={sarData.lessonProgress.length} />
-              <Row label="Consentements" value={sarData.policyConsents.length} />
-              <Row label="Événements audit" value={sarData.auditEvents.length} />
+              <Row
+                label="Consentements"
+                value={sarData.policyConsents.length}
+              />
+              <Row
+                label="Événements audit"
+                value={sarData.auditEvents.length}
+              />
             </CardContent>
           </Card>
         </div>
@@ -152,7 +171,9 @@ export function DsrDetailPage() {
             </CardHeader>
             <CardContent className="p-0">
               {userRequests.length === 0 && (
-                <p className="text-meta text-sm p-6">Aucune demande pour cet utilisateur.</p>
+                <p className="text-meta text-sm p-6">
+                  Aucune demande pour cet utilisateur.
+                </p>
               )}
               <ul className="divide-y divide-rule">
                 {userRequests.map((req) => (
@@ -162,14 +183,19 @@ export function DsrDetailPage() {
                         <span className="text-sm font-bold capitalize">
                           {TYPE_LABELS[req.type]}
                         </span>
-                        <Badge variant={req.status}>{STATUS_LABELS[req.status]}</Badge>
+                        <Badge variant={req.status}>
+                          {STATUS_LABELS[req.status]}
+                        </Badge>
                       </div>
-                      {(req.status === "pending" || req.status === "in_progress") && (
+                      {(req.status === "pending" ||
+                        req.status === "in_progress") && (
                         <Button
                           size="sm"
                           variant="outline"
                           disabled={completeMutation.isPending}
-                          onClick={() => completeMutation.mutate(req.userId)}
+                          onClick={() => {
+                            completeMutation.mutate(req.userId);
+                          }}
                         >
                           Marquer terminé
                         </Button>
@@ -182,7 +208,9 @@ export function DsrDetailPage() {
                       )}
                     </div>
                     {req.notes !== null && (
-                      <p className="text-xs text-meta bg-cream px-3 py-2">{req.notes}</p>
+                      <p className="text-xs text-meta bg-cream px-3 py-2">
+                        {req.notes}
+                      </p>
                     )}
                   </li>
                 ))}
@@ -201,9 +229,14 @@ export function DsrDetailPage() {
               )}
               <ul className="divide-y divide-rule">
                 {sarData.auditEvents.slice(0, 10).map((ev) => (
-                  <li key={ev.id} className="flex items-center justify-between px-6 py-3">
+                  <li
+                    key={ev.id}
+                    className="flex items-center justify-between px-6 py-3"
+                  >
                     <span className="text-sm text-dark">{ev.eventType}</span>
-                    <span className="text-xs text-meta">{formatDate(ev.eventAt)}</span>
+                    <span className="text-xs text-meta">
+                      {formatDate(ev.eventAt)}
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -215,11 +248,13 @@ export function DsrDetailPage() {
       {pendingRequests.length > 0 && (
         <div className="bg-sand/20 border border-sand/40 px-5 py-4">
           <p className="text-sm font-bold text-dark">
-            {pendingRequests.length} demande{pendingRequests.length > 1 ? "s" : ""} en attente de traitement
+            {pendingRequests.length} demande
+            {pendingRequests.length > 1 ? "s" : ""} en attente de traitement
           </p>
           <p className="text-xs text-mid mt-1">
-            SLA RGPD : 30 jours à compter de la réception. Traitez les demandes d'effacement via
-            le worker automatique ou manuellement si celui-ci est en échec.
+            SLA RGPD : 30 jours à compter de la réception. Traitez les demandes
+            d'effacement via le worker automatique ou manuellement si celui-ci
+            est en échec.
           </p>
         </div>
       )}
@@ -238,8 +273,12 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-meta text-xs uppercase tracking-wider font-bold">{label}</span>
-      <span className={`text-dark ${mono ? "font-mono text-xs" : ""}`}>{value}</span>
+      <span className="text-meta text-xs uppercase tracking-wider font-bold">
+        {label}
+      </span>
+      <span className={`text-dark ${mono ? "font-mono text-xs" : ""}`}>
+        {value}
+      </span>
     </div>
   );
 }

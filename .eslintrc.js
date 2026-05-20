@@ -87,5 +87,8 @@ module.exports = {
     "!.eslintrc.js",
     "**/drizzle.config.ts",
     "**/vitest.config.ts",
+    "**/postcss.config.ts",
+    "**/tailwind.config.ts",
+    "**/vite.config.ts",
   ],
 };

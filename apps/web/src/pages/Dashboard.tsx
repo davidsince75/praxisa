@@ -19,7 +19,9 @@ function StatCard({ label, value, icon, sub }: StatCardProps) {
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-meta mb-1">{label}</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-meta mb-1">
+              {label}
+            </p>
             <p className="text-3xl font-bold text-dark">{value}</p>
             {sub !== undefined && (
               <p className="text-xs text-meta mt-1">{sub}</p>
@@ -43,15 +45,19 @@ export function DashboardPage() {
     queryFn: () => api.get<AuditEventsResponse>("/audit/events?limit=5"),
   });
 
-  const pending = dsrData?.requests.filter((r) => r.status === "pending").length ?? 0;
-  const inProgress = dsrData?.requests.filter((r) => r.status === "in_progress").length ?? 0;
+  const pending =
+    dsrData?.requests.filter((r) => r.status === "pending").length ?? 0;
+  const inProgress =
+    dsrData?.requests.filter((r) => r.status === "in_progress").length ?? 0;
   const total = dsrData?.requests.length ?? 0;
 
   return (
     <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold text-dark">Dashboard</h1>
-        <p className="text-meta text-sm mt-1">Vue d'ensemble de la plateforme</p>
+        <p className="text-meta text-sm mt-1">
+          Vue d'ensemble de la plateforme
+        </p>
       </div>
 
       {/* Stats */}
@@ -92,14 +98,21 @@ export function DashboardPage() {
             )}
             <ul className="divide-y divide-rule">
               {auditData?.events.map((event) => (
-                <li key={event.id} className="flex items-center justify-between px-6 py-3">
+                <li
+                  key={event.id}
+                  className="flex items-center justify-between px-6 py-3"
+                >
                   <div>
-                    <span className="text-sm font-medium text-dark">{event.eventType}</span>
+                    <span className="text-sm font-medium text-dark">
+                      {event.eventType}
+                    </span>
                     <span className="text-xs text-meta ml-3">
                       {event.entityType} · {event.entityId.slice(0, 8)}…
                     </span>
                   </div>
-                  <span className="text-xs text-meta">{formatDate(event.eventAt)}</span>
+                  <span className="text-xs text-meta">
+                    {formatDate(event.eventAt)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -120,14 +133,23 @@ export function DashboardPage() {
                   .filter((r) => r.status === "pending")
                   .slice(0, 5)
                   .map((req) => (
-                    <li key={req.id} className="flex items-center justify-between px-6 py-3">
+                    <li
+                      key={req.id}
+                      className="flex items-center justify-between px-6 py-3"
+                    >
                       <div>
-                        <span className="text-sm font-medium text-dark capitalize">{req.type}</span>
-                        <span className="text-xs text-meta ml-3">{req.userId.slice(0, 8)}…</span>
+                        <span className="text-sm font-medium text-dark capitalize">
+                          {req.type}
+                        </span>
+                        <span className="text-xs text-meta ml-3">
+                          {req.userId.slice(0, 8)}…
+                        </span>
                       </div>
                       <div className="flex items-center gap-3">
                         <Badge variant="pending">En attente</Badge>
-                        <span className="text-xs text-meta">{formatDate(req.createdAt)}</span>
+                        <span className="text-xs text-meta">
+                          {formatDate(req.createdAt)}
+                        </span>
                       </div>
                     </li>
                   ))}

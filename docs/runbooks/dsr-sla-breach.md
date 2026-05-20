@@ -51,11 +51,11 @@ WHERE r.id IN ('<id1>', '<id2>');
 
 For each request, determine:
 
-| Status | Action |
-|--------|--------|
-| `pending` | Erasure worker hasn't run or has been failing — see erasure sweep runbook |
-| `in_progress` | Sweep claimed it but failed — check worker logs for the `requestId` |
-| `completed` | False alarm (monitor ran before completion timestamp propagated) — verify and close |
+| Status        | Action                                                                              |
+| ------------- | ----------------------------------------------------------------------------------- |
+| `pending`     | Erasure worker hasn't run or has been failing — see erasure sweep runbook           |
+| `in_progress` | Sweep claimed it but failed — check worker logs for the `requestId`                 |
+| `completed`   | False alarm (monitor ran before completion timestamp propagated) — verify and close |
 
 ---
 
@@ -115,6 +115,7 @@ numerous. **This extension must be communicated to the data subject within
 the original 30-day window.**
 
 Draft and send an extension notice to the user explaining:
+
 - That you received their request
 - That you need additional time (up to 2 months)
 - The reason for the delay

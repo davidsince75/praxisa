@@ -6,3 +6,4 @@ coverage/
 # Docker and TOML — no prettier parser available
 **/Dockerfile
 **/*.toml
+.claude/

@@ -34,7 +34,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
 
   if (!res.ok) {
-    const body = (await res.json().catch(() => ({ message: res.statusText }))) as {
+    const body = (await res
+      .json()
+      .catch(() => ({ message: res.statusText }))) as {
       message?: string;
       error?: string;
     };
@@ -119,8 +121,8 @@ export interface SarExport {
     isActive: boolean;
     createdAt: string;
   };
-  enrolments: unknown[];
-  lessonProgress: unknown[];
-  policyConsents: unknown[];
-  auditEvents: AuditEvent[];
+  enrolments: Array<{ id: string; courseId: string; enrolledAt: string }>;
+  lessonProgress: Array<{ lessonId: string; completedAt: string | null }>;
+  policyConsents: Array<{ policyId: string; consentedAt: string }>;
+  auditEvents: Array<{ id: string; eventType: string; eventAt: string }>;
 }

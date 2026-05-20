@@ -60,7 +60,7 @@ SELECT
 **Record pre-restore counts:**
 
 | Table           | Row count |
-|-----------------|-----------|
+| --------------- | --------- |
 | users           |           |
 | gdpr_requests   |           |
 | audit_events    |           |
@@ -133,7 +133,7 @@ SELECT
 **Record post-restore counts:**
 
 | Table           | Row count | Matches pre-restore? |
-|-----------------|-----------|----------------------|
+| --------------- | --------- | -------------------- |
 | users           |           |                      |
 | gdpr_requests   |           |                      |
 | audit_events    |           |                      |
@@ -183,19 +183,19 @@ Run the critical path to confirm data integrity end-to-end:
 Fill in after completing all steps. Commit this file as
 `docs/runbooks/restore-drill-evidence-YYYY-MM-DD.md`.
 
-| Field                        | Value |
-|------------------------------|-------|
-| Drill date (UTC)             |       |
-| Operator                     |       |
-| Staging API URL              |       |
-| Backup used (timestamp)      |       |
-| Restore duration (min)       |       |
-| Canary row absent            |       |
-| Row counts consistent        |       |
-| /ready passed after restore  |       |
-| Smoke test passed            |       |
-| Issues observed              |       |
-| Follow-up actions            |       |
+| Field                       | Value |
+| --------------------------- | ----- |
+| Drill date (UTC)            |       |
+| Operator                    |       |
+| Staging API URL             |       |
+| Backup used (timestamp)     |       |
+| Restore duration (min)      |       |
+| Canary row absent           |       |
+| Row counts consistent       |       |
+| /ready passed after restore |       |
+| Smoke test passed           |       |
+| Issues observed             |       |
+| Follow-up actions           |       |
 
 ---
 
