@@ -169,10 +169,31 @@ export const learningPlugin = (
         lessonsByModule[mod.id] = ls;
       }
 
+      // Collect all lesson ids and fetch their exercises in one pass
+      const allLessons = Object.values(lessonsByModule).flat();
+      const exercisesByLesson: Record<
+        string,
+        { id: string; title: string; type: string; position: number }[]
+      > = {};
+      for (const les of allLessons) {
+        const exs = await fastify.db
+          .select({
+            id: exercises.id,
+            title: exercises.title,
+            type: exercises.type,
+            position: exercises.position,
+          })
+          .from(exercises)
+          .where(eq(exercises.lessonId, les.id))
+          .orderBy(asc(exercises.position));
+        exercisesByLesson[les.id] = exs;
+      }
+
       const tree = mods.map((mod) => ({
         ...mod,
         lessons: (lessonsByModule[mod.id] ?? []).map((l) => ({
           ...l,
+          exercises: exercisesByLesson[l.id] ?? [],
         })),
       }));
 

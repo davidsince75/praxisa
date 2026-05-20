@@ -187,6 +187,13 @@ export interface CourseModule {
 
 export type LessonContentType = "text" | "video" | "pdf" | "audio" | "quiz";
 
+export interface LessonExercise {
+  id: string;
+  title: string;
+  type: string;
+  position: number;
+}
+
 export interface LessonItem {
   id: string;
   moduleId: string;
@@ -198,6 +205,7 @@ export interface LessonItem {
   contentBody: string | null;
   durationMinutes: number | null;
   isFreePreview: boolean;
+  exercises: LessonExercise[];
   createdAt: string;
   updatedAt: string;
 }
