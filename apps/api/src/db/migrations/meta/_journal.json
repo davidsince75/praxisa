@@ -50,6 +50,13 @@
       "when": 1747958400000,
       "tag": "0006_policy_consents",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748044800000,
+      "tag": "0007_quiz_and_content_body",
+      "breakpoints": true
     }
   ]
 }
