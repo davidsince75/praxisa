@@ -53,3 +53,5 @@ data-migration/batches/*.xlsx
 data-migration/batches/*.csv
 data-migration/batches/*.xls
 data-migration/profiles/*.csv
+.claude/
+_tmp_*

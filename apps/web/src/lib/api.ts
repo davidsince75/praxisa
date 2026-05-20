@@ -34,14 +34,17 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { ...init, headers });
 
   if (!res.ok) {
+    const body = (await res.json().catch(() => ({ message: res.statusText }))) as {
+      message?: string;
+      error?: string;
+    };
+    const message = body.message ?? body.error ?? res.statusText;
     if (res.status === 401) {
+      console.error(`[api] 401 on ${init.method ?? "GET"} ${path}:`, message);
       clearToken();
       window.location.href = "/login";
     }
-    const body = (await res.json().catch(() => ({ message: res.statusText }))) as {
-      message?: string;
-    };
-    throw new ApiError(res.status, body.message ?? res.statusText);
+    throw new ApiError(res.status, message);
   }
 
   if (res.status === 204) return undefined as T;
