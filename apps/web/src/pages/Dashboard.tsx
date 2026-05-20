@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { ShieldCheck, ScrollText, Users, Clock } from "lucide-react";
 import { api } from "@/lib/api.js";
-import type { DsrListResponse, AuditEventsResponse } from "@/lib/api.js";
+import type {
+  DsrListResponse,
+  AuditEventsResponse,
+  UserListResponse,
+  CourseListResponse,
+} from "@/lib/api.js";
 import { Card, CardContent } from "@/components/ui/card.js";
 import { Badge } from "@/components/ui/badge.js";
 import { formatDate } from "@/lib/utils.js";
@@ -45,6 +50,16 @@ export function DashboardPage() {
     queryFn: () => api.get<AuditEventsResponse>("/audit/events?limit=5"),
   });
 
+  const { data: usersData } = useQuery({
+    queryKey: ["users", "", "all", 1],
+    queryFn: () => api.get<UserListResponse>("/users?limit=1"),
+  });
+
+  const { data: coursesData } = useQuery({
+    queryKey: ["courses"],
+    queryFn: () => api.get<CourseListResponse>("/courses"),
+  });
+
   const pending =
     dsrData?.requests.filter((r) => r.status === "pending").length ?? 0;
   const inProgress =
@@ -80,9 +95,13 @@ export function DashboardPage() {
         />
         <StatCard
           label="Utilisateurs"
-          value="—"
+          value={usersData?.meta.total ?? "—"}
           icon={<Users size={24} />}
-          sub="Bientôt disponible"
+          sub={
+            coursesData !== undefined
+              ? `${String(coursesData.courses.length)} cours`
+              : undefined
+          }
         />
       </div>
 
@@ -158,6 +177,6 @@ export function DashboardPage() {
           </Card>
         </div>
       )}
-    </div>
+     </div>
   );
 }

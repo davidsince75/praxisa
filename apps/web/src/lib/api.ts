@@ -111,6 +111,50 @@ export interface AuditEventsResponse {
   pagination: { limit: number; offset: number; count: number };
 }
 
+// ── Users ──────────────────────────────────────────────────────────────────────
+
+export type UserRole = "admin" | "instructor" | "student" | "migration_lead";
+
+export interface User {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: UserRole;
+  isActive: boolean;
+  emailVerified: boolean;
+  lastLoginAt: string | null;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+// GET /v1/users → { users, meta }
+export interface UserListResponse {
+  users: User[];
+  meta: { total: number; page: number; limit: number; pages: number };
+}
+
+// ── Courses ────────────────────────────────────────────────────────────────────
+
+export interface Course {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  status: "draft" | "published" | "archived";
+  instructorId: string | null;
+  language: string;
+  thumbnailUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+}
+
+// GET /v1/courses → { courses }
+export interface CourseListResponse {
+  courses: Course[];
+}
+
 export interface SarExport {
   user: {
     id: string;

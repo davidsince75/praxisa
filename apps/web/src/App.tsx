@@ -3,6 +3,8 @@ import { useAuth } from "@/hooks/useAuth.js";
 import { Shell } from "@/components/layout/Shell.js";
 import { LoginPage } from "@/pages/Login.js";
 import { DashboardPage } from "@/pages/Dashboard.js";
+import { UserManagementPage } from "@/pages/users/UserManagement.js";
+import { CourseManagementPage } from "@/pages/courses/CourseManagement.js";
 import { DsrQueuePage } from "@/pages/gdpr/DsrQueue.js";
 import { DsrDetailPage } from "@/pages/gdpr/DsrDetail.js";
 import { AuditLogPage } from "@/pages/audit/AuditLog.js";
@@ -25,6 +27,8 @@ export function App() {
             <Shell>
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
+                <Route path="/users" element={<UserManagementPage />} />
+                <Route path="/courses" element={<CourseManagementPage />} />
                 <Route path="/gdpr" element={<DsrQueuePage />} />
                 <Route path="/gdpr/:userId" element={<DsrDetailPage />} />
                 <Route path="/audit" element={<AuditLogPage />} />

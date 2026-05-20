@@ -1,10 +1,19 @@
 import { NavLink } from "react-router-dom";
-import { LayoutDashboard, ShieldCheck, ScrollText, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  ShieldCheck,
+  ScrollText,
+  LogOut,
+  Users,
+  BookOpen,
+} from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/users", label: "Utilisateurs", icon: Users, end: false },
+  { to: "/courses", label: "Cours", icon: BookOpen, end: false },
   { to: "/gdpr", label: "DSR Queue", icon: ShieldCheck, end: false },
   { to: "/audit", label: "Audit Log", icon: ScrollText, end: false },
 ];
