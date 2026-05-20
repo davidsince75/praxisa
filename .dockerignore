@@ -1,0 +1,32 @@
+# Dependencies — reinstalled inside the image
+node_modules
+**/node_modules
+
+# Build artefacts
+dist
+**/dist
+build
+**/build
+
+# Dev / test
+coverage
+**/.claude
+**/_tmp_*
+*.test.ts
+*.spec.ts
+
+# Local env — secrets must come from Railway/Doppler at runtime
+.env
+.env.*
+!.env.example
+
+# Git / editor
+.git
+.gitignore
+.github
+*.md
+!README.md
+
+# Misc
+.DS_Store
+Thumbs.db
