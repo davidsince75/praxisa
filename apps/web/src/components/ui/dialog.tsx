@@ -50,7 +50,10 @@ function DialogContent({
   );
 }
 
-function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function DialogHeader({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn("px-6 pt-6 pb-4 border-b border-rule", className)}
@@ -59,10 +62,16 @@ function DialogHeader({ className, ...props }: React.HTMLAttributes<HTMLDivEleme
   );
 }
 
-function DialogFooter({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+function DialogFooter({
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("flex justify-end gap-3 px-6 py-4 border-t border-rule", className)}
+      className={cn(
+        "flex justify-end gap-3 px-6 py-4 border-t border-rule",
+        className,
+      )}
       {...props}
     />
   );
@@ -74,7 +83,10 @@ function DialogTitle({
 }: React.ComponentPropsWithoutRef<typeof DialogPrimitive.Title>) {
   return (
     <DialogPrimitive.Title
-      className={cn("text-sm font-bold uppercase tracking-widest text-dark", className)}
+      className={cn(
+        "text-sm font-bold uppercase tracking-widest text-dark",
+        className,
+      )}
       {...props}
     />
   );
