@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Demo seed script — populates the database with realistic data for client demos.
  *
@@ -60,7 +61,9 @@ async function upsertUser(data: {
       emailVerified: true,
     })
     .returning({ id: users.id });
-  return rows[0]!.id;
+  const row = rows[0];
+  if (row === undefined) throw new Error("upsertUser: insert returned no row");
+  return row.id;
 }
 
 async function upsertCourse(data: {
@@ -85,7 +88,9 @@ async function upsertCourse(data: {
       publishedAt: new Date(),
     })
     .returning({ id: courses.id });
-  return rows[0]!.id;
+  const row = rows[0];
+  if (row === undefined) throw new Error("upsertCourse: insert returned no row");
+  return row.id;
 }
 
 async function insertModule(
@@ -98,7 +103,9 @@ async function insertModule(
     .insert(courseModules)
     .values({ courseId, title, description, position })
     .returning({ id: courseModules.id });
-  return rows[0]!.id;
+  const row = rows[0];
+  if (row === undefined) throw new Error("insertModule: insert returned no row");
+  return row.id;
 }
 
 async function insertLesson(data: {
@@ -126,7 +133,9 @@ async function insertLesson(data: {
       isFreePreview: data.isFreePreview ?? false,
     })
     .returning({ id: lessons.id });
-  return rows[0]!.id;
+  const row = rows[0];
+  if (row === undefined) throw new Error("insertLesson: insert returned no row");
+  return row.id;
 }
 
 async function insertExercise(
@@ -140,20 +149,23 @@ async function insertExercise(
     .insert(exercises)
     .values({ lessonId, title, type, position, maxScore, isRequired: true })
     .returning({ id: exercises.id });
-  return rows[0]!.id;
+  const row = rows[0];
+  if (row === undefined) throw new Error("insertExercise: insert returned no row");
+  return row.id;
 }
 
 async function insertQuizQuestions(
   exerciseId: string,
-  questions: Array<{
+  questions: {
     questionText: string;
-    options: Array<{ id: string; text: string }>;
+    options: { id: string; text: string }[];
     correctOptionId: string;
     explanation: string;
-  }>,
+  }[],
 ) {
   for (let i = 0; i < questions.length; i++) {
-    const q = questions[i]!;
+    const q = questions[i];
+    if (q === undefined) continue;
     await db.insert(quizQuestions).values({
       exerciseId,
       position: i,
@@ -166,20 +178,6 @@ async function insertQuizQuestions(
 }
 
 async function enrol(studentId: string, courseId: string, enrolledBy: string) {
-  const existing = await db
-    .select({ id: enrolments.id })
-    .from(enrolments)
-    .where(eq(enrolments.studentId, studentId))
-    .limit(1);
-  // Check if already enrolled in this specific course
-  const courseEnrolment =
-    existing.find !== undefined
-      ? await db
-          .select({ id: enrolments.id })
-          .from(enrolments)
-          .where(eq(enrolments.courseId, courseId))
-          .limit(1)
-      : [];
   const rows = await db
     .insert(enrolments)
     .values({ studentId, courseId, enrolledBy, status: "active" })
@@ -308,7 +306,7 @@ async function seed() {
     studentIds.push(id);
   }
 
-  console.log(`  ✓ ${studentIds.length + 3} users created`);
+  console.log(`  ✓ ${String(studentIds.length + 3)} users created`);
 
   // ── Course 1: Marketing Digital ───────────────────────────────────────────
 
@@ -1200,12 +1198,14 @@ async function seed() {
   ];
 
   for (const config of enrolmentConfigs) {
-    const studentId = studentIds[config.studentIdx]!;
+    const studentId = studentIds[config.studentIdx];
+    if (studentId === undefined) continue;
     const enrolmentId = await enrol(studentId, config.courseId, adminId);
     if (enrolmentId === undefined) continue;
 
     for (let i = 0; i < config.lessons.length; i++) {
-      const lessonId = config.lessons[i]!;
+      const lessonId = config.lessons[i];
+      if (lessonId === undefined) continue;
       let status: "not_started" | "in_progress" | "completed" = "not_started";
       if (i < config.completedCount) status = "completed";
       else if (i === config.completedCount) status = "in_progress";
@@ -1226,8 +1226,8 @@ async function seed() {
 }
 
 seed()
-  .catch((err) => {
+  .catch((err: unknown) => {
     console.error("Seed failed:", err);
     process.exit(1);
   })
-  .finally(() => pool.end());
+  .finally(() => { void pool.end(); });
