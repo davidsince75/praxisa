@@ -121,8 +121,8 @@ export interface SarExport {
     isActive: boolean;
     createdAt: string;
   };
-  enrolments: Array<{ id: string; courseId: string; enrolledAt: string }>;
-  lessonProgress: Array<{ lessonId: string; completedAt: string | null }>;
-  policyConsents: Array<{ policyId: string; consentedAt: string }>;
-  auditEvents: Array<{ id: string; eventType: string; eventAt: string }>;
+  enrolments: { id: string; courseId: string; enrolledAt: string }[];
+  lessonProgress: { lessonId: string; completedAt: string | null }[];
+  policyConsents: { policyId: string; consentedAt: string }[];
+  auditEvents: { id: string; eventType: string; eventAt: string }[];
 }
