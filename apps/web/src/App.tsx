@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth.js";
 import { Shell } from "@/components/layout/Shell.js";
 import { TeacherShell } from "@/components/layout/TeacherShell.js";
+import { LearnShell } from "@/components/layout/LearnShell.js";
 import { LoginPage } from "@/pages/Login.js";
 import { DashboardPage } from "@/pages/Dashboard.js";
 import { UserManagementPage } from "@/pages/users/UserManagement.js";
@@ -12,6 +13,9 @@ import { AuditLogPage } from "@/pages/audit/AuditLog.js";
 import { TeacherCoursesPage } from "@/pages/teacher/TeacherCourses.js";
 import { TeacherCourseDetailPage } from "@/pages/teacher/TeacherCourseDetail.js";
 import { TeacherCourseBuilderPage } from "@/pages/teacher/TeacherCourseBuilder.js";
+import { LearnCatalogPage } from "@/pages/learn/LearnCatalog.js";
+import { LearnMyCoursesPage } from "@/pages/learn/LearnMyCourses.js";
+import { LearnCoursePlayerPage } from "@/pages/learn/LearnCoursePlayer.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -24,6 +28,13 @@ function RequireTeacher({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, isInstructor } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isAdmin && !isInstructor) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
+function RequireStudent({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isAdmin, isStudent } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAdmin && !isStudent) return <Navigate to="/login" replace />;
   return <>{children}</>;
 }
 
@@ -70,6 +81,25 @@ export function App() {
               </Routes>
             </TeacherShell>
           </RequireTeacher>
+        }
+      />
+
+      {/* Learner portal */}
+      <Route
+        path="/learn/*"
+        element={
+          <RequireStudent>
+            <LearnShell>
+              <Routes>
+                <Route path="/catalog" element={<LearnCatalogPage />} />
+                <Route path="/courses" element={<LearnMyCoursesPage />} />
+                <Route
+                  path="/courses/:enrolmentId"
+                  element={<LearnCoursePlayerPage />}
+                />
+              </Routes>
+            </LearnShell>
+          </RequireStudent>
         }
       />
     </Routes>

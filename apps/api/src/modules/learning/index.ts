@@ -1317,5 +1317,49 @@ export const learningPlugin = (
     },
   );
 
+  // ═════════════════════════════════════════════════════════════════════════
+  // EXERCISES
+  // ═════════════════════════════════════════════════════════════════════════
+
+  // GET /exercises/:exerciseId
+  // Returns exercise details with quiz questions.
+  // correctOptionId is stripped for non-admin roles.
+  fastify.get(
+    "/exercises/:exerciseId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { exerciseId } = request.params as { exerciseId: string };
+      const { role } = request.jwtPayload;
+
+      const exerciseRows = await fastify.db
+        .select()
+        .from(exercises)
+        .where(eq(exercises.id, exerciseId))
+        .limit(1);
+      const exercise = exerciseRows[0];
+      if (exercise === undefined) {
+        return reply.status(404).send({ error: "Exercise not found" });
+      }
+
+      const questions = await fastify.db
+        .select()
+        .from(quizQuestions)
+        .where(eq(quizQuestions.exerciseId, exerciseId))
+        .orderBy(asc(quizQuestions.position));
+
+      const sanitised = questions.map((q) => ({
+        id: q.id,
+        position: q.position,
+        questionText: q.questionText,
+        options: JSON.parse(q.options) as { id: string; text: string }[],
+        explanation: q.explanation,
+        // Only admins see the answer key
+        ...(role === "admin" ? { correctOptionId: q.correctOptionId } : {}),
+      }));
+
+      return reply.send({ exercise, questions: sanitised });
+    },
+  );
+
   done();
 };

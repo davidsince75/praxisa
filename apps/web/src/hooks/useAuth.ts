@@ -49,6 +49,7 @@ export function useAuth() {
     isAuthenticated: getToken() !== null && user !== null,
     isAdmin: user?.role === "admin",
     isInstructor: user?.role === "instructor",
+    isStudent: user?.role === "student",
     login,
     logout,
   };

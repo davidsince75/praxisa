@@ -59,6 +59,8 @@ export const api = {
     request<T>(path, { method: "POST", body: JSON.stringify(body) }),
   patch: <T>(path: string, body: unknown) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body) }),
+  put: <T>(path: string, body: unknown) =>
+    request<T>(path, { method: "PUT", body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
@@ -240,4 +242,84 @@ export interface CourseProgressTotals {
 export interface CourseProgressStats {
   totals: CourseProgressTotals;
   lessonCompletions: { lessonId: string; completedCount: number }[];
+}
+
+// ── Learner: enrolments ────────────────────────────────────────────────────────
+
+export interface MyEnrolment {
+  enrolmentId: string;
+  status: "active" | "completed" | "cancelled";
+  enrolledAt: string;
+  completedAt: string | null;
+  expiresAt: string | null;
+  courseId: string;
+  courseTitle: string;
+  courseSlug: string;
+  courseDescription: string | null;
+  courseThumbnailUrl: string | null;
+  courseLanguage: string;
+  completionPct: number;
+}
+
+export interface MyEnrolmentsResponse {
+  enrolments: MyEnrolment[];
+}
+
+export interface EnrolmentDetail {
+  enrolment: {
+    id: string;
+    courseId: string;
+    studentId: string;
+    status: "active" | "completed" | "cancelled";
+    createdAt: string;
+    completedAt: string | null;
+  };
+  progress: {
+    id: string;
+    enrolmentId: string;
+    lessonId: string;
+    status: "not_started" | "in_progress" | "completed";
+    completedAt: string | null;
+  }[];
+  completionPct: number;
+}
+
+// ── Learner: quiz ──────────────────────────────────────────────────────────────
+
+export interface QuizOption {
+  id: string;
+  text: string;
+}
+
+export interface QuizQuestion {
+  id: string;
+  position: number;
+  questionText: string;
+  options: QuizOption[];
+  explanation: string | null;
+}
+
+export interface ExerciseWithQuestions {
+  exercise: {
+    id: string;
+    lessonId: string;
+    title: string;
+    description: string | null;
+    type: string;
+    maxScore: number | null;
+    isRequired: boolean;
+  };
+  questions: QuizQuestion[];
+}
+
+export interface QuizAttemptResult {
+  score: number;
+  maxScore: number;
+  passed: boolean;
+  completedAt: string;
+  feedback: {
+    questionId: string;
+    correct: boolean;
+    explanation: string | null;
+  }[];
 }
