@@ -17,6 +17,7 @@ import { gdprPlugin } from "./modules/gdpr/index.js";
 import { migrationPlugin } from "./modules/migration/index.js";
 import { aiPlugin } from "./modules/ai/index.js";
 import { auditPlugin } from "./modules/audit/index.js";
+import { usersPlugin } from "./modules/users/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -61,6 +62,7 @@ await app.register(learningPlugin, { prefix: "/v1" });
 await app.register(gdprPlugin, { prefix: "/v1" });
 await app.register(migrationPlugin, { prefix: "/v1" });
 await app.register(auditPlugin, { prefix: "/v1" });
+await app.register(usersPlugin, { prefix: "/v1" });
 await app.register(aiPlugin, {
   prefix: "/v1",
   ...(config.mistralApiKey !== undefined

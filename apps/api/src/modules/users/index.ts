@@ -1,0 +1,327 @@
+import type { FastifyInstance } from "fastify";
+import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import { hash } from "@node-rs/argon2";
+import { z } from "zod";
+import { emitEvent } from "@praxisa/audit-sdk";
+import { users } from "../../db/schema/index.js";
+
+// ── Validation schemas ─────────────────────────────────────────────────────────
+
+const createUserSchema = z.object({
+  email: z.string().email(),
+  firstName: z.string().min(1).max(100),
+  lastName: z.string().min(1).max(100),
+  role: z.enum(["admin", "instructor", "student", "migration_lead"]),
+  password: z
+    .string()
+    .min(8)
+    .regex(/[A-Z]/, "Must contain uppercase")
+    .regex(/[0-9]/, "Must contain a digit"),
+  isActive: z.boolean().optional().default(true),
+});
+
+const updateUserSchema = z.object({
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  role: z.enum(["admin", "instructor", "student", "migration_lead"]).optional(),
+  isActive: z.boolean().optional(),
+  emailVerified: z.boolean().optional(),
+});
+
+const listUsersQuerySchema = z.object({
+  role: z.enum(["admin", "instructor", "student", "migration_lead"]).optional(),
+  search: z.string().max(200).optional(),
+  page: z.coerce.number().int().min(1).optional().default(1),
+  limit: z.coerce.number().int().min(1).max(200).optional().default(50),
+});
+
+// ── Plugin ─────────────────────────────────────────────────────────────────────
+
+export const usersPlugin = (
+  fastify: FastifyInstance,
+  _opts: unknown,
+  done: (err?: Error) => void,
+) => {
+  // ── GET /users ───────────────────────────────────────────────────────────────
+
+  fastify.get(
+    "/users",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role } = request.jwtPayload;
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const qParse = listUsersQuerySchema.safeParse(request.query);
+      if (!qParse.success) {
+        return reply.status(400).send({ error: qParse.error.flatten() });
+      }
+      const { role: filterRole, search, page, limit } = qParse.data;
+      const offset = (page - 1) * limit;
+
+      // Build WHERE conditions
+      const conditions = [isNull(users.deletedAt)];
+      if (filterRole !== undefined) {
+        conditions.push(eq(users.role, filterRole));
+      }
+      if (search !== undefined && search.length > 0) {
+        const pattern = `%${search}%`;
+        conditions.push(
+          or(
+            ilike(users.email, pattern),
+            ilike(users.firstName, pattern),
+            ilike(users.lastName, pattern),
+          ) ?? sql`true`,
+        );
+      }
+
+      const where = and(...conditions);
+
+      const [rows, totalRows] = await Promise.all([
+        fastify.db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            role: users.role,
+            isActive: users.isActive,
+            emailVerified: users.emailVerified,
+            lastLoginAt: users.lastLoginAt,
+            createdAt: users.createdAt,
+          })
+          .from(users)
+          .where(where)
+          .orderBy(asc(users.createdAt))
+          .limit(limit)
+          .offset(offset),
+        fastify.db.select({ n: count() }).from(users).where(where),
+      ]);
+
+      const total = totalRows[0]?.n ?? 0;
+
+      return reply.send({
+        users: rows,
+        meta: { total, page, limit, pages: Math.ceil(total / limit) },
+      });
+    },
+  );
+
+  // ── GET /users/:userId ───────────────────────────────────────────────────────
+
+  fastify.get(
+    "/users/:userId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      const { userId } = request.params as { userId: string };
+
+      // Admin can view anyone; users can view their own profile
+      if (role !== "admin" && sub !== userId) {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const rows = await fastify.db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          isActive: users.isActive,
+          emailVerified: users.emailVerified,
+          lastLoginAt: users.lastLoginAt,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+        })
+        .from(users)
+        .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+        .limit(1);
+
+      if (rows[0] === undefined) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
+      return reply.send({ user: rows[0] });
+    },
+  );
+
+  // ── POST /users ──────────────────────────────────────────────────────────────
+
+  fastify.post(
+    "/users",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const parse = createUserSchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+      const body = parse.data;
+
+      // Check for existing email
+      const existing = await fastify.db
+        .select({ id: users.id })
+        .from(users)
+        .where(eq(users.email, body.email.toLowerCase()))
+        .limit(1);
+      if (existing.length > 0) {
+        return reply.status(409).send({ error: "Email already in use" });
+      }
+
+      const passwordHash = await hash(body.password, {
+        memoryCost: 65536,
+        timeCost: 3,
+        outputLen: 32,
+        parallelism: 1,
+      });
+
+      const returned = await fastify.db
+        .insert(users)
+        .values({
+          email: body.email.toLowerCase(),
+          firstName: body.firstName,
+          lastName: body.lastName,
+          role: body.role,
+          passwordHash,
+          isActive: body.isActive,
+          emailVerified: false,
+        })
+        .returning({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          isActive: users.isActive,
+          emailVerified: users.emailVerified,
+          createdAt: users.createdAt,
+        });
+
+      const user = returned[0];
+      if (user === undefined) throw new Error("Insert returned no rows");
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "admin.user.created",
+        entityType: "user",
+        entityId: user.id,
+        dataClassification: "pii:direct",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.status(201).send({ user });
+    },
+  );
+
+  // ── PATCH /users/:userId ─────────────────────────────────────────────────────
+
+  fastify.patch(
+    "/users/:userId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      const { userId } = request.params as { userId: string };
+
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const existing = await fastify.db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+        .limit(1);
+      if (existing[0] === undefined) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
+      const parse = updateUserSchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+      const body = parse.data;
+
+      const updated = await fastify.db
+        .update(users)
+        .set({ ...body, updatedAt: new Date() })
+        .where(eq(users.id, userId))
+        .returning({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          isActive: users.isActive,
+          emailVerified: users.emailVerified,
+          updatedAt: users.updatedAt,
+        });
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "admin.user.updated",
+        entityType: "user",
+        entityId: userId,
+        dataClassification: "pii:direct",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.send({ user: updated[0] });
+    },
+  );
+
+  // ── DELETE /users/:userId (soft) ─────────────────────────────────────────────
+
+  fastify.delete(
+    "/users/:userId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      const { userId } = request.params as { userId: string };
+
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+      if (userId === sub) {
+        return reply
+          .status(409)
+          .send({ error: "Cannot deactivate your own account" });
+      }
+
+      const existing = await fastify.db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.id, userId), isNull(users.deletedAt)))
+        .limit(1);
+      if (existing[0] === undefined) {
+        return reply.status(404).send({ error: "User not found" });
+      }
+
+      await fastify.db
+        .update(users)
+        .set({ isActive: false, deletedAt: new Date(), updatedAt: new Date() })
+        .where(eq(users.id, userId));
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "admin.user.deactivated",
+        entityType: "user",
+        entityId: userId,
+        dataClassification: "pii:direct",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.status(204).send();
+    },
+  );
+
+  done();
+};

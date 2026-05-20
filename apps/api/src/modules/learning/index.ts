@@ -1,5 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { and, asc, eq, isNull, ne } from "drizzle-orm";
+import { and, asc, count, desc, eq, isNull, ne, sql } from "drizzle-orm";
+import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
 import {
   courseModules,
@@ -8,6 +9,8 @@ import {
   exercises,
   lessonProgress,
   lessons,
+  quizAttempts,
+  quizQuestions,
   users,
 } from "../../db/schema/index.js";
 import {
@@ -1023,6 +1026,294 @@ export const learningPlugin = (
       }
 
       return reply.send({ progress });
+    },
+  );
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // INSTRUCTOR VIEWS
+  // ═════════════════════════════════════════════════════════════════════════
+
+  // GET /courses/:courseId/students
+  // Returns enrolled students with completion % — admin + course instructor
+  fastify.get(
+    "/courses/:courseId/students",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { courseId } = request.params as { courseId: string };
+      const { role, sub } = request.jwtPayload;
+
+      const course = await findActiveCourse(fastify.db, courseId);
+      if (course === undefined) {
+        return reply.status(404).send({ error: "Course not found" });
+      }
+      if (!canManageCourse(course, sub, role)) {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      // Fetch enrolments with student info
+      const rows = await fastify.db
+        .select({
+          enrolmentId: enrolments.id,
+          status: enrolments.status,
+          enrolledAt: enrolments.createdAt,
+          completedAt: enrolments.completedAt,
+          studentId: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        })
+        .from(enrolments)
+        .innerJoin(users, eq(users.id, enrolments.studentId))
+        .where(
+          and(eq(enrolments.courseId, courseId), isNull(enrolments.deletedAt)),
+        )
+        .orderBy(asc(users.lastName), asc(users.firstName));
+
+      // Attach completion % per enrolment
+      const withProgress = await Promise.all(
+        rows.map(async (row) => {
+          const progress = await fastify.db
+            .select()
+            .from(lessonProgress)
+            .where(eq(lessonProgress.enrolmentId, row.enrolmentId));
+          return { ...row, completionPct: computeCompletion(progress) };
+        }),
+      );
+
+      return reply.send({ students: withProgress });
+    },
+  );
+
+  // GET /courses/:courseId/progress
+  // Aggregate progress stats for a course — admin + course instructor
+  fastify.get(
+    "/courses/:courseId/progress",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { courseId } = request.params as { courseId: string };
+      const { role, sub } = request.jwtPayload;
+
+      const course = await findActiveCourse(fastify.db, courseId);
+      if (course === undefined) {
+        return reply.status(404).send({ error: "Course not found" });
+      }
+      if (!canManageCourse(course, sub, role)) {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const [totals] = await fastify.db
+        .select({
+          total: count(),
+          completed: sql<number>`sum(case when ${enrolments.status} = 'completed' then 1 else 0 end)::int`,
+          active: sql<number>`sum(case when ${enrolments.status} = 'active' then 1 else 0 end)::int`,
+          cancelled: sql<number>`sum(case when ${enrolments.status} = 'cancelled' then 1 else 0 end)::int`,
+        })
+        .from(enrolments)
+        .where(
+          and(eq(enrolments.courseId, courseId), isNull(enrolments.deletedAt)),
+        );
+
+      // Lesson-level completion breakdown
+      const lessonStats = await fastify.db
+        .select({
+          lessonId: lessonProgress.lessonId,
+          completedCount: count(),
+        })
+        .from(lessonProgress)
+        .innerJoin(
+          enrolments,
+          and(
+            eq(enrolments.id, lessonProgress.enrolmentId),
+            eq(enrolments.courseId, courseId),
+          ),
+        )
+        .where(eq(lessonProgress.status, "completed"))
+        .groupBy(lessonProgress.lessonId)
+        .orderBy(desc(count()));
+
+      return reply.send({
+        totals: {
+          enrolled: totals?.total ?? 0,
+          completed: totals?.completed ?? 0,
+          active: totals?.active ?? 0,
+          cancelled: totals?.cancelled ?? 0,
+        },
+        lessonCompletions: lessonStats,
+      });
+    },
+  );
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // STUDENT: MY ENROLMENTS
+  // ═════════════════════════════════════════════════════════════════════════
+
+  // GET /enrolments/my
+  // Returns a student's own enrolments with course details + completion %
+  // Must be registered BEFORE /enrolments/:enrolmentId to avoid "my" being
+  // treated as a UUID param.
+  fastify.get(
+    "/enrolments/my",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { sub } = request.jwtPayload;
+
+      const rows = await fastify.db
+        .select({
+          enrolmentId: enrolments.id,
+          status: enrolments.status,
+          enrolledAt: enrolments.createdAt,
+          completedAt: enrolments.completedAt,
+          expiresAt: enrolments.expiresAt,
+          courseId: courses.id,
+          courseTitle: courses.title,
+          courseSlug: courses.slug,
+          courseDescription: courses.description,
+          courseThumbnailUrl: courses.thumbnailUrl,
+          courseLanguage: courses.language,
+        })
+        .from(enrolments)
+        .innerJoin(courses, eq(courses.id, enrolments.courseId))
+        .where(and(eq(enrolments.studentId, sub), isNull(enrolments.deletedAt)))
+        .orderBy(desc(enrolments.createdAt));
+
+      const withProgress = await Promise.all(
+        rows.map(async (row) => {
+          const progress = await fastify.db
+            .select()
+            .from(lessonProgress)
+            .where(eq(lessonProgress.enrolmentId, row.enrolmentId));
+          return { ...row, completionPct: computeCompletion(progress) };
+        }),
+      );
+
+      return reply.send({ enrolments: withProgress });
+    },
+  );
+
+  // ═════════════════════════════════════════════════════════════════════════
+  // QUIZ SUBMISSION
+  // ═════════════════════════════════════════════════════════════════════════
+
+  // POST /exercises/:exerciseId/attempt
+  // Submit a quiz attempt; calculates score, stores result, marks lesson progress
+  fastify.post(
+    "/exercises/:exerciseId/attempt",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { exerciseId } = request.params as { exerciseId: string };
+      const { sub, role } = request.jwtPayload;
+
+      const attemptSchema = z.object({
+        enrolmentId: z.string().uuid(),
+        // { [questionId]: selectedOptionId }
+        answers: z.record(z.string(), z.string()),
+      });
+
+      const parse = attemptSchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+      const { enrolmentId, answers } = parse.data;
+
+      // Verify enrolment ownership
+      const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
+      if (enrolment === undefined) {
+        return reply.status(404).send({ error: "Enrolment not found" });
+      }
+      if (role !== "admin" && enrolment.studentId !== sub) {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      // Fetch exercise
+      const exerciseRows = await fastify.db
+        .select()
+        .from(exercises)
+        .where(eq(exercises.id, exerciseId))
+        .limit(1);
+      const exercise = exerciseRows[0];
+      if (exercise === undefined) {
+        return reply.status(404).send({ error: "Exercise not found" });
+      }
+      if (exercise.type !== "quiz") {
+        return reply.status(400).send({ error: "Exercise is not a quiz" });
+      }
+
+      // Fetch questions and grade
+      const questions = await fastify.db
+        .select()
+        .from(quizQuestions)
+        .where(eq(quizQuestions.exerciseId, exerciseId))
+        .orderBy(asc(quizQuestions.position));
+
+      let score = 0;
+      const maxScore = questions.length;
+      const feedback: {
+        questionId: string;
+        correct: boolean;
+        correctOptionId: string;
+        explanation: string | null;
+      }[] = [];
+
+      for (const q of questions) {
+        const selected = answers[q.id];
+        const correct = selected === q.correctOptionId;
+        if (correct) score += 1;
+        feedback.push({
+          questionId: q.id,
+          correct,
+          correctOptionId: q.correctOptionId,
+          explanation: q.explanation ?? null,
+        });
+      }
+
+      // Persist attempt
+      const attemptReturned = await fastify.db
+        .insert(quizAttempts)
+        .values({
+          exerciseId,
+          studentId: sub,
+          enrolmentId,
+          answers: JSON.stringify(answers),
+          score,
+          maxScore,
+          completedAt: new Date(),
+        })
+        .returning();
+      const attempt = attemptReturned[0];
+      if (attempt === undefined) throw new Error("Insert returned no rows");
+
+      // Mark the parent lesson as completed if passed (≥ 70%)
+      const passed = maxScore === 0 || score / maxScore >= 0.7;
+      if (passed) {
+        await upsertLessonProgress(
+          fastify.db,
+          enrolmentId,
+          exercise.lessonId,
+          "completed",
+          0,
+        );
+      }
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "learning.quiz.attempted",
+        entityType: "quiz_attempt",
+        entityId: attempt.id,
+        dataClassification: "pii:pseudonymous",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.status(201).send({
+        attempt: {
+          id: attempt.id,
+          score,
+          maxScore,
+          passed,
+          completedAt: attempt.completedAt,
+        },
+        feedback,
+      });
     },
   );
 
