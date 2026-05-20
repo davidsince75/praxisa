@@ -170,3 +170,74 @@ export interface SarExport {
   policyConsents: { policyId: string; consentedAt: string }[];
   auditEvents: { id: string; eventType: string; eventAt: string }[];
 }
+
+// ── Learning: modules + lessons ────────────────────────────────────────────────
+
+export interface CourseModule {
+  id: string;
+  courseId: string;
+  title: string;
+  description: string | null;
+  position: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type LessonContentType = "text" | "video" | "pdf" | "audio" | "quiz";
+
+export interface LessonItem {
+  id: string;
+  moduleId: string;
+  title: string;
+  description: string | null;
+  position: number;
+  contentType: LessonContentType;
+  contentUrl: string | null;
+  contentBody: string | null;
+  durationMinutes: number | null;
+  isFreePreview: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ModuleWithLessons extends CourseModule {
+  lessons: LessonItem[];
+}
+
+export interface CourseDetail extends Course {
+  modules: ModuleWithLessons[];
+}
+
+export interface CourseDetailResponse {
+  course: CourseDetail;
+}
+
+// GET /v1/courses/:courseId/students
+export interface CourseStudent {
+  enrolmentId: string;
+  status: "active" | "completed" | "cancelled";
+  enrolledAt: string;
+  completedAt: string | null;
+  studentId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  completionPct: number;
+}
+
+export interface CourseStudentsResponse {
+  students: CourseStudent[];
+}
+
+// GET /v1/courses/:courseId/progress
+export interface CourseProgressTotals {
+  enrolled: number;
+  completed: number;
+  active: number;
+  cancelled: number;
+}
+
+export interface CourseProgressStats {
+  totals: CourseProgressTotals;
+  lessonCompletions: { lessonId: string; completedCount: number }[];
+}
