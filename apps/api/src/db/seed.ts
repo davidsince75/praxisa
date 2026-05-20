@@ -89,7 +89,8 @@ async function upsertCourse(data: {
     })
     .returning({ id: courses.id });
   const row = rows[0];
-  if (row === undefined) throw new Error("upsertCourse: insert returned no row");
+  if (row === undefined)
+    throw new Error("upsertCourse: insert returned no row");
   return row.id;
 }
 
@@ -104,7 +105,8 @@ async function insertModule(
     .values({ courseId, title, description, position })
     .returning({ id: courseModules.id });
   const row = rows[0];
-  if (row === undefined) throw new Error("insertModule: insert returned no row");
+  if (row === undefined)
+    throw new Error("insertModule: insert returned no row");
   return row.id;
 }
 
@@ -134,7 +136,8 @@ async function insertLesson(data: {
     })
     .returning({ id: lessons.id });
   const row = rows[0];
-  if (row === undefined) throw new Error("insertLesson: insert returned no row");
+  if (row === undefined)
+    throw new Error("insertLesson: insert returned no row");
   return row.id;
 }
 
@@ -150,7 +153,8 @@ async function insertExercise(
     .values({ lessonId, title, type, position, maxScore, isRequired: true })
     .returning({ id: exercises.id });
   const row = rows[0];
-  if (row === undefined) throw new Error("insertExercise: insert returned no row");
+  if (row === undefined)
+    throw new Error("insertExercise: insert returned no row");
   return row.id;
 }
 
@@ -1230,4 +1234,6 @@ seed()
     console.error("Seed failed:", err);
     process.exit(1);
   })
-  .finally(() => { void pool.end(); });
+  .finally(() => {
+    void pool.end();
+  });
