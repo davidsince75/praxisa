@@ -555,3 +555,35 @@ export interface AiAdminDraft {
 export interface AiAdminDraftResponse {
   draft: AiAdminDraft;
 }
+
+// ── Campaigns ──────────────────────────────────────────────────────────────────
+
+export type CampaignStatus = "draft" | "sending" | "sent" | "failed";
+export type CampaignTarget = "all_students" | "course_enrolled";
+
+export interface Campaign {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  targetType: CampaignTarget;
+  targetCourseId: string | null;
+  status: CampaignStatus;
+  recipientCount: number | null;
+  sentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CampaignsResponse {
+  campaigns: Campaign[];
+}
+
+export interface CampaignResponse {
+  campaign: Campaign;
+}
+
+export interface CampaignSendResponse {
+  sent: number;
+  recipientCount: number;
+}

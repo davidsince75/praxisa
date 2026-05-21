@@ -9,6 +9,7 @@ import {
   BarChart2,
   MessageSquare,
   Bot,
+  Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -20,6 +21,7 @@ const nav = [
   { to: "/analytics", label: "Analytiques", icon: BarChart2, end: false },
   { to: "/messages", label: "Messages", icon: MessageSquare, end: false },
   { to: "/ai-assistant", label: "IA", icon: Bot, end: false },
+  { to: "/campaigns", label: "Campagnes", icon: Mail, end: false },
   { to: "/gdpr", label: "DSR Queue", icon: ShieldCheck, end: false },
   { to: "/audit", label: "Audit Log", icon: ScrollText, end: false },
 ];

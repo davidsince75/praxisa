@@ -27,6 +27,7 @@ import { LearnMessagesPage } from "@/pages/learn/LearnMessages.js";
 import { LearnAIChatPage } from "@/pages/learn/LearnAIChat.js";
 import { TeacherAIIngestPage } from "@/pages/teacher/TeacherAIIngest.js";
 import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
+import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -70,6 +71,7 @@ export function App() {
                 <Route path="/gdpr/:userId" element={<DsrDetailPage />} />
                 <Route path="/audit" element={<AuditLogPage />} />
                 <Route path="/ai-assistant" element={<AdminAIDraftPage />} />
+                <Route path="/campaigns" element={<AdminCampaignsPage />} />
               </Routes>
             </Shell>
           </RequireAdmin>

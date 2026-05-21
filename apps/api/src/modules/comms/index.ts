@@ -6,6 +6,7 @@ import {
   sendPasswordResetEmail,
   sendEnrolmentConfirmation,
   sendCourseCompletionEmail,
+  sendCampaignEmail,
 } from "./service.js";
 
 export interface CommsPluginOptions {
@@ -33,6 +34,11 @@ export interface CommsService {
     to: { email: string; firstName: string },
     courseTitle: string,
   ) => Promise<void>;
+  sendCampaignEmail: (
+    to: { email: string; name: string },
+    subject: string,
+    body: string,
+  ) => Promise<void>;
 }
 
 export const commsPlugin = fp(
@@ -57,6 +63,8 @@ export const commsPlugin = fp(
         sendEnrolmentConfirmation(config, to, course),
       sendCourseCompletionEmail: (to, courseTitle) =>
         sendCourseCompletionEmail(config, to, courseTitle),
+      sendCampaignEmail: (to, subject, body) =>
+        sendCampaignEmail(config, to, subject, body),
     };
 
     fastify.decorate("comms", service);

@@ -8,6 +8,8 @@ import {
   enrolmentConfirmationText,
   courseCompletionHtml,
   courseCompletionText,
+  campaignEmailHtml,
+  campaignEmailText,
 } from "./templates.js";
 
 export interface CommsConfig {
@@ -93,5 +95,23 @@ export async function sendCourseCompletionEmail(
     htmlContent: courseCompletionHtml(to.firstName, courseTitle),
     textContent: courseCompletionText(to.firstName, courseTitle),
     tags: ["course-completion"],
+  });
+}
+
+// ── Campaign broadcast ─────────────────────────────────────────────────────────
+
+export async function sendCampaignEmail(
+  config: CommsConfig,
+  to: { email: string; name: string },
+  subject: string,
+  body: string,
+): Promise<void> {
+  await sendBrevoEmail(config.brevoApiKey, {
+    sender: { email: config.senderEmail, name: config.senderName },
+    to: [{ email: to.email, name: to.name }],
+    subject,
+    htmlContent: campaignEmailHtml(subject, body),
+    textContent: campaignEmailText(body),
+    tags: ["campaign"],
   });
 }

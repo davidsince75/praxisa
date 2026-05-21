@@ -152,3 +152,25 @@ export function courseCompletionText(
     `Vous avez terminé la formation "${courseName}".`,
   ]);
 }
+
+// ── Campaign email ─────────────────────────────────────────────────────────────
+
+export function campaignEmailHtml(subject: string, body: string): string {
+  // Convert newlines to <br> for HTML rendering
+  const htmlBody = body
+    .split("\n")
+    .map(
+      (line) =>
+        `<p style="color:#374151;font-size:16px;margin:0 0 12px">${line.length > 0 ? line : "&nbsp;"}</p>`,
+    )
+    .join("");
+  return base(
+    subject,
+    `<p style="color:#1a1a2e;font-size:20px;font-weight:bold;margin:0 0 20px">${subject}</p>
+     ${htmlBody}`,
+  );
+}
+
+export function campaignEmailText(body: string): string {
+  return text([body]);
+}
