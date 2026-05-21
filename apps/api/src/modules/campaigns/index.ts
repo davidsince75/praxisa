@@ -71,11 +71,9 @@ export function campaignsPlugin(fastify: FastifyInstance) {
       const { name, subject, body, targetType, targetCourseId } = parse.data;
 
       if (targetType === "course_enrolled" && targetCourseId === undefined) {
-        return reply
-          .status(400)
-          .send({
-            error: "targetCourseId required for course_enrolled target",
-          });
+        return reply.status(400).send({
+          error: "targetCourseId required for course_enrolled target",
+        });
       }
 
       const returned = await fastify.db
