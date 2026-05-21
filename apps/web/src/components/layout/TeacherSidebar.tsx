@@ -1,10 +1,16 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { BookOpen, LayoutDashboard, LogOut } from "lucide-react";
+import { BookOpen, LayoutDashboard, LogOut, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 
 const nav = [
   { to: "/teacher/courses", label: "Mes cours", icon: BookOpen, end: false },
+  {
+    to: "/teacher/analytics",
+    label: "Analytiques",
+    icon: BarChart2,
+    end: false,
+  },
 ];
 
 export function TeacherSidebar() {

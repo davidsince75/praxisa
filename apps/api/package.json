@@ -13,7 +13,7 @@
     "test:integration": "vitest run --reporter=verbose src/**/*.integration.test.ts",
     "test:watch": "vitest watch",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate": "tsx --env-file=../../.env src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx --env-file=../../.env src/db/seed.ts"
   },

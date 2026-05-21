@@ -16,6 +16,9 @@ import { TeacherCourseBuilderPage } from "@/pages/teacher/TeacherCourseBuilder.j
 import { LearnCatalogPage } from "@/pages/learn/LearnCatalog.js";
 import { LearnMyCoursesPage } from "@/pages/learn/LearnMyCourses.js";
 import { LearnCoursePlayerPage } from "@/pages/learn/LearnCoursePlayer.js";
+import { AdminAnalytics } from "@/pages/analytics/AdminAnalytics.js";
+import { TeacherAnalytics } from "@/pages/analytics/TeacherAnalytics.js";
+import { LearnProgress } from "@/pages/analytics/LearnProgress.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -53,6 +56,7 @@ export function App() {
                 <Route path="/" element={<DashboardPage />} />
                 <Route path="/users" element={<UserManagementPage />} />
                 <Route path="/courses" element={<CourseManagementPage />} />
+                <Route path="/analytics" element={<AdminAnalytics />} />
                 <Route path="/gdpr" element={<DsrQueuePage />} />
                 <Route path="/gdpr/:userId" element={<DsrDetailPage />} />
                 <Route path="/audit" element={<AuditLogPage />} />
@@ -78,6 +82,7 @@ export function App() {
                   path="/courses/:courseId/builder"
                   element={<TeacherCourseBuilderPage />}
                 />
+                <Route path="/analytics" element={<TeacherAnalytics />} />
               </Routes>
             </TeacherShell>
           </RequireTeacher>
@@ -97,6 +102,7 @@ export function App() {
                   path="/courses/:enrolmentId"
                   element={<LearnCoursePlayerPage />}
                 />
+                <Route path="/progress" element={<LearnProgress />} />
               </Routes>
             </LearnShell>
           </RequireStudent>

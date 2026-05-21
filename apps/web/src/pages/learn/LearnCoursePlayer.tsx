@@ -373,9 +373,10 @@ function LessonViewer({
           {lesson.contentType === "text" && (
             <>
               {lesson.contentBody !== null ? (
-                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed text-dark">
-                  {lesson.contentBody}
-                </pre>
+                <div
+                  className="prose prose-sm max-w-none text-dark"
+                  dangerouslySetInnerHTML={{ __html: lesson.contentBody }}
+                />
               ) : (
                 <p className="text-meta italic text-sm">
                   Aucun contenu disponible.
