@@ -524,3 +524,34 @@ export interface SubmissionDetailResponse {
 export interface SubmissionStatsResponse {
   stats: { submitted: number; grading: number; graded: number };
 }
+
+// ── AI Assistant ───────────────────────────────────────────────────────────────
+
+export interface AiQueryChunk {
+  lessonId: string;
+  chunkIndex: number;
+  chunkText: string;
+  similarity: number;
+}
+
+export interface AiQueryResponse {
+  answer: string;
+  chunks: AiQueryChunk[];
+  escalated: boolean;
+}
+
+export interface AiIngestResponse {
+  lessonId: string;
+  chunkCount: number;
+}
+
+export interface AiAdminDraft {
+  draft: string;
+  intentClassification: string;
+  requiresReview: true;
+  policyPassed: boolean;
+}
+
+export interface AiAdminDraftResponse {
+  draft: AiAdminDraft;
+}

@@ -24,6 +24,9 @@ import { AdminMessagesPage } from "@/pages/messages/AdminMessages.js";
 import { TeacherMessagesPage } from "@/pages/teacher/TeacherMessages.js";
 import { TeacherGradingPage } from "@/pages/teacher/TeacherGrading.js";
 import { LearnMessagesPage } from "@/pages/learn/LearnMessages.js";
+import { LearnAIChatPage } from "@/pages/learn/LearnAIChat.js";
+import { TeacherAIIngestPage } from "@/pages/teacher/TeacherAIIngest.js";
+import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -66,6 +69,7 @@ export function App() {
                 <Route path="/gdpr" element={<DsrQueuePage />} />
                 <Route path="/gdpr/:userId" element={<DsrDetailPage />} />
                 <Route path="/audit" element={<AuditLogPage />} />
+                <Route path="/ai-assistant" element={<AdminAIDraftPage />} />
               </Routes>
             </Shell>
           </RequireAdmin>
@@ -94,6 +98,7 @@ export function App() {
                   path="/courses/:courseId/grading"
                   element={<TeacherGradingPage />}
                 />
+                <Route path="/ai" element={<TeacherAIIngestPage />} />
               </Routes>
             </TeacherShell>
           </RequireTeacher>
@@ -119,6 +124,7 @@ export function App() {
                 />
                 <Route path="/progress" element={<LearnProgress />} />
                 <Route path="/messages" element={<LearnMessagesPage />} />
+                <Route path="/ai" element={<LearnAIChatPage />} />
               </Routes>
             </LearnShell>
           </RequireStudent>

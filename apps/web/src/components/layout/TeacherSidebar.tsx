@@ -5,6 +5,7 @@ import {
   LogOut,
   BarChart2,
   MessageSquare,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -23,6 +24,7 @@ const nav = [
     icon: MessageSquare,
     end: false,
   },
+  { to: "/teacher/ai", label: "IA", icon: Bot, end: false },
 ];
 
 export function TeacherSidebar() {

@@ -5,6 +5,7 @@ import {
   LogOut,
   TrendingUp,
   MessageSquare,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -34,6 +35,7 @@ const nav = [
     icon: MessageSquare,
     end: false,
   },
+  { to: "/learn/ai", label: "IA", icon: Bot, end: false },
 ];
 
 export function LearnSidebar() {

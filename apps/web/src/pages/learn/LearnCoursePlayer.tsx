@@ -14,6 +14,7 @@ import {
   Music,
   HelpCircle,
   PenLine,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
@@ -475,7 +476,16 @@ function LessonViewer({
             </span>
           )}
         </div>
-        <h2 className="text-xl font-bold text-dark">{lesson.title}</h2>
+        <div className="flex items-start justify-between gap-3">
+          <h2 className="text-xl font-bold text-dark">{lesson.title}</h2>
+          <Link
+            to={`/learn/ai?lessonId=${lesson.id}&lessonTitle=${encodeURIComponent(lesson.title)}`}
+            className="flex items-center gap-1.5 flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors border border-teal/30 rounded px-2 py-1"
+          >
+            <Bot size={11} />
+            Ask AI
+          </Link>
+        </div>
         {lesson.description !== null && (
           <p className="text-meta text-sm mt-1">{lesson.description}</p>
         )}
