@@ -13,9 +13,9 @@
     "test:integration": "vitest run --reporter=verbose src/**/*.integration.test.ts",
     "test:watch": "vitest watch",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx --env-file=../../.env src/db/migrate.ts",
+    "db:migrate": "tsx --env-file-if-exists=../../.env src/db/migrate.ts",
     "db:studio": "drizzle-kit studio",
-    "db:seed": "tsx --env-file=../../.env src/db/seed.ts"
+    "db:seed": "tsx --env-file-if-exists=../../.env src/db/seed.ts"
   },
   "dependencies": {
     "@fastify/cors": "^10.0.0",
