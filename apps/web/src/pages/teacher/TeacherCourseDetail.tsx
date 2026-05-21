@@ -11,6 +11,7 @@ import {
   XCircle,
   UserPlus,
   X,
+  Star,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
@@ -18,6 +19,7 @@ import type {
   CourseStudentsResponse,
   CourseProgressStats,
   TeacherEnrolResponse,
+  CourseRatingsResponse,
 } from "@/lib/api.js";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
@@ -171,10 +173,13 @@ function EnrolModal({ courseId, onClose }: EnrolModalProps) {
   );
 }
 
+type Tab = "students" | "ratings";
+
 export function TeacherCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const id = courseId ?? "";
   const [showEnrolModal, setShowEnrolModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<Tab>("students");
   const queryClient = useQueryClient();
 
   const { data: courseData } = useQuery({
@@ -204,6 +209,12 @@ export function TeacherCourseDetailPage() {
         queryKey: ["course-progress", id],
       });
     },
+  });
+
+  const { data: ratingsData } = useQuery({
+    queryKey: ["course-ratings", id],
+    queryFn: () => api.get<CourseRatingsResponse>(`/courses/${id}/ratings`),
+    enabled: id.length > 0 && activeTab === "ratings",
   });
 
   const course = courseData?.course;
@@ -300,79 +311,180 @@ export function TeacherCourseDetailPage() {
           </div>
         )}
 
+        {/* Tabs */}
+        <div className="flex gap-4 border-b border-rule">
+          <button
+            onClick={() => {
+              setActiveTab("students");
+            }}
+            className={`pb-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+              activeTab === "students"
+                ? "text-teal border-b-2 border-teal"
+                : "text-meta hover:text-dark"
+            }`}
+          >
+            Apprenants
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab("ratings");
+            }}
+            className={`pb-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+              activeTab === "ratings"
+                ? "text-teal border-b-2 border-teal"
+                : "text-meta hover:text-dark"
+            }`}
+          >
+            Évaluations
+          </button>
+        </div>
+
         {/* Student table */}
-        <Card>
-          <CardContent className="p-0">
-            {isLoading ? (
-              <p className="text-meta text-sm p-6">Chargement...</p>
-            ) : students.length === 0 ? (
-              <p className="text-meta text-sm p-6">Aucun apprenant inscrit.</p>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-rule">
-                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                        Apprenant
-                      </th>
-                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                        Email
-                      </th>
-                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                        Statut
-                      </th>
-                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                        Inscrit le
-                      </th>
-                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta min-w-[160px]">
-                        Progression
-                      </th>
-                      <th className="px-6 py-3" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-rule">
-                    {students.map((s) => (
-                      <tr
-                        key={s.enrolmentId}
-                        className="hover:bg-cream/50 transition-colors"
-                      >
-                        <td className="px-6 py-3 font-medium text-dark">
-                          {s.firstName} {s.lastName}
-                        </td>
-                        <td className="px-6 py-3 text-meta">{s.email}</td>
-                        <td className="px-6 py-3">
-                          <Badge variant={enrolStatusVariant(s.status)}>
-                            {ENROL_LABELS[s.status] ?? s.status}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-3 text-meta">
-                          {formatDate(s.enrolledAt)}
-                        </td>
-                        <td className="px-6 py-3">
-                          <ProgressBar pct={s.completionPct} />
-                        </td>
-                        <td className="px-6 py-3 text-right">
-                          {s.status !== "cancelled" && (
-                            <button
-                              onClick={() => {
-                                removeMutation.mutate(s.enrolmentId);
-                              }}
-                              disabled={removeMutation.isPending}
-                              className="text-meta hover:text-rose transition-colors"
-                              title="Desinscrire"
-                            >
-                              <X size={14} />
-                            </button>
-                          )}
-                        </td>
+        {activeTab === "students" && (
+          <Card>
+            <CardContent className="p-0">
+              {isLoading ? (
+                <p className="text-meta text-sm p-6">Chargement...</p>
+              ) : students.length === 0 ? (
+                <p className="text-meta text-sm p-6">
+                  Aucun apprenant inscrit.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-rule">
+                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                          Apprenant
+                        </th>
+                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                          Email
+                        </th>
+                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                          Statut
+                        </th>
+                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                          Inscrit le
+                        </th>
+                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta min-w-[160px]">
+                          Progression
+                        </th>
+                        <th className="px-6 py-3" />
                       </tr>
+                    </thead>
+                    <tbody className="divide-y divide-rule">
+                      {students.map((s) => (
+                        <tr
+                          key={s.enrolmentId}
+                          className="hover:bg-cream/50 transition-colors"
+                        >
+                          <td className="px-6 py-3 font-medium text-dark">
+                            {s.firstName} {s.lastName}
+                          </td>
+                          <td className="px-6 py-3 text-meta">{s.email}</td>
+                          <td className="px-6 py-3">
+                            <Badge variant={enrolStatusVariant(s.status)}>
+                              {ENROL_LABELS[s.status] ?? s.status}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-3 text-meta">
+                            {formatDate(s.enrolledAt)}
+                          </td>
+                          <td className="px-6 py-3">
+                            <ProgressBar pct={s.completionPct} />
+                          </td>
+                          <td className="px-6 py-3 text-right">
+                            {s.status !== "cancelled" && (
+                              <button
+                                onClick={() => {
+                                  removeMutation.mutate(s.enrolmentId);
+                                }}
+                                disabled={removeMutation.isPending}
+                                className="text-meta hover:text-rose transition-colors"
+                                title="Desinscrire"
+                              >
+                                <X size={14} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Ratings tab */}
+        {activeTab === "ratings" && (
+          <Card>
+            <CardContent className="p-6">
+              {ratingsData === undefined ? (
+                <p className="text-meta text-sm">Chargement...</p>
+              ) : ratingsData.totalCount === 0 ? (
+                <p className="text-meta text-sm">
+                  Aucune évaluation pour le moment
+                </p>
+              ) : (
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl font-bold text-dark">
+                      {String(ratingsData.averageRating)}
+                    </span>
+                    <div>
+                      <div className="flex gap-0.5">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <Star
+                            key={n}
+                            size={16}
+                            className={
+                              n <= Math.round(ratingsData.averageRating)
+                                ? "text-yellow-400 fill-yellow-400"
+                                : "text-meta/20"
+                            }
+                          />
+                        ))}
+                      </div>
+                      <p className="text-xs text-meta mt-0.5">
+                        ({String(ratingsData.totalCount)} évaluation
+                        {ratingsData.totalCount !== 1 ? "s" : ""})
+                      </p>
+                    </div>
+                  </div>
+                  <div className="divide-y divide-rule">
+                    {ratingsData.ratings.map((r) => (
+                      <div key={r.id} className="py-4 first:pt-0 last:pb-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <div className="flex gap-0.5">
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star
+                                key={n}
+                                size={12}
+                                className={
+                                  n <= r.rating
+                                    ? "text-yellow-400 fill-yellow-400"
+                                    : "text-meta/20"
+                                }
+                              />
+                            ))}
+                          </div>
+                          <span className="text-[11px] text-meta">
+                            {formatDate(r.createdAt)}
+                          </span>
+                        </div>
+                        {r.comment !== null && (
+                          <p className="text-sm text-dark">{r.comment}</p>
+                        )}
+                      </div>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </>
   );

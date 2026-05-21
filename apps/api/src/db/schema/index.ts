@@ -9,3 +9,4 @@ export * from "./messaging.js";
 export * from "./submissions.js";
 export * from "./campaigns.js";
 export * from "./notifications.js";
+export * from "./ratings.js";

@@ -24,6 +24,7 @@ import { messagingPlugin } from "./modules/messaging/index.js";
 import { submissionsPlugin } from "./modules/submissions/index.js";
 import { campaignsPlugin } from "./modules/campaigns/index.js";
 import { notificationsPlugin } from "./modules/notifications/index.js";
+import { ratingsPlugin } from "./modules/ratings/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -75,6 +76,7 @@ await app.register(messagingPlugin, { prefix: "/v1" });
 await app.register(submissionsPlugin, { prefix: "/v1" });
 await app.register(campaignsPlugin, { prefix: "/v1" });
 await app.register(notificationsPlugin, { prefix: "/v1" });
+await app.register(ratingsPlugin, { prefix: "/v1" });
 await app.register(aiPlugin, {
   prefix: "/v1",
   ...(config.mistralApiKey !== undefined

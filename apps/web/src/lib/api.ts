@@ -611,3 +611,25 @@ export interface NotificationsResponse {
   notifications: Notification[];
   unreadCount: number;
 }
+
+// ── Course Ratings ────────────────────────────────────────────────────────────
+
+export interface CourseRating {
+  id: string;
+  courseId: string;
+  studentId: string;
+  rating: number;
+  comment: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CourseRatingsResponse {
+  ratings: CourseRating[];
+  averageRating: number;
+  totalCount: number;
+}
+
+export interface MyRatingResponse {
+  rating: CourseRating | null;
+}
