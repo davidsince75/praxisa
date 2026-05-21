@@ -1,7 +1,13 @@
 import type { FastifyInstance } from "fastify";
 import { and, eq, or, sql, isNull } from "drizzle-orm";
 import { z } from "zod";
-import { messageThreads, messages, users, enrolments, courses } from "../../db/schema/index.js";
+import {
+  messageThreads,
+  messages,
+  users,
+  enrolments,
+  courses,
+} from "../../db/schema/index.js";
 
 const createThreadSchema = z.object({
   recipientId: z.string().uuid(),
@@ -45,8 +51,6 @@ export function messagingPlugin(fastify: FastifyInstance) {
         return reply.send({ threads: [] });
       }
 
-      const threadIds = threadRows.map((t) => t.id);
-
       // Collect other-participant IDs
       const otherIds = threadRows.map((t) =>
         t.participantA === userId ? t.participantB : t.participantA,
@@ -63,8 +67,8 @@ export function messagingPlugin(fastify: FastifyInstance) {
         })
         .from(users)
         .where(
-          uniqueOtherIds.length === 1
-            ? eq(users.id, uniqueOtherIds[0]!)
+          uniqueOtherIds.length === 1 && uniqueOtherIds[0] !== undefined
+            ? eq(users.id, uniqueOtherIds[0])
             : sql`${users.id} = ANY(ARRAY[${sql.join(
                 uniqueOtherIds.map((id) => sql`${id}::uuid`),
                 sql`, `,
@@ -156,7 +160,8 @@ export function messagingPlugin(fastify: FastifyInstance) {
 
         if (enrolRows.length === 0) {
           return reply.status(403).send({
-            error: "You can only message instructors of courses you are enrolled in",
+            error:
+              "You can only message instructors of courses you are enrolled in",
           });
         }
       } else if (role === "instructor") {
