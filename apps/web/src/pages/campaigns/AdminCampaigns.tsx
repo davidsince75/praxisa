@@ -105,7 +105,9 @@ function CreateForm({ onClose }: CreateFormProps) {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                }}
                 placeholder="Ex : Relance juin 2025"
                 className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
@@ -117,7 +119,9 @@ function CreateForm({ onClose }: CreateFormProps) {
               <input
                 type="text"
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) => {
+                  setSubject(e.target.value);
+                }}
                 placeholder="Ex : Votre prochaine formation vous attend"
                 className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
@@ -130,7 +134,9 @@ function CreateForm({ onClose }: CreateFormProps) {
             </label>
             <textarea
               value={body}
-              onChange={(e) => setBody(e.target.value)}
+              onChange={(e) => {
+                setBody(e.target.value);
+              }}
               rows={6}
               placeholder="Rédigez votre message ici…"
               className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
@@ -148,7 +154,9 @@ function CreateForm({ onClose }: CreateFormProps) {
                   name="target"
                   value="all_students"
                   checked={targetType === "all_students"}
-                  onChange={() => setTargetType("all_students")}
+                  onChange={() => {
+                    setTargetType("all_students");
+                  }}
                   className="accent-teal"
                 />
                 <Users size={13} />
@@ -160,7 +168,9 @@ function CreateForm({ onClose }: CreateFormProps) {
                   name="target"
                   value="course_enrolled"
                   checked={targetType === "course_enrolled"}
-                  onChange={() => setTargetType("course_enrolled")}
+                  onChange={() => {
+                    setTargetType("course_enrolled");
+                  }}
                   className="accent-teal"
                 />
                 <BookOpen size={13} />
@@ -170,7 +180,9 @@ function CreateForm({ onClose }: CreateFormProps) {
             {targetType === "course_enrolled" && (
               <select
                 value={targetCourseId}
-                onChange={(e) => setTargetCourseId(e.target.value)}
+                onChange={(e) => {
+                  setTargetCourseId(e.target.value);
+                }}
                 className="mt-2 w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark focus:outline-none focus:ring-2 focus:ring-teal/30"
               >
                 <option value="">-- Sélectionner un cours --</option>
@@ -342,7 +354,12 @@ export function AdminCampaignsPage() {
           </p>
         </div>
         {!showCreate && (
-          <Button size="sm" onClick={() => setShowCreate(true)}>
+          <Button
+            size="sm"
+            onClick={() => {
+              setShowCreate(true);
+            }}
+          >
             <Plus size={13} className="mr-1.5" />
             Nouvelle campagne
           </Button>
@@ -350,7 +367,13 @@ export function AdminCampaignsPage() {
       </div>
 
       {/* Create form */}
-      {showCreate && <CreateForm onClose={() => setShowCreate(false)} />}
+      {showCreate && (
+        <CreateForm
+          onClose={() => {
+            setShowCreate(false);
+          }}
+        />
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
