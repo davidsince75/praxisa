@@ -10,6 +10,7 @@ import {
   courseModules,
   users,
 } from "../../db/schema/index.js";
+import { createNotification } from "../notifications/service.js";
 
 const submitSchema = z.object({
   body: z.string().min(1).max(20000),
@@ -367,6 +368,18 @@ export function submissionsPlugin(fastify: FastifyInstance) {
         .from(submissions)
         .where(eq(submissions.id, submissionId))
         .limit(1);
+
+      if (updated[0] !== undefined) {
+        await createNotification(
+          fastify.db,
+          updated[0].studentId,
+          "grading_returned",
+          "Travail noté",
+          "Votre travail a été évalué.",
+          "submission",
+          submissionId,
+        );
+      }
 
       return reply.send({ submission: updated[0] });
     },

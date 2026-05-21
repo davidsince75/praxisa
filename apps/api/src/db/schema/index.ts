@@ -8,3 +8,4 @@ export * from "./consents.js";
 export * from "./messaging.js";
 export * from "./submissions.js";
 export * from "./campaigns.js";
+export * from "./notifications.js";

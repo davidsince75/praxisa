@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
+import { NotificationBell } from "@/components/layout/NotificationBell.js";
 
 const nav = [
   { to: "/teacher/courses", label: "Mes cours", icon: BookOpen, end: false },
@@ -86,6 +87,9 @@ export function TeacherSidebar() {
           </NavLink>
         )}
       </nav>
+
+      {/* Notifications */}
+      <NotificationBell />
 
       {/* User */}
       <div className="px-3 py-4 border-t border-white/10">

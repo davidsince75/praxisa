@@ -587,3 +587,27 @@ export interface CampaignSendResponse {
   sent: number;
   recipientCount: number;
 }
+
+// ── Notifications ─────────────────────────────────────────────────────────────
+
+export type NotificationType =
+  | "new_message"
+  | "grading_returned"
+  | "campaign_sent"
+  | "enrolment_created";
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  entityType: string | null;
+  entityId: string | null;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface NotificationsResponse {
+  notifications: Notification[];
+  unreadCount: number;
+}

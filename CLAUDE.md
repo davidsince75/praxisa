@@ -3,6 +3,7 @@
 ## Project Overview
 
 Praxisa is an LMS (learning management system) built as a client demo. It has three portals:
+
 - **Admin** (`/`) — platform management
 - **Teacher/Formateur** (`/teacher/*`) — course authoring + grading
 - **Learner/Apprenant** (`/learn/*`) — catalog, courses, AI chat, progress
@@ -14,6 +15,7 @@ Praxisa is an LMS (learning management system) built as a client demo. It has th
 ## CRITICAL: Known Bugs and Gotchas
 
 ### 1. NTFS File Truncation Bug
+
 The Edit tool truncates files on Windows NTFS. Never use Edit or Write for files longer than ~80 lines. Always use Python via Bash:
 
 ```bash
@@ -26,6 +28,7 @@ EOF
 The sandbox mount path for the workspace is: `/sessions/intelligent-cool-sagan/mnt/Praxisa/praxisa-platform/`
 
 ### 2. ESLint `no-confusing-void-expression`
+
 ANY shorthand arrow that calls a void function will fail CI. This includes React state setters, mutate(), navigate(), logout(), and window.print().
 
 ```tsx
@@ -41,10 +44,13 @@ onClick={() => { navigate("/login"); }}
 This rule fires on ALL shorthand arrows that return void — everywhere in the codebase. Write all event handlers with braces from the start. There are no exceptions.
 
 ### 3. Git Lock on Windows
+
 The .git/index.lock file can get stuck. The user commits from PowerShell. Do not attempt git commit via bash. Instead, output the exact git commands for the user to run in PowerShell.
 
 ### 4. ESLint Type-Aware Linting is Slow
+
 `pnpm lint` times out (>45s) for larger files in the sandbox. Workflow:
+
 1. Run `npx tsc --noEmit` (fast — catches type errors)
 2. Run `npx prettier --write <file>` (format)
 3. Manually verify no shorthand void arrows exist
@@ -55,6 +61,7 @@ The .git/index.lock file can get stuck. The user commits from PowerShell. Do not
 ## Coding Conventions
 
 ### Fastify Plugins
+
 ```typescript
 // CORRECT — synchronous outer function, no async
 export function myPlugin(fastify: FastifyInstance) {
@@ -70,9 +77,11 @@ export async function myPlugin(fastify: FastifyInstance) { ... }
 ```
 
 ### Named Exports Only
+
 No default exports anywhere. Always `export function X` or `export const X`.
 
 ### React / TanStack Query Pattern
+
 ```tsx
 const { data, isLoading, error } = useQuery<ResponseType>({
   queryKey: ["key", id],
@@ -81,33 +90,46 @@ const { data, isLoading, error } = useQuery<ResponseType>({
 
 const mutation = useMutation({
   mutationFn: (body: BodyType) => api.post<ResponseType>("/route", body),
-  onSuccess: () => { queryClient.invalidateQueries({ queryKey: ["key"] }); },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ["key"] });
+  },
 });
 ```
 
 ### Badge Variants
+
 Only these values are valid: `"default"` | `"pending"` | `"in_progress"` | `"completed"` | `"rejected"` | `"destructive"`
 
 ### API Client
+
 All shared types go in `apps/web/src/lib/api.ts`. Use `export interface`. The api client is:
+
 ```typescript
-api.get<T>(path)
-api.post<T>(path, body)
-api.patch<T>(path, body)
-api.delete<T>(path)
+api.get<T>(path);
+api.post<T>(path, body);
+api.patch<T>(path, body);
+api.delete<T>(path);
 ```
 
 ### Drizzle ORM
+
 - Column references in sql templates use camelCase
 - Always `.returning()` after `.insert()` when you need the row back
 - Migrations are hand-written SQL in `apps/api/src/db/migrations/`
 
 ### Migration Numbering
+
 Next migration is **0011**. After writing the SQL file, add an entry to:
 `apps/api/src/db/migrations/meta/_journal.json`
 
 ```json
-{"idx": 11, "version": "7", "when": 1748390400000, "tag": "0011_notifications", "breakpoints": true}
+{
+  "idx": 11,
+  "version": "7",
+  "when": 1748390400000,
+  "tag": "0011_notifications",
+  "breakpoints": true
+}
 ```
 
 Increment `when` by 86400000 (one day in ms) per migration. Phase 13 migration is idx 12, `when` 1748476800000.
@@ -117,6 +139,7 @@ Increment `when` by 86400000 (one day in ms) per migration. Phase 13 migration i
 ## Current State (Phase 11 complete, all CI green)
 
 Shipped phases:
+
 - Auth (JWT + argon2), Users CRUD, GDPR/DSR, Audit log, Policy consents
 - Courses, Lessons, Quizzes, Enrolments, Progress tracking
 - Submissions and Grading (Phase 9)
@@ -151,11 +174,16 @@ export const NOTIFICATION_TYPES = [
   "enrolment_created",
 ] as const;
 
-export const notificationTypeEnum = pgEnum("notification_type", NOTIFICATION_TYPES);
+export const notificationTypeEnum = pgEnum(
+  "notification_type",
+  NOTIFICATION_TYPES,
+);
 
 export const notifications = pgTable("notifications", {
   id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
   type: notificationTypeEnum("type").notNull(),
   title: text("title").notNull(),
   body: text("body").notNull(),
@@ -309,7 +337,14 @@ Goal: Learners rate a completed course 1–5 stars with optional comment. Teache
 New file `apps/api/src/db/schema/ratings.ts`:
 
 ```typescript
-import { pgTable, uuid, integer, text, timestamp, unique } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  uuid,
+  integer,
+  text,
+  timestamp,
+  unique,
+} from "drizzle-orm/pg-core";
 import { users } from "./users.js";
 import { courses } from "./learning.js";
 
@@ -460,12 +495,14 @@ Run `--write` on any failing files.
 #### Step 3 — API Unit Tests
 
 Write `apps/api/src/modules/notifications/notifications.test.ts` covering:
+
 - `GET /notifications` returns 200 with notifications array and unreadCount
 - `GET /notifications` returns 401 without auth
 - `PATCH /notifications/:id/read` returns 204
 - `POST /notifications/read-all` returns { updated: number }
 
 Write `apps/api/src/modules/ratings/ratings.test.ts` covering:
+
 - `POST /courses/:courseId/ratings` returns 201 for a student on a completed enrolment
 - `POST /courses/:courseId/ratings` returns 403 for a teacher
 - `POST /courses/:courseId/ratings` returns 400 for rating out of range (0 or 6)
@@ -482,6 +519,7 @@ Create `docs/test-checklist.md`:
 # Praxisa Demo Test Checklist
 
 ## Admin Portal
+
 - [ ] Login with admin credentials → redirects to dashboard
 - [ ] Create a new user (student role)
 - [ ] Create a new course, add a lesson, publish it
@@ -493,6 +531,7 @@ Create `docs/test-checklist.md`:
 - [ ] Logout → redirects to /login
 
 ## Teacher Portal
+
 - [ ] Login with instructor credentials → redirects to /teacher/courses
 - [ ] View course list, open a course
 - [ ] Open course builder, add/edit a lesson
@@ -504,6 +543,7 @@ Create `docs/test-checklist.md`:
 - [ ] Logout → redirects to /login
 
 ## Learner Portal
+
 - [ ] Login with student credentials → redirects to /learn/catalog
 - [ ] Browse catalog, enrol in a course
 - [ ] Open course player, complete a lesson
@@ -517,9 +557,10 @@ Create `docs/test-checklist.md`:
 - [ ] Logout → redirects to /login
 
 ## Cross-cutting
+
 - [ ] All three portals: unauthenticated access redirects to /login
-- [ ] Admin cannot access /teacher/* (redirects)
-- [ ] Student cannot access /teacher/* (redirects)
+- [ ] Admin cannot access /teacher/\* (redirects)
+- [ ] Student cannot access /teacher/\* (redirects)
 - [ ] Notifications mark-as-read works (badge clears)
 - [ ] Print certificate (browser print dialog opens)
 ```
@@ -536,21 +577,21 @@ git push
 
 ## File Locations Quick Reference
 
-| What | Path |
-|---|---|
-| API entry point | `apps/api/src/index.ts` |
-| DB schema exports | `apps/api/src/db/schema/index.ts` |
-| DB migrations | `apps/api/src/db/migrations/` |
-| Migration journal | `apps/api/src/db/migrations/meta/_journal.json` |
-| Web API types + client | `apps/web/src/lib/api.ts` |
-| React router config | `apps/web/src/App.tsx` |
-| Admin sidebar | `apps/web/src/components/layout/Sidebar.tsx` |
-| Teacher sidebar | `apps/web/src/components/layout/TeacherSidebar.tsx` |
-| Learner sidebar | `apps/web/src/components/layout/LearnSidebar.tsx` |
-| Admin pages | `apps/web/src/pages/` |
-| Teacher pages | `apps/web/src/pages/teacher/` |
-| Learner pages | `apps/web/src/pages/learn/` |
-| Sandbox mount prefix | `/sessions/intelligent-cool-sagan/mnt/Praxisa/praxisa-platform/` |
+| What                   | Path                                                             |
+| ---------------------- | ---------------------------------------------------------------- |
+| API entry point        | `apps/api/src/index.ts`                                          |
+| DB schema exports      | `apps/api/src/db/schema/index.ts`                                |
+| DB migrations          | `apps/api/src/db/migrations/`                                    |
+| Migration journal      | `apps/api/src/db/migrations/meta/_journal.json`                  |
+| Web API types + client | `apps/web/src/lib/api.ts`                                        |
+| React router config    | `apps/web/src/App.tsx`                                           |
+| Admin sidebar          | `apps/web/src/components/layout/Sidebar.tsx`                     |
+| Teacher sidebar        | `apps/web/src/components/layout/TeacherSidebar.tsx`              |
+| Learner sidebar        | `apps/web/src/components/layout/LearnSidebar.tsx`                |
+| Admin pages            | `apps/web/src/pages/`                                            |
+| Teacher pages          | `apps/web/src/pages/teacher/`                                    |
+| Learner pages          | `apps/web/src/pages/learn/`                                      |
+| Sandbox mount prefix   | `/sessions/intelligent-cool-sagan/mnt/Praxisa/praxisa-platform/` |
 
 ---
 

@@ -8,6 +8,7 @@ import {
   enrolments,
   courses,
 } from "../../db/schema/index.js";
+import { createNotification } from "../notifications/service.js";
 
 const createThreadSchema = z.object({
   recipientId: z.string().uuid(),
@@ -238,6 +239,16 @@ export function messagingPlugin(fastify: FastifyInstance) {
         .set({ updatedAt: new Date() })
         .where(eq(messageThreads.id, threadId));
 
+      await createNotification(
+        fastify.db,
+        recipientId,
+        "new_message",
+        "Nouveau message",
+        body.slice(0, 80),
+        "thread",
+        threadId,
+      );
+
       return reply.status(201).send({ threadId, message: msg });
     },
   );
@@ -339,6 +350,31 @@ export function messagingPlugin(fastify: FastifyInstance) {
         .update(messageThreads)
         .set({ updatedAt: new Date() })
         .where(eq(messageThreads.id, threadId));
+
+      const threadDetail = await fastify.db
+        .select({
+          participantA: messageThreads.participantA,
+          participantB: messageThreads.participantB,
+        })
+        .from(messageThreads)
+        .where(eq(messageThreads.id, threadId))
+        .limit(1);
+
+      if (threadDetail[0] !== undefined) {
+        const recipientId =
+          threadDetail[0].participantA === senderId
+            ? threadDetail[0].participantB
+            : threadDetail[0].participantA;
+        await createNotification(
+          fastify.db,
+          recipientId,
+          "new_message",
+          "Nouveau message",
+          parse.data.body.slice(0, 80),
+          "thread",
+          threadId,
+        );
+      }
 
       return reply.status(201).send({ message: msg });
     },
