@@ -466,3 +466,61 @@ export interface SendMessageResponse {
 export interface UnreadCountResponse {
   unread: number;
 }
+
+// ── Submissions & Grading ──────────────────────────────────────────────────────
+
+export type SubmissionStatus = "submitted" | "grading" | "graded";
+
+export interface Submission {
+  id: string;
+  exerciseId: string;
+  enrolmentId: string;
+  studentId: string;
+  body: string;
+  fileUrl: string | null;
+  status: SubmissionStatus;
+  score: number | null;
+  feedback: string | null;
+  gradedBy: string | null;
+  gradedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SubmissionResponse {
+  submission: Submission;
+}
+
+export interface CourseSubmissionRow {
+  id: string;
+  status: SubmissionStatus;
+  score: number | null;
+  feedback: string | null;
+  createdAt: string;
+  updatedAt: string;
+  gradedAt: string | null;
+  exerciseId: string;
+  exerciseTitle: string;
+  exerciseType: string;
+  maxScore: number | null;
+  enrolmentId: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+  studentEmail: string;
+}
+
+export interface CourseSubmissionsResponse {
+  submissions: CourseSubmissionRow[];
+}
+
+export interface SubmissionDetailResponse {
+  submission: Submission;
+  exerciseTitle: string;
+  exerciseType: string;
+  maxScore: number | null;
+}
+
+export interface SubmissionStatsResponse {
+  stats: { submitted: number; grading: number; graded: number };
+}

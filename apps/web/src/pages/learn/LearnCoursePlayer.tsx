@@ -13,6 +13,7 @@ import {
   File,
   Music,
   HelpCircle,
+  PenLine,
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
@@ -25,6 +26,8 @@ import type {
   ModuleWithLessons,
   ExerciseWithQuestions,
   QuizAttemptResult,
+  SubmissionResponse,
+  Submission,
 } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
 import { Card, CardContent } from "@/components/ui/card.js";
@@ -323,6 +326,117 @@ function Quiz({ exerciseId, enrolmentId, onComplete }: QuizProps) {
   );
 }
 
+// ── Submission form (assignment / reflection) ──────────────────────────────────
+
+interface SubmissionFormProps {
+  exerciseId: string;
+  enrolmentId: string;
+  exerciseTitle: string;
+  exerciseType: string;
+}
+
+function SubmissionForm({
+  exerciseId,
+  enrolmentId,
+  exerciseTitle,
+  exerciseType,
+}: SubmissionFormProps) {
+  const queryClient = useQueryClient();
+  const [body, setBody] = useState("");
+  const [saved, setSaved] = useState<Submission | null>(null);
+
+  const { data: existing } = useQuery<SubmissionResponse>({
+    queryKey: ["submission", enrolmentId, exerciseId],
+    queryFn: () =>
+      api.get<SubmissionResponse>(
+        `/enrolments/${enrolmentId}/exercises/${exerciseId}/submission`,
+      ),
+    retry: false,
+  });
+
+  useEffect(() => {
+    if (existing?.submission !== undefined && body === "") {
+      setBody(existing.submission.body);
+      setSaved(existing.submission);
+    }
+  }, [existing, body]);
+
+  const submitMutation = useMutation({
+    mutationFn: () =>
+      api.post<SubmissionResponse>(
+        `/enrolments/${enrolmentId}/exercises/${exerciseId}/submit`,
+        { body },
+      ),
+    onSuccess: (data) => {
+      setSaved(data.submission);
+      void queryClient.invalidateQueries({
+        queryKey: ["submission", enrolmentId, exerciseId],
+      });
+    },
+  });
+
+  const typeLabel = exerciseType === "assignment" ? "Devoir" : "Réflexion";
+
+  return (
+    <div className="border border-slate-200 rounded-xl p-5 space-y-4">
+      <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+        <PenLine size={15} className="text-teal" />
+        {typeLabel} : {exerciseTitle}
+      </div>
+
+      {saved !== null && saved.status === "graded" && (
+        <div className="bg-teal-50 border border-teal-200 rounded-lg px-4 py-3 space-y-1">
+          <p className="text-xs font-bold text-teal uppercase tracking-wider">
+            Note reçue
+          </p>
+          {saved.score !== null && (
+            <p className="text-sm font-semibold text-slate-800">
+              Score : {saved.score.toString()}
+            </p>
+          )}
+          {saved.feedback !== null && (
+            <p className="text-sm text-slate-700">{saved.feedback}</p>
+          )}
+        </div>
+      )}
+
+      {saved !== null && saved.status === "submitted" && (
+        <p className="text-xs text-amber-600 font-medium">
+          Réponse soumise — en attente de correction.
+        </p>
+      )}
+
+      <textarea
+        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+        rows={6}
+        placeholder="Rédigez votre réponse ici…"
+        value={body}
+        onChange={(e) => {
+          setBody(e.target.value);
+        }}
+        disabled={saved?.status === "graded"}
+      />
+
+      {saved?.status !== "graded" && (
+        <Button
+          size="sm"
+          disabled={submitMutation.isPending || !body.trim()}
+          onClick={() => {
+            submitMutation.mutate();
+          }}
+        >
+          <PenLine size={13} className="mr-1.5" />
+          {submitMutation.isPending
+            ? "Envoi…"
+            : saved !== null
+              ? "Soumettre à nouveau"
+              : "Soumettre"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 // ── Lesson content viewer ──────────────────────────────────────────────────────
 
 interface LessonViewerProps {
@@ -444,6 +558,19 @@ function LessonViewer({
           ) : null}
         </CardContent>
       </Card>
+
+      {/* Assignment / reflection exercises */}
+      {lesson.exercises
+        .filter((ex) => ex.type === "assignment" || ex.type === "reflection")
+        .map((ex) => (
+          <SubmissionForm
+            key={ex.id}
+            exerciseId={ex.id}
+            enrolmentId={enrolmentId}
+            exerciseTitle={ex.title}
+            exerciseType={ex.type}
+          />
+        ))}
 
       {/* Actions */}
       <div className="flex items-center gap-3">

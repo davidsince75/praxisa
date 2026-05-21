@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
+  ClipboardList,
   ArrowLeft,
   Wrench,
   Users,
@@ -259,6 +260,12 @@ export function TeacherCourseDetailPage() {
               <Button size="sm" variant="outline">
                 <Wrench size={13} className="mr-1.5" />
                 Editeur
+              </Button>
+            </Link>
+            <Link to={`/teacher/courses/${id}/grading`}>
+              <Button size="sm" variant="outline">
+                <ClipboardList size={13} className="mr-1.5" />
+                Travaux
               </Button>
             </Link>
           </div>

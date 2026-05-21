@@ -22,6 +22,7 @@ import { TeacherAnalytics } from "@/pages/analytics/TeacherAnalytics.js";
 import { LearnProgress } from "@/pages/analytics/LearnProgress.js";
 import { AdminMessagesPage } from "@/pages/messages/AdminMessages.js";
 import { TeacherMessagesPage } from "@/pages/teacher/TeacherMessages.js";
+import { TeacherGradingPage } from "@/pages/teacher/TeacherGrading.js";
 import { LearnMessagesPage } from "@/pages/learn/LearnMessages.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
@@ -89,6 +90,10 @@ export function App() {
                 />
                 <Route path="/analytics" element={<TeacherAnalytics />} />
                 <Route path="/messages" element={<TeacherMessagesPage />} />
+                <Route
+                  path="/courses/:courseId/grading"
+                  element={<TeacherGradingPage />}
+                />
               </Routes>
             </TeacherShell>
           </RequireTeacher>
