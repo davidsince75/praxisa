@@ -19,8 +19,9 @@ export function chunkText(
   chunkSize = CHUNK_SIZE,
   overlap = CHUNK_OVERLAP,
 ): string[] {
-  const words = text.trim().split(/\s+/);
-  if (words.length === 0) return [];
+  const trimmed = text.trim();
+  if (trimmed.length === 0) return [];
+  const words = trimmed.split(/\s+/);
 
   const chunks: string[] = [];
   let start = 0;

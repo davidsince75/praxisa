@@ -140,23 +140,26 @@ describe("hasPii", () => {
 
 // ── generateAdminDraft JSON parsing ───────────────────────────────────────────
 
+vi.mock("./mistral-client.js", () => ({
+  chatComplete: vi.fn(),
+  MISTRAL_SMALL: "mistral-small-latest",
+  embedTexts: vi.fn(),
+}));
+
 describe("generateAdminDraft JSON parsing (unit)", () => {
   beforeEach(() => {
     vi.resetAllMocks();
   });
 
   it("parses well-formed JSON from LLM response", async () => {
-    // Mock chatComplete to return valid JSON
-    vi.mock("./mistral-client.js", () => ({
-      chatComplete: vi.fn().mockResolvedValue(
-        JSON.stringify({
-          subject: "Bienvenue chez Praxisa",
-          body: "Bonjour, voici votre accès.",
-          intentClassification: "onboarding_welcome",
-        }),
-      ),
-      MISTRAL_SMALL: "mistral-small-latest",
-    }));
+    const { chatComplete } = await import("./mistral-client.js");
+    (chatComplete as ReturnType<typeof vi.fn>).mockResolvedValue(
+      JSON.stringify({
+        subject: "Bienvenue chez Praxisa",
+        body: "Bonjour, voici votre accès.",
+        intentClassification: "onboarding_welcome",
+      }),
+    );
 
     const { generateAdminDraft: generate } = await import("./rag.service.js");
     const draft = await generate("welcome new student", {}, "fake-key");
@@ -167,12 +170,10 @@ describe("generateAdminDraft JSON parsing (unit)", () => {
   });
 
   it("returns fallback when LLM response is not valid JSON", async () => {
-    vi.mock("./mistral-client.js", () => ({
-      chatComplete: vi
-        .fn()
-        .mockResolvedValue("Here is a draft email for you: Bonjour..."),
-      MISTRAL_SMALL: "mistral-small-latest",
-    }));
+    const { chatComplete } = await import("./mistral-client.js");
+    (chatComplete as ReturnType<typeof vi.fn>).mockResolvedValue(
+      "Here is a draft email for you: Bonjour...",
+    );
 
     const { generateAdminDraft: generate } = await import("./rag.service.js");
     const draft = await generate("some intent", {}, "fake-key");
