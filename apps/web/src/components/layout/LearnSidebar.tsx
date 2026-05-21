@@ -1,5 +1,11 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { BookOpen, GraduationCap, LogOut, TrendingUp } from "lucide-react";
+import {
+  BookOpen,
+  GraduationCap,
+  LogOut,
+  TrendingUp,
+  MessageSquare,
+} from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 
@@ -20,6 +26,12 @@ const nav = [
     to: "/learn/progress",
     label: "Ma progression",
     icon: TrendingUp,
+    end: false,
+  },
+  {
+    to: "/learn/messages",
+    label: "Messages",
+    icon: MessageSquare,
     end: false,
   },
 ];
