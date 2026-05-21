@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 import { sql, eq, and } from "drizzle-orm";
 import { users, courses } from "../../db/schema/index.js";
 
-export async function analyticsPlugin(fastify: FastifyInstance) {
+export function analyticsPlugin(fastify: FastifyInstance) {
   // ── GET /analytics/overview  (admin only) ─────────────────────────────────
   fastify.get(
     "/analytics/overview",

@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Wrench,
@@ -7,12 +8,15 @@ import {
   CheckCircle2,
   Activity,
   XCircle,
+  UserPlus,
+  X,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   CourseDetailResponse,
   CourseStudentsResponse,
   CourseProgressStats,
+  TeacherEnrolResponse,
 } from "@/lib/api.js";
 import { Badge } from "@/components/ui/badge.js";
 import { Button } from "@/components/ui/button.js";
@@ -21,8 +25,8 @@ import { formatDate } from "@/lib/utils.js";
 
 const STATUS_LABELS = {
   draft: "Brouillon",
-  published: "Publié",
-  archived: "Archivé",
+  published: "Publie",
+  archived: "Archive",
 };
 
 function statusVariant(status: string) {
@@ -39,8 +43,8 @@ function enrolStatusVariant(status: string) {
 
 const ENROL_LABELS: Record<string, string> = {
   active: "Actif",
-  completed: "Terminé",
-  cancelled: "Annulé",
+  completed: "Termine",
+  cancelled: "Annule",
 };
 
 interface StatCardProps {
@@ -81,9 +85,96 @@ function ProgressBar({ pct }: { pct: number }) {
   );
 }
 
+interface EnrolModalProps {
+  courseId: string;
+  onClose: () => void;
+}
+
+function EnrolModal({ courseId, onClose }: EnrolModalProps) {
+  const [email, setEmail] = useState("");
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const mutation = useMutation({
+    mutationFn: (studentEmail: string) =>
+      api.post<TeacherEnrolResponse>(`/courses/${courseId}/teacher-enrol`, {
+        email: studentEmail,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["course-students", courseId],
+      });
+      void queryClient.invalidateQueries({
+        queryKey: ["course-progress", courseId],
+      });
+      onClose();
+    },
+    onError: (err: { message?: string }) => {
+      setErrorMsg(err.message ?? "Erreur lors de l inscription.");
+    },
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorMsg(null);
+    if (email.trim().length === 0) return;
+    mutation.mutate(email.trim());
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md mx-4 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-dark">
+            Inscrire un apprenant
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-meta hover:text-dark transition-colors"
+          >
+            <X size={18} />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-xs font-bold uppercase tracking-wider text-meta block mb-1.5">
+              Adresse email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+              }}
+              placeholder="apprenant@exemple.com"
+              className="w-full rounded-lg border border-rule bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal"
+              autoFocus
+            />
+          </div>
+          {errorMsg !== null && <p className="text-xs text-rose">{errorMsg}</p>}
+          <div className="flex justify-end gap-2 pt-1">
+            <Button type="button" variant="outline" size="sm" onClick={onClose}>
+              Annuler
+            </Button>
+            <Button
+              type="submit"
+              size="sm"
+              disabled={mutation.isPending || email.trim().length === 0}
+            >
+              {mutation.isPending ? "Inscription..." : "Inscrire"}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 export function TeacherCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const id = courseId ?? "";
+  const [showEnrolModal, setShowEnrolModal] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: courseData } = useQuery({
     queryKey: ["course", id],
@@ -103,129 +194,179 @@ export function TeacherCourseDetailPage() {
     enabled: id.length > 0,
   });
 
+  const removeMutation = useMutation({
+    mutationFn: (enrolmentId: string) =>
+      api.delete<undefined>(`/enrolments/${enrolmentId}/remove`),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["course-students", id] });
+      void queryClient.invalidateQueries({
+        queryKey: ["course-progress", id],
+      });
+    },
+  });
+
   const course = courseData?.course;
   const totals = statsData?.totals;
   const students = studentsData?.students ?? [];
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-start gap-3">
-          <Link to="/teacher/courses">
-            <button className="mt-1 text-meta hover:text-dark transition-colors">
-              <ArrowLeft size={18} />
-            </button>
-          </Link>
-          <div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-2xl font-bold text-dark">
-                {course?.title ?? "Chargement…"}
-              </h1>
-              {course !== undefined && (
-                <Badge variant={statusVariant(course.status)}>
-                  {STATUS_LABELS[course.status]}
-                </Badge>
-              )}
-            </div>
-            <p className="text-meta text-sm mt-1">Tableau de bord apprenants</p>
-          </div>
-        </div>
-        <Link to={`/teacher/courses/${id}/builder`}>
-          <Button size="sm" variant="outline">
-            <Wrench size={13} className="mr-1.5" />
-            Éditeur de contenu
-          </Button>
-        </Link>
-      </div>
-
-      {/* Stats */}
-      {totals !== undefined && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <StatCard
-            label="Inscrits"
-            value={totals.enrolled}
-            icon={<Users size={22} />}
-          />
-          <StatCard
-            label="Actifs"
-            value={totals.active}
-            icon={<Activity size={22} />}
-            accent="text-olive"
-          />
-          <StatCard
-            label="Terminé"
-            value={totals.completed}
-            icon={<CheckCircle2 size={22} />}
-            accent="text-teal"
-          />
-          <StatCard
-            label="Annulés"
-            value={totals.cancelled}
-            icon={<XCircle size={22} />}
-            accent="text-rose"
-          />
-        </div>
+    <>
+      {showEnrolModal && (
+        <EnrolModal
+          courseId={id}
+          onClose={() => {
+            setShowEnrolModal(false);
+          }}
+        />
       )}
 
-      {/* Student table */}
-      <Card>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <p className="text-meta text-sm p-6">Chargement…</p>
-          ) : students.length === 0 ? (
-            <p className="text-meta text-sm p-6">Aucun apprenant inscrit.</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-rule">
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      Apprenant
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      Email
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      Statut
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      Inscrit le
-                    </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta min-w-[160px]">
-                      Progression
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-rule">
-                  {students.map((s) => (
-                    <tr
-                      key={s.enrolmentId}
-                      className="hover:bg-cream/50 transition-colors"
-                    >
-                      <td className="px-6 py-3 font-medium text-dark">
-                        {s.firstName} {s.lastName}
-                      </td>
-                      <td className="px-6 py-3 text-meta">{s.email}</td>
-                      <td className="px-6 py-3">
-                        <Badge variant={enrolStatusVariant(s.status)}>
-                          {ENROL_LABELS[s.status] ?? s.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-3 text-meta">
-                        {formatDate(s.enrolledAt)}
-                      </td>
-                      <td className="px-6 py-3">
-                        <ProgressBar pct={s.completionPct} />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-3">
+            <Link to="/teacher/courses">
+              <button className="mt-1 text-meta hover:text-dark transition-colors">
+                <ArrowLeft size={18} />
+              </button>
+            </Link>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-bold text-dark">
+                  {course?.title ?? "Chargement..."}
+                </h1>
+                {course !== undefined && (
+                  <Badge variant={statusVariant(course.status)}>
+                    {STATUS_LABELS[course.status]}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-meta text-sm mt-1">
+                Tableau de bord apprenants
+              </p>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => {
+                setShowEnrolModal(true);
+              }}
+            >
+              <UserPlus size={13} className="mr-1.5" />
+              Inscrire
+            </Button>
+            <Link to={`/teacher/courses/${id}/builder`}>
+              <Button size="sm" variant="outline">
+                <Wrench size={13} className="mr-1.5" />
+                Editeur
+              </Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats */}
+        {totals !== undefined && (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <StatCard
+              label="Inscrits"
+              value={totals.enrolled}
+              icon={<Users size={22} />}
+            />
+            <StatCard
+              label="Actifs"
+              value={totals.active}
+              icon={<Activity size={22} />}
+              accent="text-olive"
+            />
+            <StatCard
+              label="Termines"
+              value={totals.completed}
+              icon={<CheckCircle2 size={22} />}
+              accent="text-teal"
+            />
+            <StatCard
+              label="Annules"
+              value={totals.cancelled}
+              icon={<XCircle size={22} />}
+              accent="text-rose"
+            />
+          </div>
+        )}
+
+        {/* Student table */}
+        <Card>
+          <CardContent className="p-0">
+            {isLoading ? (
+              <p className="text-meta text-sm p-6">Chargement...</p>
+            ) : students.length === 0 ? (
+              <p className="text-meta text-sm p-6">Aucun apprenant inscrit.</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-rule">
+                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        Apprenant
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        Email
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        Statut
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        Inscrit le
+                      </th>
+                      <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta min-w-[160px]">
+                        Progression
+                      </th>
+                      <th className="px-6 py-3" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-rule">
+                    {students.map((s) => (
+                      <tr
+                        key={s.enrolmentId}
+                        className="hover:bg-cream/50 transition-colors"
+                      >
+                        <td className="px-6 py-3 font-medium text-dark">
+                          {s.firstName} {s.lastName}
+                        </td>
+                        <td className="px-6 py-3 text-meta">{s.email}</td>
+                        <td className="px-6 py-3">
+                          <Badge variant={enrolStatusVariant(s.status)}>
+                            {ENROL_LABELS[s.status] ?? s.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-3 text-meta">
+                          {formatDate(s.enrolledAt)}
+                        </td>
+                        <td className="px-6 py-3">
+                          <ProgressBar pct={s.completionPct} />
+                        </td>
+                        <td className="px-6 py-3 text-right">
+                          {s.status !== "cancelled" && (
+                            <button
+                              onClick={() => {
+                                removeMutation.mutate(s.enrolmentId);
+                              }}
+                              disabled={removeMutation.isPending}
+                              className="text-meta hover:text-rose transition-colors"
+                              title="Desinscrire"
+                            >
+                              <X size={14} />
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }

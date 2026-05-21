@@ -64,7 +64,7 @@ export const api = {
   delete: <T>(path: string) => request<T>(path, { method: "DELETE" }),
 };
 
-// ── Typed response shapes (match API exactly) ──────────────────────────────────
+// ── Typed response shapes ──────────────────────────────────────────────────────
 
 export interface LoginResponse {
   token: string;
@@ -89,7 +89,6 @@ export interface DsrRequest {
   notes: string | null;
 }
 
-// GET /v1/gdpr/requests → { requests: DsrRequest[] }
 export interface DsrListResponse {
   requests: DsrRequest[];
 }
@@ -107,7 +106,6 @@ export interface AuditEvent {
   metadata: Record<string, unknown> | null;
 }
 
-// GET /v1/audit/events → { events, pagination: { limit, offset, count } }
 export interface AuditEventsResponse {
   events: AuditEvent[];
   pagination: { limit: number; offset: number; count: number };
@@ -130,7 +128,6 @@ export interface User {
   updatedAt?: string;
 }
 
-// GET /v1/users → { users, meta }
 export interface UserListResponse {
   users: User[];
   meta: { total: number; page: number; limit: number; pages: number };
@@ -152,7 +149,6 @@ export interface Course {
   publishedAt: string | null;
 }
 
-// GET /v1/courses → { courses }
 export interface CourseListResponse {
   courses: Course[];
 }
@@ -334,7 +330,6 @@ export interface QuizAttemptResult {
 
 // ── Analytics ──────────────────────────────────────────────────────────────────
 
-// GET /v1/analytics/overview  (admin)
 export interface AdminOverviewResponse {
   totalUsers: number;
   usersByRole: Record<string, number>;
@@ -353,7 +348,6 @@ export interface AdminOverviewResponse {
   }[];
 }
 
-// GET /v1/analytics/courses/:courseId  (instructor/admin)
 export interface CourseAnalyticsResponse {
   enrolments: { enrolled: number; active: number; completed: number };
   lessonFunnel: {
@@ -373,7 +367,6 @@ export interface CourseAnalyticsResponse {
   progressDistribution: { bucket: string; count: number }[];
 }
 
-// GET /v1/analytics/me  (student)
 export interface MyAnalyticsResponse {
   totalEnrolled: number;
   totalCompleted: number;
@@ -395,4 +388,81 @@ export interface MyAnalyticsResponse {
     passed: boolean;
     completedAt: string;
   }[];
+}
+
+// ── Certificates & Enrollment Management ──────────────────────────────────────
+
+export interface CertificateData {
+  enrolmentId: string;
+  studentName: string;
+  courseTitle: string;
+  courseId: string;
+  completedAt: string | null;
+  issuedAt: string;
+}
+
+export interface CertificateResponse {
+  certificate: CertificateData;
+}
+
+export interface TeacherEnrolResponse {
+  enrolment: {
+    id: string;
+    studentId: string;
+    courseId: string;
+    status: string;
+    enrolledAt: string;
+  };
+}
+
+// ── Messaging ──────────────────────────────────────────────────────────────────
+
+export interface MessageParticipant {
+  id: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+}
+
+export interface MessageItem {
+  id: string;
+  threadId: string;
+  senderId: string;
+  body: string;
+  readAt: string | null;
+  createdAt: string;
+}
+
+export interface MessageThread {
+  id: string;
+  courseId: string | null;
+  updatedAt: string;
+  other: MessageParticipant | null;
+  lastMessage: MessageItem | null;
+  unreadCount: number;
+}
+
+export interface MessageThreadsResponse {
+  threads: MessageThread[];
+}
+
+export interface MessageThreadDetailResponse {
+  thread: {
+    id: string;
+    participantA: string;
+    participantB: string;
+    courseId: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+  messages: MessageItem[];
+}
+
+export interface SendMessageResponse {
+  threadId: string;
+  message: MessageItem;
+}
+
+export interface UnreadCountResponse {
+  unread: number;
 }

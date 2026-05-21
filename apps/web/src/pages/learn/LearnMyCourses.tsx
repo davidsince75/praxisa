@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { BookOpen, CheckCircle2, Clock, XCircle } from "lucide-react";
+import { Award, BookOpen, CheckCircle2, Clock, XCircle } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type { MyEnrolmentsResponse } from "@/lib/api.js";
 import { Badge } from "@/components/ui/badge.js";
@@ -16,8 +16,8 @@ function statusVariant(status: string) {
 
 const STATUS_LABELS: Record<string, string> = {
   active: "En cours",
-  completed: "Terminé",
-  cancelled: "Annulé",
+  completed: "Termine",
+  cancelled: "Annule",
 };
 
 function ProgressBar({ pct }: { pct: number }) {
@@ -45,7 +45,10 @@ export function LearnMyCoursesPage() {
 
   const enrolments = data?.enrolments ?? [];
   const active = enrolments.filter((e) => e.status === "active");
-  const others = enrolments.filter((e) => e.status !== "active");
+  const completed = enrolments.filter((e) => e.status === "completed");
+  const others = enrolments.filter(
+    (e) => e.status !== "active" && e.status !== "completed",
+  );
 
   return (
     <div className="space-y-6">
@@ -53,19 +56,19 @@ export function LearnMyCoursesPage() {
         <h1 className="text-2xl font-bold text-dark">Mes formations</h1>
         <p className="text-meta text-sm mt-1">
           {isLoading
-            ? "Chargement…"
+            ? "Chargement..."
             : `${String(enrolments.length)} formation${enrolments.length !== 1 ? "s" : ""}`}
         </p>
       </div>
 
       {isLoading ? (
-        <p className="text-meta text-sm">Chargement…</p>
+        <p className="text-meta text-sm">Chargement...</p>
       ) : enrolments.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
             <BookOpen size={32} className="text-meta/40 mx-auto mb-3" />
             <p className="text-meta text-sm mb-4">
-              Vous n&apos;êtes inscrit à aucune formation.
+              Vous n&apos;etes inscrit a aucune formation.
             </p>
             <Link to="/learn/catalog">
               <Button size="sm">Parcourir le catalogue</Button>
@@ -74,6 +77,7 @@ export function LearnMyCoursesPage() {
         </Card>
       ) : (
         <div className="space-y-8">
+          {/* Active courses */}
           {active.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-xs font-bold uppercase tracking-widest text-meta">
@@ -128,26 +132,58 @@ export function LearnMyCoursesPage() {
             </section>
           )}
 
+          {/* Completed courses — with certificate link */}
+          {completed.length > 0 && (
+            <section className="space-y-3">
+              <h2 className="text-xs font-bold uppercase tracking-widest text-meta">
+                Terminees
+              </h2>
+              <div className="grid gap-3">
+                {completed.map((e) => (
+                  <Card key={e.enrolmentId}>
+                    <CardContent className="p-4 flex items-center gap-4">
+                      <CheckCircle2
+                        size={16}
+                        className="text-teal flex-shrink-0"
+                      />
+                      <span className="flex-1 text-sm font-medium text-dark truncate">
+                        {e.courseTitle}
+                      </span>
+                      {e.completedAt !== null && (
+                        <span className="text-xs text-meta hidden sm:block">
+                          {formatDate(e.completedAt)}
+                        </span>
+                      )}
+                      <Badge variant="completed">
+                        {STATUS_LABELS.completed}
+                      </Badge>
+                      <Link
+                        to={`/learn/courses/${e.enrolmentId}/certificate`}
+                        className="flex-shrink-0"
+                      >
+                        <Button size="sm" variant="outline">
+                          <Award size={13} className="mr-1.5 text-teal" />
+                          Certificat
+                        </Button>
+                      </Link>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Cancelled */}
           {others.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-xs font-bold uppercase tracking-widest text-meta">
-                Terminées / Annulées
+                Annulees
               </h2>
               <div className="grid gap-3">
                 {others.map((e) => (
                   <Card key={e.enrolmentId} className="opacity-70">
                     <CardContent className="p-4 flex items-center gap-4">
-                      {e.status === "completed" ? (
-                        <CheckCircle2
-                          size={16}
-                          className="text-teal flex-shrink-0"
-                        />
-                      ) : (
-                        <XCircle
-                          size={16}
-                          className="text-rose flex-shrink-0"
-                        />
-                      )}
+                      <XCircle size={16} className="text-rose flex-shrink-0" />
                       <span className="flex-1 text-sm font-medium text-dark truncate">
                         {e.courseTitle}
                       </span>
