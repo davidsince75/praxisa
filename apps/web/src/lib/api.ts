@@ -71,7 +71,6 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     if (res.status === 401) {
       clearAuth();
       window.location.href = "/login";
-      return undefined as T;
     }
     throw new ApiError(res.status, message);
   }
