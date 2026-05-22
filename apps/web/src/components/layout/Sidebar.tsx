@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -14,6 +14,7 @@ import {
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
@@ -29,6 +30,13 @@ const nav = [
 
 export function Sidebar() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const unreadMessages = useUnreadMessages();
+
+  function handleLogout() {
+    logout();
+    navigate("/login");
+  }
 
   return (
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
@@ -59,7 +67,12 @@ export function Sidebar() {
             }
           >
             <Icon size={15} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {to === "/messages" && unreadMessages > 0 && (
+              <span className="ml-auto bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadMessages > 9 ? "9+" : String(unreadMessages)}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>
@@ -76,7 +89,7 @@ export function Sidebar() {
           <p className="text-[11px] text-white/30 truncate">{user?.email}</p>
         </div>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
         >
           <LogOut size={15} />

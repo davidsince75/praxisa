@@ -6,10 +6,12 @@ import {
   TrendingUp,
   MessageSquare,
   Bot,
+  Award,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
 const nav = [
   {
@@ -31,6 +33,12 @@ const nav = [
     end: false,
   },
   {
+    to: "/learn/certificates",
+    label: "Certificats",
+    icon: Award,
+    end: false,
+  },
+  {
     to: "/learn/messages",
     label: "Messages",
     icon: MessageSquare,
@@ -42,6 +50,7 @@ const nav = [
 export function LearnSidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const unreadMessages = useUnreadMessages();
 
   function handleLogout() {
     logout();
@@ -75,7 +84,12 @@ export function LearnSidebar() {
             }
           >
             <Icon size={15} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {to === "/learn/messages" && unreadMessages > 0 && (
+              <span className="ml-auto bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadMessages > 9 ? "9+" : String(unreadMessages)}
+              </span>
+            )}
           </NavLink>
         ))}
       </nav>

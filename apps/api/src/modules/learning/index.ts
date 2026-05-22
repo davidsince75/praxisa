@@ -1,9 +1,20 @@
 import type { FastifyInstance } from "fastify";
-import { and, asc, count, desc, eq, isNull, ne, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  inArray,
+  isNull,
+  ne,
+  sql,
+} from "drizzle-orm";
 import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
 import {
   courseModules,
+  courseRatings,
   courses,
   enrolments,
   exercises,
@@ -76,7 +87,62 @@ export const learningPlugin = (
                 and(isNull(courses.deletedAt), eq(courses.status, "published")),
               )
               .orderBy(asc(courses.createdAt));
-      return reply.send({ courses: rows });
+
+      // Enrich with instructor names
+      const instructorIds = [
+        ...new Set(
+          rows
+            .map((r) => r.instructorId)
+            .filter((id): id is string => id !== null),
+        ),
+      ];
+      const instructorMap = new Map<string, string>();
+      if (instructorIds.length > 0) {
+        const instructorRows = await fastify.db
+          .select({
+            id: users.id,
+            firstName: users.firstName,
+            lastName: users.lastName,
+          })
+          .from(users)
+          .where(inArray(users.id, instructorIds));
+        for (const i of instructorRows) {
+          instructorMap.set(i.id, `${i.firstName} ${i.lastName}`);
+        }
+      }
+
+      // Enrich with average ratings
+      const courseIds = rows.map((r) => r.id);
+      const ratingMap = new Map<string, { avg: number; count: number }>();
+      if (courseIds.length > 0) {
+        const ratingRows = await fastify.db
+          .select({
+            courseId: courseRatings.courseId,
+            avg: sql<string>`coalesce(round(avg(${courseRatings.rating})::numeric, 1), 0)`,
+            cnt: sql<number>`count(*)::int`,
+          })
+          .from(courseRatings)
+          .where(inArray(courseRatings.courseId, courseIds))
+          .groupBy(courseRatings.courseId);
+        for (const r of ratingRows) {
+          ratingMap.set(r.courseId, {
+            avg: parseFloat(r.avg),
+            count: r.cnt,
+          });
+        }
+      }
+
+      const enriched = rows.map((c) => ({
+        ...c,
+        instructorName:
+          c.instructorId !== null
+            ? (instructorMap.get(c.instructorId) ?? null)
+            : null,
+        averageRating: ratingMap.get(c.id)?.avg ?? 0,
+        totalRatings: ratingMap.get(c.id)?.count ?? 0,
+      }));
+
+      return reply.send({ courses: enriched });
     },
   );
 

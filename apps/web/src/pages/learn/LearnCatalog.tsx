@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Globe, Clock, CheckCircle2 } from "lucide-react";
+import { BookOpen, Globe, Clock, CheckCircle2, Star, User } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type { CourseListResponse, MyEnrolmentsResponse } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
@@ -92,11 +92,27 @@ export function LearnCatalogPage() {
                     )}
                   </div>
 
+                  {course.instructorName !== null && (
+                    <p className="text-xs text-meta flex items-center gap-1">
+                      <User size={11} />
+                      {course.instructorName}
+                    </p>
+                  )}
+
                   <div className="flex items-center gap-3 text-xs text-meta">
                     <span className="flex items-center gap-1">
                       <Globe size={11} />
                       {course.language.toUpperCase()}
                     </span>
+                    {course.averageRating > 0 && (
+                      <span className="flex items-center gap-1 text-yellow-500">
+                        <Star size={11} fill="currentColor" />
+                        {String(course.averageRating)}
+                        <span className="text-meta/60">
+                          ({String(course.totalRatings)})
+                        </span>
+                      </span>
+                    )}
                     {isEnrolled && enrolment !== undefined && (
                       <span className="flex items-center gap-1 text-teal">
                         <Clock size={11} />

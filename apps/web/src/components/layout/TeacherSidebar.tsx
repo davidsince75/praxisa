@@ -6,13 +6,23 @@ import {
   BarChart2,
   MessageSquare,
   Bot,
+  Users,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
 const nav = [
   { to: "/teacher/courses", label: "Mes cours", icon: BookOpen, end: false },
+  { to: "/teacher/students", label: "Mes élèves", icon: Users, end: false },
+  {
+    to: "/teacher/grading",
+    label: "Travaux",
+    icon: ClipboardList,
+    end: false,
+  },
   {
     to: "/teacher/analytics",
     label: "Analytiques",
@@ -31,6 +41,7 @@ const nav = [
 export function TeacherSidebar() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const unreadMessages = useUnreadMessages();
 
   function handleLogout() {
     logout();
@@ -66,7 +77,12 @@ export function TeacherSidebar() {
             }
           >
             <Icon size={15} />
-            {label}
+            <span className="flex-1">{label}</span>
+            {to === "/teacher/messages" && unreadMessages > 0 && (
+              <span className="ml-auto bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                {unreadMessages > 9 ? "9+" : String(unreadMessages)}
+              </span>
+            )}
           </NavLink>
         ))}
         {isAdmin && (

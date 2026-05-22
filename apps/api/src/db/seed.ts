@@ -16,7 +16,7 @@
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
 import { hash } from "@node-rs/argon2";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import {
   users,
   courses,
@@ -26,6 +26,9 @@ import {
   quizQuestions,
   enrolments,
   lessonProgress,
+  messageThreads,
+  messages,
+  notifications,
 } from "./schema/index.js";
 
 // ── DB connection ─────────────────────────────────────────────────────────────
@@ -1220,6 +1223,229 @@ async function seed() {
   }
 
   console.log("  ✓ Enrolments and progress seeded");
+
+  // ── Conversations & Messages ───────────────────
+
+  console.log("  Creating demo conversations...");
+
+  const marieId = studentIds[0];
+  const thomasId = studentIds[1];
+  const leaId = studentIds[2];
+
+  async function insertThread(
+    pA: string,
+    pB: string,
+    cId: string | null,
+    msgs: { senderId: string; body: string; hoursAgo: number; read: boolean }[],
+  ) {
+    const rows = await db
+      .insert(messageThreads)
+      .values({ participantA: pA, participantB: pB, courseId: cId })
+      .onConflictDoNothing()
+      .returning({ id: messageThreads.id });
+    const thread = rows[0];
+    if (thread === undefined) return;
+    for (const m of msgs) {
+      const ts = new Date(Date.now() - m.hoursAgo * 3600000);
+      await db.insert(messages).values({
+        threadId: thread.id,
+        senderId: m.senderId,
+        body: m.body,
+        createdAt: ts,
+        readAt: m.read ? ts : null,
+      });
+    }
+    await db
+      .update(messageThreads)
+      .set({ updatedAt: new Date() })
+      .where(eq(messageThreads.id, thread.id));
+  }
+
+  // Thread 1: Martin <-> Marie (about Marketing Digital)
+  if (marieId !== undefined) {
+    await insertThread(martinId, marieId, course1Id, [
+      {
+        senderId: marieId,
+        body: "Bonjour Monsieur Martin, j’ai une question sur le module SEO. Pourriez-vous expliquer la différence entre backlinks dofollow et nofollow ?",
+        hoursAgo: 4,
+        read: true,
+      },
+      {
+        senderId: martinId,
+        body: "Bonjour Marie ! Bonne question. Un lien dofollow transmet du «jus SEO» au site cible, tandis qu’un nofollow indique aux moteurs de ne pas suivre ce lien.",
+        hoursAgo: 3,
+        read: true,
+      },
+      {
+        senderId: marieId,
+        body: "Merci beaucoup, c’est plus clair maintenant ! Je vais revoir le cours avec cette distinction en tête.",
+        hoursAgo: 2,
+        read: true,
+      },
+      {
+        senderId: martinId,
+        body: "Parfait ! N’hésitez pas si vous avez d’autres questions. Votre progression est excellente.",
+        hoursAgo: 1,
+        read: false,
+      },
+    ]);
+  }
+
+  // Thread 2: Martin <-> Thomas
+  if (thomasId !== undefined) {
+    await insertThread(martinId, thomasId, course1Id, [
+      {
+        senderId: thomasId,
+        body: "Bonjour, je n’arrive pas à accéder au PDF du guide SEO. Le lien semble cassé.",
+        hoursAgo: 14,
+        read: true,
+      },
+      {
+        senderId: martinId,
+        body: "Bonjour Thomas, merci de me le signaler. Je vais vérifier le lien. En attendant, les concepts clés sont dans la leçon texte précédente.",
+        hoursAgo: 12,
+        read: true,
+      },
+      {
+        senderId: thomasId,
+        body: "D’accord, merci pour la réactivité !",
+        hoursAgo: 10,
+        read: true,
+      },
+    ]);
+  }
+
+  // Thread 3: Martin <-> Léa (unread)
+  if (leaId !== undefined) {
+    await insertThread(martinId, leaId, course1Id, [
+      {
+        senderId: martinId,
+        body: "Bonjour Léa, je remarque que vous n’avez pas encore commencé le module 2. Avez-vous besoin d’aide pour avancer ?",
+        hoursAgo: 24,
+        read: false,
+      },
+    ]);
+  }
+
+  // Thread 4: Admin <-> Martin
+  await insertThread(adminId, martinId, null, [
+    {
+      senderId: adminId,
+      body: "Julien, nous préparons la prochaine cohorte pour septembre. Pourriez-vous mettre à jour le cours Marketing Digital ?",
+      hoursAgo: 48,
+      read: true,
+    },
+    {
+      senderId: martinId,
+      body: "Bien sûr Sophie, je m’en occupe cette semaine. Je prévois d’ajouter un module sur l’IA générative appliquée au marketing.",
+      hoursAgo: 44,
+      read: true,
+    },
+    {
+      senderId: adminId,
+      body: "Excellent ! C’est exactement ce que les entreprises demandent. Tenez-moi au courant.",
+      hoursAgo: 40,
+      read: true,
+    },
+  ]);
+
+  console.log("  ✓ Demo conversations created");
+
+  // ── Notifications ────────────────────────
+
+  console.log("  Creating demo notifications...");
+
+  await db.insert(notifications).values([
+    {
+      userId: martinId,
+      type: "new_message" as const,
+      title: "Nouveau message",
+      body: "Bonjour Monsieur Martin, j’ai une question sur le module SEO...",
+      entityType: "thread",
+      createdAt: new Date(Date.now() - 3600000),
+      readAt: new Date(),
+    },
+    {
+      userId: martinId,
+      type: "enrolment_created" as const,
+      title: "Nouvel inscrit",
+      body: "Un nouvel apprenant s’est inscrit à Fondamentaux du Marketing Digital.",
+      entityType: "course",
+      entityId: course1Id,
+      createdAt: new Date(Date.now() - 86400000),
+      readAt: null,
+    },
+    {
+      userId: martinId,
+      type: "enrolment_created" as const,
+      title: "Nouvel inscrit",
+      body: "Un nouvel apprenant s’est inscrit à Communication Professionnelle.",
+      entityType: "course",
+      entityId: course3Id,
+      createdAt: new Date(Date.now() - 172800000),
+      readAt: new Date(),
+    },
+  ]);
+
+  if (marieId !== undefined) {
+    await db.insert(notifications).values([
+      {
+        userId: marieId,
+        type: "new_message" as const,
+        title: "Nouveau message",
+        body: "Parfait ! N’hésitez pas si vous avez d’autres questions...",
+        entityType: "thread",
+        createdAt: new Date(Date.now() - 3600000),
+        readAt: null,
+      },
+      {
+        userId: marieId,
+        type: "grading_returned" as const,
+        title: "Travail noté",
+        body: "Votre travail a été évalué.",
+        entityType: "submission",
+        createdAt: new Date(Date.now() - 259200000),
+        readAt: new Date(),
+      },
+    ]);
+  }
+
+  await db.insert(notifications).values([
+    {
+      userId: adminId,
+      type: "enrolment_created" as const,
+      title: "Nouvel inscrit",
+      body: "Marie Dupont s’est inscrite à Excel pour les Professionnels.",
+      entityType: "course",
+      entityId: course2Id,
+      createdAt: new Date(Date.now() - 43200000),
+      readAt: null,
+    },
+    {
+      userId: adminId,
+      type: "new_message" as const,
+      title: "Nouveau message",
+      body: "Bien sûr Sophie, je m’en occupe cette semaine...",
+      entityType: "thread",
+      createdAt: new Date(Date.now() - 14400000),
+      readAt: new Date(),
+    },
+  ]);
+
+  if (leaId !== undefined) {
+    await db.insert(notifications).values({
+      userId: leaId,
+      type: "new_message" as const,
+      title: "Nouveau message",
+      body: "Bonjour Léa, je remarque que vous n’avez pas encore commencé...",
+      entityType: "thread",
+      createdAt: new Date(Date.now() - 86400000),
+      readAt: null,
+    });
+  }
+
+  console.log("  ✓ Demo notifications created");
+
   console.log("\n✅ Seed complete!\n");
   console.log("Demo accounts:");
   console.log("  Admin    → admin@praxisa.fr       / Admin1234!");

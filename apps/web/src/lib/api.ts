@@ -142,6 +142,9 @@ export interface Course {
   description: string | null;
   status: "draft" | "published" | "archived";
   instructorId: string | null;
+  instructorName: string | null;
+  averageRating: number;
+  totalRatings: number;
   language: string;
   thumbnailUrl: string | null;
   createdAt: string;

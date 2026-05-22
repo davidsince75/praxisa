@@ -23,8 +23,11 @@ import { LearnProgress } from "@/pages/analytics/LearnProgress.js";
 import { AdminMessagesPage } from "@/pages/messages/AdminMessages.js";
 import { TeacherMessagesPage } from "@/pages/teacher/TeacherMessages.js";
 import { TeacherGradingPage } from "@/pages/teacher/TeacherGrading.js";
+import { TeacherGradingOverviewPage } from "@/pages/teacher/TeacherGradingOverview.js";
+import { TeacherStudentsPage } from "@/pages/teacher/TeacherStudents.js";
 import { LearnMessagesPage } from "@/pages/learn/LearnMessages.js";
 import { LearnAIChatPage } from "@/pages/learn/LearnAIChat.js";
+import { LearnCertificatesPage } from "@/pages/learn/LearnCertificates.js";
 import { TeacherAIIngestPage } from "@/pages/teacher/TeacherAIIngest.js";
 import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
 import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
@@ -86,6 +89,7 @@ export function App() {
             <TeacherShell>
               <Routes>
                 <Route path="/courses" element={<TeacherCoursesPage />} />
+                <Route path="/students" element={<TeacherStudentsPage />} />
                 <Route
                   path="/courses/:courseId"
                   element={<TeacherCourseDetailPage />}
@@ -95,6 +99,10 @@ export function App() {
                   element={<TeacherCourseBuilderPage />}
                 />
                 <Route path="/analytics" element={<TeacherAnalytics />} />
+                <Route
+                  path="/grading"
+                  element={<TeacherGradingOverviewPage />}
+                />
                 <Route path="/messages" element={<TeacherMessagesPage />} />
                 <Route
                   path="/courses/:courseId/grading"
@@ -125,6 +133,10 @@ export function App() {
                   element={<LearnCertificatePage />}
                 />
                 <Route path="/progress" element={<LearnProgress />} />
+                <Route
+                  path="/certificates"
+                  element={<LearnCertificatesPage />}
+                />
                 <Route path="/messages" element={<LearnMessagesPage />} />
                 <Route path="/ai" element={<LearnAIChatPage />} />
               </Routes>
