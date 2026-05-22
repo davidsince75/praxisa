@@ -13,6 +13,25 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+export function clearAuth(): void {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem("praxisa_user");
+}
+
+export function isTokenExpired(): boolean {
+  const token = getToken();
+  if (token === null) return true;
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return true;
+    const payload = JSON.parse(atob(parts[1])) as { exp?: number };
+    if (typeof payload.exp !== "number") return true;
+    return payload.exp * 1000 < Date.now();
+  } catch {
+    return true;
+  }
+}
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -42,9 +61,9 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     };
     const message = body.message ?? body.error ?? res.statusText;
     if (res.status === 401) {
-      console.error(`[api] 401 on ${init.method ?? "GET"} ${path}:`, message);
-      clearToken();
+      clearAuth();
       window.location.href = "/login";
+      return undefined as T;
     }
     throw new ApiError(res.status, message);
   }

@@ -1,5 +1,11 @@
 import { useState, useCallback } from "react";
-import { api, setToken, clearToken, getToken } from "@/lib/api.js";
+import {
+  api,
+  setToken,
+  clearAuth,
+  getToken,
+  isTokenExpired,
+} from "@/lib/api.js";
 import type { LoginResponse } from "@/lib/api.js";
 import { queryClient } from "@/lib/query.js";
 
@@ -22,7 +28,13 @@ function parseStoredUser(): AuthUser | null {
 }
 
 export function useAuth() {
-  const [user, setUser] = useState<AuthUser | null>(parseStoredUser);
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    if (isTokenExpired()) {
+      clearAuth();
+      return null;
+    }
+    return parseStoredUser();
+  });
 
   const login = useCallback(
     async (email: string, password: string): Promise<void> => {
@@ -38,8 +50,7 @@ export function useAuth() {
   );
 
   const logout = useCallback((): void => {
-    clearToken();
-    localStorage.removeItem("praxisa_user");
+    clearAuth();
     setUser(null);
     queryClient.clear();
   }, []);
