@@ -24,11 +24,19 @@ export function isTokenExpired(): boolean {
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return true;
-    const payload = JSON.parse(atob(parts[1])) as { exp?: number };
-    if (typeof payload.exp !== "number") return true;
+    // JWT uses base64url — convert to standard base64 for atob
+    let b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4;
+    if (pad > 0) {
+      b64 += "=".repeat(4 - pad);
+    }
+    const payload = JSON.parse(atob(b64)) as { exp?: number };
+    if (typeof payload.exp !== "number") return false;
     return payload.exp * 1000 < Date.now();
   } catch {
-    return true;
+    // If we can't decode the token, don't wipe the session —
+    // let the API 401 handler deal with truly invalid tokens.
+    return false;
   }
 }
 

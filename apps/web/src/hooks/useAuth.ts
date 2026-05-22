@@ -30,7 +30,9 @@ function parseStoredUser(): AuthUser | null {
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(() => {
     if (isTokenExpired()) {
-      clearAuth();
+      // Don't clear localStorage here — side effects in useState
+      // initializers race with React's render cycle. The stale entries
+      // will be overwritten on next login or cleaned by the 401 handler.
       return null;
     }
     return parseStoredUser();
