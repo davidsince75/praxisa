@@ -146,8 +146,13 @@ export function TeacherStudentsPage() {
                       key={`${s.studentId}-${s.courseId}`}
                       className="hover:bg-cream/50 transition-colors"
                     >
-                      <td className="px-6 py-3 font-medium text-dark">
-                        {s.firstName} {s.lastName}
+                      <td className="px-6 py-3 font-medium">
+                        <Link
+                          to={`/teacher/students/${s.studentId}`}
+                          className="text-teal hover:underline"
+                        >
+                          {s.firstName} {s.lastName}
+                        </Link>
                       </td>
                       <td className="px-6 py-3 text-meta">{s.email}</td>
                       <td className="px-6 py-3">

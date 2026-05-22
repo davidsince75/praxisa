@@ -25,12 +25,14 @@ import { TeacherMessagesPage } from "@/pages/teacher/TeacherMessages.js";
 import { TeacherGradingPage } from "@/pages/teacher/TeacherGrading.js";
 import { TeacherGradingOverviewPage } from "@/pages/teacher/TeacherGradingOverview.js";
 import { TeacherStudentsPage } from "@/pages/teacher/TeacherStudents.js";
+import { TeacherStudentDetailPage } from "@/pages/teacher/TeacherStudentDetail.js";
 import { LearnMessagesPage } from "@/pages/learn/LearnMessages.js";
 import { LearnAIChatPage } from "@/pages/learn/LearnAIChat.js";
 import { LearnCertificatesPage } from "@/pages/learn/LearnCertificates.js";
 import { TeacherAIIngestPage } from "@/pages/teacher/TeacherAIIngest.js";
 import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
 import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
+import { DataImportPage } from "@/pages/import/DataImport.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin } = useAuth();
@@ -75,6 +77,7 @@ export function App() {
                 <Route path="/audit" element={<AuditLogPage />} />
                 <Route path="/ai-assistant" element={<AdminAIDraftPage />} />
                 <Route path="/campaigns" element={<AdminCampaignsPage />} />
+                <Route path="/import" element={<DataImportPage />} />
               </Routes>
             </Shell>
           </RequireAdmin>
@@ -90,6 +93,10 @@ export function App() {
               <Routes>
                 <Route path="/courses" element={<TeacherCoursesPage />} />
                 <Route path="/students" element={<TeacherStudentsPage />} />
+                <Route
+                  path="/students/:studentId"
+                  element={<TeacherStudentDetailPage />}
+                />
                 <Route
                   path="/courses/:courseId"
                   element={<TeacherCourseDetailPage />}

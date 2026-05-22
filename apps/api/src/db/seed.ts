@@ -215,7 +215,13 @@ async function markProgress(
 // ── Seed data ─────────────────────────────────────────────────────────────────
 
 async function seed() {
-  console.log("🌱 Seeding demo data...");
+  console.log("\u{1F331} Seeding Praxisa clinical psychology demo data...");
+
+  // ── Clean slate ─────────────────────────────────────────────────────────
+  console.log("  Clearing existing demo data...");
+  await db.execute(
+    sql`TRUNCATE notifications, messages, message_threads, quiz_attempts, quiz_questions, exercises, lesson_progress, enrolments, lessons, course_modules, course_ratings, courses, users CASCADE`,
+  );
 
   // ── Users ─────────────────────────────────────────────────────────────────
 
@@ -229,18 +235,18 @@ async function seed() {
     role: "admin",
   });
 
-  const martinId = await upsertUser({
+  const clairembeaudId = await upsertUser({
     email: "prof.martin@praxisa.fr",
-    firstName: "Julien",
-    lastName: "Martin",
+    firstName: "Jean-Marc",
+    lastName: "Clairembeaud",
     password: "Teacher1234!",
     role: "instructor",
   });
 
   const leblancId = await upsertUser({
     email: "prof.leblanc@praxisa.fr",
-    firstName: "Claire",
-    lastName: "Leblanc",
+    firstName: "Nathalie",
+    lastName: "Dubois-Faure",
     password: "Teacher1234!",
     role: "instructor",
   });
@@ -315,1149 +321,790 @@ async function seed() {
 
   console.log(`  ✓ ${String(studentIds.length + 3)} users created`);
 
-  // ── Course 1: Marketing Digital ───────────────────────────────────────────
+  // ── Course 1: Psychologie clinique (main program) ────────────────────────
 
-  console.log("  Building course 1: Marketing Digital...");
+  console.log("  Building course 1: Psychologie clinique...");
 
   const course1Id = await upsertCourse({
-    slug: "fondamentaux-marketing-digital",
-    title: "Fondamentaux du Marketing Digital",
+    slug: "psychologie-clinique",
+    title: "Psychologie clinique — Formation complète",
     description:
-      "Maîtrisez les bases du marketing digital : SEO, réseaux sociaux, publicité en ligne et analytique web. Une formation complète pour développer votre présence numérique.",
-    instructorId: martinId,
+      "Formation fondamentale en psychologie clinique : structures de la personnalité, psychopathologie, analyse du caractère, processus conscients et inconscients. Programme de 480 heures validé Qualiopi, couvrant les 14 unités du cursus de psychopraticien.",
+    instructorId: clairembeaudId,
     thumbnailUrl:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800",
+      "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800",
   });
 
-  // Module 1
+  // Module 1 — U1: Structures de la personnalité
   const c1m1 = await insertModule(
     course1Id,
-    "Introduction au Marketing Digital",
-    "Les fondements et l'écosystème digital",
+    "U1 — Structures de la personnalité",
+    "Les grandes structures de la personnalité selon les approches psychanalytiques, cognitives et intégratives.",
     0,
   );
   const c1m1l1 = await insertLesson({
     moduleId: c1m1,
-    title: "Qu'est-ce que le marketing digital ?",
+    title: "Introduction aux structures de la personnalité",
     position: 0,
     contentType: "text",
     isFreePreview: true,
-    durationMinutes: 8,
-    contentBody: `<h2>Le marketing digital : définition et enjeux</h2>
-<p>Le marketing digital désigne l'ensemble des techniques marketing utilisées sur les supports et canaux digitaux pour promouvoir des produits et services auprès des consommateurs.</p>
-<h3>Pourquoi le marketing digital est-il essentiel ?</h3>
-<ul>
-  <li><strong>Portée mondiale</strong> : Toucher des audiences à l'échelle internationale</li>
-  <li><strong>Coût maîtrisé</strong> : Des budgets adaptables à toutes les tailles d'entreprise</li>
-  <li><strong>Mesurabilité</strong> : Des résultats trackables en temps réel</li>
-  <li><strong>Personnalisation</strong> : Des messages ciblés selon les profils</li>
-</ul>
-<h3>Les 5 piliers du marketing digital</h3>
-<ol>
-  <li>Le référencement naturel (SEO)</li>
-  <li>La publicité payante (SEA / Social Ads)</li>
-  <li>Les réseaux sociaux (Social Media Marketing)</li>
-  <li>L'email marketing</li>
-  <li>Le content marketing</li>
-</ol>
-<p>Dans cette formation, nous explorerons chacun de ces piliers avec des exemples concrets et des exercices pratiques.</p>`,
+    durationMinutes: 15,
+    contentBody: `<h2>Les structures de la personnalité</h2>
+<p>La psychologie clinique distingue traditionnellement trois grandes structures de la personnalité : névrotique, psychotique et état-limite (borderline). Cette classification, héritée des travaux de Jean Bergeret, reste un outil fondamental pour le clinicien.</p>
+<h3>Structure névrotique</h3>
+<p>Caractérisée par un œdipe structurant, un surmoi bien intériorisé et des mécanismes de défense évolués (refoulement, déplacement, rationalisation). L’angoisse prédominante est l’angoisse de castration.</p>
+<h3>Structure psychotique</h3>
+<p>Marquée par un défaut de symbolisation, des mécanismes archaïques (déni, clivage du moi, projection) et une angoisse de morcellement. Le rapport à la réalité est altéré.</p>
+<h3>États-limites</h3>
+<p>Aménagement instable entre les deux structures, avec des mécanismes de clivage de l’objet et une angoisse d’abandon. Le narcissisme est fragile.</p>`,
   });
 
   const c1m1l2 = await insertLesson({
     moduleId: c1m1,
-    title: "L'écosystème digital en 2024",
+    title: "Les mécanismes de défense",
     position: 1,
     contentType: "video",
     contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
-    durationMinutes: 12,
+    durationMinutes: 18,
   });
 
   const c1m1l3 = await insertLesson({
     moduleId: c1m1,
-    title: "Quiz — Les bases du marketing digital",
+    title: "Quiz — Structures de la personnalité",
     position: 2,
     contentType: "text",
-    durationMinutes: 5,
+    durationMinutes: 10,
   });
-  const c1m1e1 = await insertExercise(c1m1l3, "Quiz introductif", "quiz", 0, 4);
+  const c1m1e1 = await insertExercise(
+    c1m1l3,
+    "Quiz structures de la personnalité",
+    "quiz",
+    0,
+    4,
+  );
   await insertQuizQuestions(c1m1e1, [
     {
       questionText:
-        "Quel est le principal avantage du marketing digital par rapport au marketing traditionnel ?",
+        "Selon Jean Bergeret, quelle est l’angoisse prédominante dans la structure névrotique ?",
       options: [
-        { id: "a", text: "Il est toujours moins cher" },
-        { id: "b", text: "Il permet une mesure précise des résultats" },
-        { id: "c", text: "Il ne nécessite aucune compétence technique" },
-        { id: "d", text: "Il garantit des ventes immédiates" },
+        { id: "a", text: "Angoisse de morcellement" },
+        { id: "b", text: "Angoisse de castration" },
+        { id: "c", text: "Angoisse d’abandon" },
+        { id: "d", text: "Angoisse de persécution" },
       ],
       correctOptionId: "b",
       explanation:
-        "La mesurabilité est l'un des atouts majeurs du digital : chaque action peut être tracée et analysée en temps réel.",
-    },
-    {
-      questionText: "Que signifie l'acronyme SEO ?",
-      options: [
-        { id: "a", text: "Social Engagement Optimization" },
-        { id: "b", text: "Search Engine Optimization" },
-        { id: "c", text: "Sales Enhancement Operation" },
-        { id: "d", text: "Secure Email Output" },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "SEO (Search Engine Optimization) désigne l'ensemble des techniques visant à améliorer le positionnement d'un site dans les résultats des moteurs de recherche.",
+        "L’angoisse de castration est spécifique à la structure névrotique, liée au complexe d’Œdipe et à la crainte symbolique de la perte.",
     },
     {
       questionText:
-        "Parmi les canaux suivants, lequel appartient au marketing digital ?",
+        "Quel mécanisme de défense est typique de la structure psychotique ?",
       options: [
-        { id: "a", text: "Affichage publicitaire en ville" },
-        { id: "b", text: "Spot radio" },
-        { id: "c", text: "Campagne Instagram Ads" },
-        { id: "d", text: "Encart dans un magazine" },
+        { id: "a", text: "Le refoulement" },
+        { id: "b", text: "La sublimation" },
+        { id: "c", text: "Le déni de la réalité" },
+        { id: "d", text: "La rationalisation" },
       ],
       correctOptionId: "c",
       explanation:
-        "Instagram Ads est une plateforme publicitaire digitale. Les autres options sont des canaux de marketing traditionnel.",
+        "Le déni de la réalité est un mécanisme archaïque caractéristique de la structure psychotique, où le sujet rejette un fragment de la réalité externe.",
     },
     {
       questionText:
-        "Quel outil est le plus utilisé pour mesurer le trafic d'un site web ?",
+        "Quelle est la caractéristique principale de l’aménagement état-limite ?",
       options: [
-        { id: "a", text: "Microsoft Excel" },
-        { id: "b", text: "Google Analytics" },
-        { id: "c", text: "Adobe Photoshop" },
-        { id: "d", text: "Slack" },
+        { id: "a", text: "Un surmoi rigide" },
+        { id: "b", text: "Un narcissisme solide" },
+        { id: "c", text: "Un clivage de l’objet" },
+        { id: "d", text: "Une symbolisation aboutie" },
       ],
-      correctOptionId: "b",
+      correctOptionId: "c",
       explanation:
-        "Google Analytics est l'outil de mesure d'audience web le plus répandu, permettant de suivre les visites, sources de trafic et comportements des utilisateurs.",
+        "Le clivage de l’objet — alternance entre idéalisation et dévalorisation — est le mécanisme central des états-limites.",
+    },
+    {
+      questionText: "Qui a formalisé la nosographie structurale en France ?",
+      options: [
+        { id: "a", text: "Sigmund Freud" },
+        { id: "b", text: "Jacques Lacan" },
+        { id: "c", text: "Jean Bergeret" },
+        { id: "d", text: "Carl Rogers" },
+      ],
+      correctOptionId: "c",
+      explanation:
+        "Jean Bergeret a développé la nosographie structurale française distinguant névrose, psychose et états-limites.",
     },
   ]);
 
-  // Module 2
+  // Module 2 — U2: Psychopathologie fondamentale
   const c1m2 = await insertModule(
     course1Id,
-    "SEO — Référencement Naturel",
-    "Optimiser sa visibilité sur les moteurs de recherche",
+    "U2 — Psychopathologie fondamentale",
+    "Classification et compréhension des troubles psychiques : névroses, psychoses, troubles de l’humeur, troubles anxieux.",
     1,
   );
   const c1m2l1 = await insertLesson({
     moduleId: c1m2,
-    title: "Les fondamentaux du SEO",
+    title: "Les névroses : hysterie, obsessionnelle, phobique",
     position: 0,
     contentType: "text",
-    durationMinutes: 15,
-    contentBody: `<h2>Comment fonctionne un moteur de recherche ?</h2>
-<p>Les moteurs de recherche comme Google utilisent des robots (crawlers) pour explorer, indexer et classer les pages web. Comprendre ce processus est essentiel pour optimiser son référencement.</p>
-<h3>Les 3 piliers du SEO</h3>
-<h4>1. Technique</h4>
-<p>Vitesse de chargement, structure des URLs, balises meta, données structurées, compatibilité mobile...</p>
-<h4>2. Contenu</h4>
-<p>Qualité et pertinence des textes, densité des mots-clés, richesse sémantique, fraîcheur du contenu...</p>
-<h4>3. Autorité (netlinking)</h4>
-<p>Nombre et qualité des liens entrants (backlinks), citations de marque, présence sur les annuaires...</p>
-<h3>Les balises indispensables</h3>
-<pre><code>&lt;title&gt;Titre de la page (50-60 caractères)&lt;/title&gt;
-&lt;meta name="description" content="Description (150-160 caractères)"&gt;
-&lt;h1&gt;Titre principal unique par page&lt;/h1&gt;</code></pre>`,
+    durationMinutes: 20,
+    contentBody: `<h2>Les névroses</h2>
+<p>Les névroses constituent un ensemble de troubles psychiques caractérisés par des conflits intrapsychiques inconscients. Le sujet conserve le sens de la réalité mais souffre de symptômes gênants.</p>
+<h3>Névrose hystérique (conversion)</h3>
+<p>Conversion somatique de conflits psychiques. Symptômes corporels sans substrat organique : paralysies, amnésies, crises pseudo-épileptiques.</p>
+<h3>Névrose obsessionnelle (TOC)</h3>
+<p>Pensées intrusives récurrentes et rituels compulsifs. Lutte permanente entre désir et interdit, avec des formations réactionnelles et des mécanismes d’isolation.</p>
+<h3>Névrose phobique</h3>
+<p>Déplacement de l’angoisse sur un objet ou une situation externe. Mécanismes de déplacement et d’évitement. Agoraphobie, claustrophobie, phobies sociales.</p>`,
   });
 
   const c1m2l2 = await insertLesson({
     moduleId: c1m2,
-    title: "Guide pratique SEO 2024",
+    title: "Les troubles de l’humeur : dépression et bipolarité",
     position: 1,
-    contentType: "pdf",
-    contentUrl:
-      "https://web.dev/static/articles/vitals/image/core-web-vitals-overview.pdf",
-    durationMinutes: 20,
+    contentType: "video",
+    contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
+    durationMinutes: 22,
   });
 
   const c1m2l3 = await insertLesson({
     moduleId: c1m2,
-    title: "Quiz SEO",
+    title: "Les psychoses : schizophrénie et paranoïa",
     position: 2,
     contentType: "text",
-    durationMinutes: 5,
+    durationMinutes: 25,
+    contentBody: `<h2>Les psychoses</h2>
+<p>Les psychoses sont des troubles sévères où le rapport à la réalité est profondément altéré. Le sujet ne reconnaît pas le caractère pathologique de ses symptômes.</p>
+<h3>Schizophrénie</h3>
+<p>Dissociation, délires, hallucinations, retrait social. Symptômes positifs (productions délirantes) et négatifs (apathie, alogie).</p>
+<h3>Paranoïa</h3>
+<p>Délire systématisé, cohérent et inaltérable. Thèmes de persécution, jalousie, érotomanie. Hypertrophie du moi.</p>`,
   });
-  const c1m2e1 = await insertExercise(c1m2l3, "Quiz SEO", "quiz", 0, 3);
+
+  const c1m2l4 = await insertLesson({
+    moduleId: c1m2,
+    title: "Quiz — Psychopathologie",
+    position: 3,
+    contentType: "text",
+    durationMinutes: 8,
+  });
+  const c1m2e1 = await insertExercise(
+    c1m2l4,
+    "Quiz psychopathologie",
+    "quiz",
+    0,
+    3,
+  );
   await insertQuizQuestions(c1m2e1, [
     {
       questionText:
-        "Quel est le nombre idéal de mots-clés principaux à cibler par page ?",
+        "Quel est le mécanisme de défense principal de la névrose phobique ?",
       options: [
-        { id: "a", text: "1 mot-clé principal" },
-        { id: "b", text: "5 à 10 mots-clés" },
-        { id: "c", text: "20 mots-clés minimum" },
-        { id: "d", text: "Autant que possible" },
+        { id: "a", text: "La projection" },
+        { id: "b", text: "Le déplacement" },
+        { id: "c", text: "L’isolation" },
+        { id: "d", text: "Le déni" },
       ],
-      correctOptionId: "a",
+      correctOptionId: "b",
       explanation:
-        "Chaque page doit cibler un mot-clé principal pour éviter la cannibalisation et permettre aux moteurs de recherche de comprendre clairement le sujet.",
+        "Dans la névrose phobique, l’angoisse est déplacée sur un objet ou une situation externe, permettant au sujet de l’éviter.",
     },
     {
-      questionText: "Que signifie un backlink de qualité ?",
+      questionText:
+        "Qu’est-ce qui distingue un délire schizophrénique d’un délire paranoïaque ?",
       options: [
         {
           id: "a",
-          text: "Un lien provenant d'un site avec beaucoup de publicités",
+          text: "Le délire schizophrénique est systématisé et cohérent",
         },
+        { id: "b", text: "Le délire paranoïaque est polymorphe et incohérent" },
         {
-          id: "b",
-          text: "Un lien provenant d'un site autoritaire et thématiquement cohérent",
+          id: "c",
+          text: "Le délire schizophrénique est non systématisé et flou",
         },
-        { id: "c", text: "Un lien payant sur n'importe quel site" },
-        { id: "d", text: "Un lien en rouge sur la page" },
+        { id: "d", text: "Ils sont identiques" },
       ],
-      correctOptionId: "b",
+      correctOptionId: "c",
       explanation:
-        "La qualité d'un backlink dépend de l'autorité du site source et de sa pertinence thématique par rapport à votre contenu.",
+        "Le délire schizophrénique est typiquement non systématisé, polymorphe et flou, tandis que le délire paranoïaque est systématisé et cohérent.",
     },
     {
-      questionText: "Core Web Vitals mesure principalement :",
+      questionText:
+        "Dans quelle névrose observe-t-on des formations réactionnelles ?",
       options: [
-        { id: "a", text: "Le nombre de mots sur une page" },
-        {
-          id: "b",
-          text: "L'expérience utilisateur (vitesse, stabilité visuelle, interactivité)",
-        },
-        { id: "c", text: "Le nombre de backlinks" },
-        { id: "d", text: "La longueur du nom de domaine" },
+        { id: "a", text: "Névrose hystérique" },
+        { id: "b", text: "Névrose phobique" },
+        { id: "c", text: "Névrose obsessionnelle" },
+        { id: "d", text: "Névrose d’angoisse" },
       ],
-      correctOptionId: "b",
+      correctOptionId: "c",
       explanation:
-        "Core Web Vitals est un ensemble de métriques Google évaluant l'expérience utilisateur réelle : LCP (chargement), FID (interactivité) et CLS (stabilité).",
+        "Les formations réactionnelles sont caractéristiques de la névrose obsessionnelle : le sujet adopte des attitudes opposées à ses désirs refoulés.",
     },
   ]);
 
-  // Module 3
+  // Module 3 — U4: Conscience et inconscient
   const c1m3 = await insertModule(
     course1Id,
-    "Réseaux Sociaux & Publicité",
-    "Créer et piloter des campagnes performantes",
+    "U4 — Conscience et inconscient",
+    "Exploration des niveaux de conscience, du rôle de l’inconscient, et des apports de la psychanalyse freudienne et lacanienne.",
     2,
   );
   const c1m3l1 = await insertLesson({
     moduleId: c1m3,
-    title: "Stratégie réseaux sociaux",
+    title: "La première topique freudienne",
     position: 0,
-    contentType: "video",
-    contentUrl: "https://www.youtube.com/embed/wnOhqDCagUw",
+    contentType: "text",
     durationMinutes: 18,
+    contentBody: `<h2>La première topique : Conscient, Préconscient, Inconscient</h2>
+<p>Freud a proposé en 1900 son premier modèle de l’appareil psychique, la « première topique », distinguant trois instances :</p>
+<h3>Le Conscient (Cs)</h3>
+<p>Système en contact direct avec le monde extérieur. Perception, pensée rationnelle, parole. Fonctionnement selon le principe de réalité.</p>
+<h3>Le Préconscient (Pcs)</h3>
+<p>Réservoir de souvenirs et pensées accessibles à la conscience par un effort d’attention. Fonctionne comme un filtre entre inconscient et conscient.</p>
+<h3>L’Inconscient (Ics)</h3>
+<p>Siège des désirs refoulés, des pulsions et des représentations interdites. Fonctionne selon le principe de plaisir. Se manifeste à travers les rêves, les actes manqués, les symptômes.</p>`,
   });
+
   const c1m3l2 = await insertLesson({
     moduleId: c1m3,
-    title: "Créer sa première campagne Meta Ads",
+    title: "La seconde topique : Ça, Moi, Surmoi",
     position: 1,
+    contentType: "video",
+    contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
+    durationMinutes: 20,
+  });
+
+  const c1m3l3 = await insertLesson({
+    moduleId: c1m3,
+    title: "Quiz — Topiques freudiennes",
+    position: 2,
+    contentType: "text",
+    durationMinutes: 8,
+  });
+  const c1m3e1 = await insertExercise(
+    c1m3l3,
+    "Quiz topiques freudiennes",
+    "quiz",
+    0,
+    3,
+  );
+  await insertQuizQuestions(c1m3e1, [
+    {
+      questionText:
+        "Selon Freud, quel principe régit le fonctionnement de l’inconscient ?",
+      options: [
+        { id: "a", text: "Le principe de réalité" },
+        { id: "b", text: "Le principe de plaisir" },
+        { id: "c", text: "Le principe de constance" },
+        { id: "d", text: "Le principe d’économie" },
+      ],
+      correctOptionId: "b",
+      explanation:
+        "L’inconscient fonctionne selon le principe de plaisir : il cherche la satisfaction immédiate des pulsions sans tenir compte de la réalité extérieure.",
+    },
+    {
+      questionText:
+        "Dans la seconde topique, quelle instance représente les interdits intériorisés ?",
+      options: [
+        { id: "a", text: "Le Ça" },
+        { id: "b", text: "Le Moi" },
+        { id: "c", text: "Le Surmoi" },
+        { id: "d", text: "Le Préconscient" },
+      ],
+      correctOptionId: "c",
+      explanation:
+        "Le Surmoi est l’instance qui représente les interdits parentaux et sociaux intériorisés, agissant comme une conscience morale interne.",
+    },
+    {
+      questionText:
+        "Quel phénomène quotidien constitue, selon Freud, « la voie royale vers l’inconscient » ?",
+      options: [
+        { id: "a", text: "Les actes manqués" },
+        { id: "b", text: "Les lapsus" },
+        { id: "c", text: "Le rêve" },
+        { id: "d", text: "Le transfert" },
+      ],
+      correctOptionId: "c",
+      explanation:
+        "Freud a qualifié le rêve de « voie royale vers l’inconscient » dans L’Interprétation du rêve (1900), car le rêve exprime les désirs refoulés sous forme déguisée.",
+    },
+  ]);
+
+  // Module 4 — U6: Cerveau, émotions et attachement (Bowlby)
+  const c1m4 = await insertModule(
+    course1Id,
+    "U6 — Cerveau, émotions et attachement",
+    "Théorie de l’attachement de Bowlby, neurosciences affectives et régulation émotionnelle.",
+    3,
+  );
+  const c1m4l1 = await insertLesson({
+    moduleId: c1m4,
+    title: "La théorie de l’attachement de John Bowlby",
+    position: 0,
     contentType: "text",
     durationMinutes: 20,
-    contentBody: `<h2>Lancer une campagne publicitaire sur Meta (Facebook & Instagram)</h2>
-<p>Meta Ads Manager est la plateforme centralisée pour créer et gérer des publicités sur Facebook et Instagram. Voici les étapes clés.</p>
-<h3>Structure d'une campagne Meta</h3>
-<p>Une campagne est organisée en 3 niveaux :</p>
+    contentBody: `<h2>L’attachement : un besoin fondamental</h2>
+<p>John Bowlby (1907–1990) a révolutionné la psychologie du développement en montrant que le besoin d’attachement est un besoin primaire, aussi fondamental que la faim ou la soif.</p>
+<h3>Les 4 styles d’attachement (Ainsworth)</h3>
 <ul>
-  <li><strong>Campagne</strong> : Objectif marketing (notoriété, trafic, conversions…)</li>
-  <li><strong>Ensemble d'annonces</strong> : Audience, budget, calendrier, placements</li>
-  <li><strong>Annonce</strong> : Visuels, textes, appel à l'action</li>
+  <li><strong>Sécure</strong> — L’enfant explore avec confiance, revient vers la figure d’attachement en cas de stress.</li>
+  <li><strong>Insecure-évitant</strong> — L’enfant évite le contact avec la figure d’attachement, semble indifférent.</li>
+  <li><strong>Insecure-ambivalent</strong> — L’enfant est à la fois en quête et en rejet de la proximité.</li>
+  <li><strong>Désorganisé</strong> — Comportements contradictoires, souvent liés à des traumatismes précoces.</li>
 </ul>
-<h3>Choisir le bon objectif</h3>
-<table>
-  <tr><th>Objectif</th><th>Quand l'utiliser</th></tr>
-  <tr><td>Notoriété</td><td>Lancer une nouvelle marque</td></tr>
-  <tr><td>Trafic</td><td>Amener des visiteurs sur votre site</td></tr>
-  <tr><td>Leads</td><td>Collecter des contacts qualifiés</td></tr>
-  <tr><td>Ventes</td><td>E-commerce avec catalogue produit</td></tr>
-</table>
-<h3>Ciblage : la clé du succès</h3>
-<p>Meta propose trois types d'audiences :</p>
-<ol>
-  <li><strong>Audiences principales</strong> : Démographie, intérêts, comportements</li>
-  <li><strong>Audiences personnalisées</strong> : Vos clients existants, visiteurs du site</li>
-  <li><strong>Audiences similaires (Lookalike)</strong> : Profils ressemblant à vos meilleurs clients</li>
-</ol>`,
+<h3>Implications cliniques</h3>
+<p>Le style d’attachement établi dans l’enfance influence les relations adultes, la régulation émotionnelle et la vulnérabilité aux troubles psychiques. La psychothérapie peut permettre de « gagner en sécurité » (earned security).</p>`,
   });
 
-  console.log("  ✓ Course 1 built");
+  const c1m4l2 = await insertLesson({
+    moduleId: c1m4,
+    title: "Neurosciences affectives et régulation émotionnelle",
+    position: 1,
+    contentType: "pdf",
+    contentUrl:
+      "https://web.dev/static/articles/vitals/image/core-web-vitals-overview.pdf",
+    durationMinutes: 25,
+  });
 
-  // ── Course 2: Excel Professionnel ─────────────────────────────────────────
+  // ── Course 2: Psychologie de l’enfant ───────────────────────────────────
 
-  console.log("  Building course 2: Excel Professionnel...");
+  console.log("  Building course 2: Psychologie de l’enfant...");
 
   const course2Id = await upsertCourse({
-    slug: "excel-pour-les-professionnels",
-    title: "Excel pour les Professionnels",
+    slug: "psychologie-enfant",
+    title: "Psychologie de l’enfant et du développement",
     description:
-      "De la feuille de calcul simple aux tableaux de bord avancés. Maîtrisez Excel pour gagner en productivité et prendre de meilleures décisions grâce aux données.",
+      "Développement psycho-affectif de l’enfant, stades du développement (Piaget, Wallon, Freud), troubles du développement et prises en charge adaptées. 480 heures de formation à distance.",
     instructorId: leblancId,
     thumbnailUrl:
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800",
+      "https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=800",
   });
 
+  // Module 1
   const c2m1 = await insertModule(
     course2Id,
-    "Les Bases d'Excel",
-    "Navigation, formules essentielles et mise en forme",
+    "Les stades du développement",
+    "Piaget, Wallon, Freud : les grandes théories du développement de l’enfant.",
     0,
   );
   const c2m1l1 = await insertLesson({
     moduleId: c2m1,
-    title: "Interface et navigation",
+    title: "Les stades du développement selon Piaget",
     position: 0,
     contentType: "text",
-    isFreePreview: true,
-    durationMinutes: 10,
-    contentBody: `<h2>Découvrir l'interface Excel</h2>
-<p>Excel est organisé autour de quelques zones clés que vous devez maîtriser pour travailler efficacement.</p>
-<h3>Les éléments principaux</h3>
-<ul>
-  <li><strong>Le ruban</strong> : La barre d'outils en haut avec tous les menus (Accueil, Insertion, Formules…)</li>
-  <li><strong>La barre de formule</strong> : Affiche le contenu de la cellule sélectionnée</li>
-  <li><strong>La zone de nom</strong> : Indique la référence de la cellule active (ex: A1)</li>
-  <li><strong>Les onglets de feuilles</strong> : En bas, pour naviguer entre les feuilles</li>
-</ul>
-<h3>Raccourcis indispensables</h3>
-<table>
-  <tr><th>Raccourci</th><th>Action</th></tr>
-  <tr><td>Ctrl + Z</td><td>Annuler</td></tr>
-  <tr><td>Ctrl + C / V</td><td>Copier / Coller</td></tr>
-  <tr><td>Ctrl + Flèche</td><td>Aller au dernier élément du bloc</td></tr>
-  <tr><td>Ctrl + Maj + Fin</td><td>Sélectionner jusqu'à la dernière cellule utilisée</td></tr>
-  <tr><td>F2</td><td>Éditer la cellule active</td></tr>
-  <tr><td>Alt + =</td><td>Insérer une somme automatique</td></tr>
-</table>`,
+    durationMinutes: 18,
+    contentBody: `<h2>Les stades du développement cognitif</h2>
+<p>Jean Piaget (1896–1980) a identifié quatre stades du développement cognitif :</p>
+<h3>1. Stade sensori-moteur (0–2 ans)</h3>
+<p>L’intelligence se construit à travers l’action et la perception. Acquisition de la permanence de l’objet.</p>
+<h3>2. Stade préopératoire (2–7 ans)</h3>
+<p>Émergence du langage et de la pensée symbolique. Égocentrisme intellectuel, centration.</p>
+<h3>3. Stade des opérations concrètes (7–11 ans)</h3>
+<p>Raisonnement logique appliqué à des situations concrètes. Conservation, classification, sériation.</p>
+<h3>4. Stade des opérations formelles (11 ans+)</h3>
+<p>Pensée abstraite et hypothético-déductive. Raisonnement sur des propositions logiques.</p>`,
   });
 
   const c2m1l2 = await insertLesson({
     moduleId: c2m1,
-    title: "Les formules essentielles",
+    title: "Le développement psycho-affectif (Freud, Wallon)",
     position: 1,
     contentType: "video",
-    contentUrl: "https://www.youtube.com/embed/rwbho0CgEAE",
-    durationMinutes: 22,
+    contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
+    durationMinutes: 20,
   });
 
   const c2m1l3 = await insertLesson({
     moduleId: c2m1,
-    title: "Quiz — Bases Excel",
+    title: "Quiz — Développement de l’enfant",
     position: 2,
     contentType: "text",
-    durationMinutes: 5,
+    durationMinutes: 8,
   });
-  const c2m1e1 = await insertExercise(c2m1l3, "Quiz bases Excel", "quiz", 0, 3);
+  const c2m1e1 = await insertExercise(
+    c2m1l3,
+    "Quiz développement de l’enfant",
+    "quiz",
+    0,
+    3,
+  );
   await insertQuizQuestions(c2m1e1, [
     {
-      questionText: "Quelle formule permet de calculer la somme de A1 à A10 ?",
+      questionText:
+        "Selon Piaget, à quel stade l’enfant acquiert-il la permanence de l’objet ?",
       options: [
-        { id: "a", text: "=TOTAL(A1:A10)" },
-        { id: "b", text: "=SOMME(A1:A10)" },
-        { id: "c", text: "=ADDITION(A1,A10)" },
-        { id: "d", text: "=PLUS(A1:A10)" },
+        { id: "a", text: "Stade sensori-moteur" },
+        { id: "b", text: "Stade préopératoire" },
+        { id: "c", text: "Stade des opérations concrètes" },
+        { id: "d", text: "Stade des opérations formelles" },
       ],
-      correctOptionId: "b",
+      correctOptionId: "a",
       explanation:
-        "La fonction SOMME est la fonction de base pour additionner une plage de cellules. La syntaxe est =SOMME(plage).",
+        "La permanence de l’objet s’acquiert au stade sensori-moteur (0–2 ans) : l’enfant comprend qu’un objet continue d’exister même lorsqu’il est hors de sa vue.",
     },
     {
       questionText:
-        "Comment figer la ligne 1 pour qu'elle reste visible lors du défilement ?",
+        "Quel phénomène caractérise le stade préopératoire selon Piaget ?",
       options: [
-        { id: "a", text: "Format > Cellules > Figer" },
-        {
-          id: "b",
-          text: "Affichage > Figer les volets > Figer la ligne supérieure",
-        },
-        { id: "c", text: "Insertion > Figer > Ligne 1" },
-        { id: "d", text: "Ctrl + F1" },
+        { id: "a", text: "La pensée hypothético-déductive" },
+        { id: "b", text: "La conservation des quantités" },
+        { id: "c", text: "L’égocentrisme intellectuel" },
+        { id: "d", text: "La réversibilité logique" },
       ],
-      correctOptionId: "b",
+      correctOptionId: "c",
       explanation:
-        "Dans l'onglet Affichage, 'Figer les volets' propose plusieurs options : figer la ligne supérieure, la première colonne ou une zone personnalisée.",
+        "L’égocentrisme intellectuel est une caractéristique majeure du stade préopératoire : l’enfant ne peut adopter un point de vue différent du sien.",
     },
     {
-      questionText: "Qu'est-ce qu'une référence absolue en Excel ?",
+      questionText:
+        "Quel psychologue français a développé une théorie des stades du développement basée sur la dialectique émotion-cognition ?",
       options: [
-        { id: "a", text: "Une cellule dont la valeur ne peut pas changer" },
-        {
-          id: "b",
-          text: "Une référence qui ne change pas lors de la copie de la formule (ex: $A$1)",
-        },
-        { id: "c", text: "Une formule sans erreur" },
-        { id: "d", text: "Une cellule verrouillée par un mot de passe" },
+        { id: "a", text: "Jean Piaget" },
+        { id: "b", text: "Henri Wallon" },
+        { id: "c", text: "Sigmund Freud" },
+        { id: "d", text: "Françoise Dolto" },
       ],
       correctOptionId: "b",
       explanation:
-        "Le symbole $ devant la lettre et/ou le chiffre fige la référence lors de la copie : $A$1 est totalement fixe, $A1 fige seulement la colonne.",
+        "Henri Wallon a proposé une théorie intégrant les dimensions émotionnelle, sociale et cognitive du développement, avec des stades marqués par l’alternance entre intégration et différenciation.",
     },
   ]);
 
+  // Module 2
   const c2m2 = await insertModule(
     course2Id,
-    "Tableaux Croisés Dynamiques",
-    "Analyser et synthétiser vos données en quelques clics",
+    "Troubles du développement",
+    "TSA, TDAH, troubles dys, retard de développement : repérage et prise en charge.",
     1,
   );
   const c2m2l1 = await insertLesson({
     moduleId: c2m2,
-    title: "Créer son premier TCD",
+    title: "Les troubles du spectre autistique (TSA)",
     position: 0,
-    contentType: "video",
-    contentUrl: "https://www.youtube.com/embed/9NUjHBNWe9M",
-    durationMinutes: 25,
+    contentType: "text",
+    durationMinutes: 22,
   });
   const c2m2l2 = await insertLesson({
     moduleId: c2m2,
-    title: "Manuel — Tableaux croisés dynamiques",
+    title: "TDAH : diagnostic et accompagnement",
     position: 1,
+    contentType: "video",
+    contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
+    durationMinutes: 18,
+  });
+  const c2m2l3 = await insertLesson({
+    moduleId: c2m2,
+    title: "Les troubles des apprentissages (dys)",
+    position: 2,
     contentType: "pdf",
     contentUrl:
-      "https://download.microsoft.com/download/1/4/E/14EDED28-AF29-40B7-8523-B6F19FD80B94/Excel_Basics_en.pdf",
-    durationMinutes: 30,
+      "https://web.dev/static/articles/vitals/image/core-web-vitals-overview.pdf",
+    durationMinutes: 15,
   });
 
-  const c2m3 = await insertModule(
-    course2Id,
-    "Tableaux de Bord et Visualisation",
-    "Créer des dashboards percutants",
-    2,
-  );
-  const c2m3l1 = await insertLesson({
-    moduleId: c2m3,
-    title: "Graphiques et visualisation de données",
-    position: 0,
-    contentType: "text",
-    durationMinutes: 18,
-    contentBody: `<h2>Choisir le bon type de graphique</h2>
-<p>Un bon graphique raconte une histoire. Le choix du type dépend de ce que vous voulez montrer.</p>
-<h3>Guide de sélection</h3>
-<table>
-  <tr><th>Objectif</th><th>Type recommandé</th></tr>
-  <tr><td>Comparer des valeurs</td><td>Histogramme / Barres</td></tr>
-  <tr><td>Évolution dans le temps</td><td>Courbe (ligne)</td></tr>
-  <tr><td>Proportion du tout</td><td>Secteurs (camembert)</td></tr>
-  <tr><td>Corrélation entre 2 variables</td><td>Nuage de points</td></tr>
-  <tr><td>Hiérarchie / Structure</td><td>Arborescence / Treemap</td></tr>
-</table>
-<h3>Les 5 règles d'un bon graphique</h3>
-<ol>
-  <li>Un seul message principal par graphique</li>
-  <li>Titre explicite et autonome</li>
-  <li>Légende claire et minimale</li>
-  <li>Pas de déformations d'échelle</li>
-  <li>Cohérence des couleurs avec votre charte</li>
-</ol>`,
-  });
+  // ── Course 3: Modules complémentaires (TCC, systémique) ────────────────
 
-  const c2m3l2 = await insertLesson({
-    moduleId: c2m3,
-    title: "Quiz final — Excel",
-    position: 1,
-    contentType: "text",
-    durationMinutes: 8,
-  });
-  const c2m3e1 = await insertExercise(c2m3l2, "Quiz final Excel", "quiz", 0, 3);
-  await insertQuizQuestions(c2m3e1, [
-    {
-      questionText: "Dans un TCD, que permet le champ 'Valeurs' ?",
-      options: [
-        { id: "a", text: "Filtrer les données affichées" },
-        {
-          id: "b",
-          text: "Calculer des agrégats (somme, moyenne, comptage…) sur les données",
-        },
-        { id: "c", text: "Trier les lignes alphabétiquement" },
-        { id: "d", text: "Définir le titre du tableau" },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "Le champ Valeurs est le cœur du TCD : il applique une fonction d'agrégation (SOMME par défaut) aux données numériques.",
-    },
-    {
-      questionText:
-        "Quel type de graphique est le plus adapté pour montrer l'évolution du CA mensuel sur 12 mois ?",
-      options: [
-        { id: "a", text: "Graphique en secteurs (camembert)" },
-        { id: "b", text: "Nuage de points" },
-        { id: "c", text: "Graphique en courbes" },
-        { id: "d", text: "Graphique radar" },
-      ],
-      correctOptionId: "c",
-      explanation:
-        "Le graphique en courbes est idéal pour visualiser des tendances et évolutions dans le temps.",
-    },
-    {
-      questionText: 'La formule =NB.SI(A1:A100,"Paris") compte :',
-      options: [
-        { id: "a", text: "La somme des valeurs contenant 'Paris'" },
-        { id: "b", text: "Le nombre de cellules contenant exactement 'Paris'" },
-        { id: "c", text: "La position de la première occurrence de 'Paris'" },
-        { id: "d", text: "Le pourcentage de cellules contenant 'Paris'" },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "NB.SI compte le nombre de cellules dans une plage qui satisfont un critère donné. Ici, elle compte les cellules contenant exactement 'Paris'.",
-    },
-  ]);
-
-  console.log("  ✓ Course 2 built");
-
-  // ── Course 3: Communication Professionnelle ───────────────────────────────
-
-  console.log("  Building course 3: Communication Professionnelle...");
+  console.log("  Building course 3: Modules complémentaires...");
 
   const course3Id = await upsertCourse({
-    slug: "communication-professionnelle",
-    title: "Communication Professionnelle",
+    slug: "modules-complementaires",
+    title: "Modules complémentaires — Psychothérapies & pratique",
     description:
-      "Développez vos compétences en communication écrite et orale. E-mails impactants, présentations convaincantes, réunions efficaces : les clés pour vous démarquer en entreprise.",
-    instructorId: martinId,
+      "TCC (Thérapies Cognitives et Comportementales), approche systémique, psychothérapie intégrative, travail sur soi et compétences pratiques du psychopraticien.",
+    instructorId: clairembeaudId,
     thumbnailUrl:
-      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800",
+      "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=800",
   });
 
+  // Module 1
   const c3m1 = await insertModule(
     course3Id,
-    "Communication Écrite",
-    "E-mails, rapports et supports professionnels",
+    "TCC — Thérapies Cognitives et Comportementales",
+    "Principes, techniques et applications des TCC dans la pratique clinique.",
     0,
   );
   const c3m1l1 = await insertLesson({
     moduleId: c3m1,
-    title: "L'e-mail professionnel parfait",
+    title: "Fondements des TCC",
     position: 0,
     contentType: "text",
-    isFreePreview: true,
-    durationMinutes: 12,
-    contentBody: `<h2>Écrire des e-mails professionnels efficaces</h2>
-<p>Un e-mail professionnel est souvent le premier contact avec un interlocuteur. Son impact sur votre image est immédiat.</p>
-<h3>Structure d'un e-mail professionnel</h3>
-<ol>
-  <li><strong>Objet</strong> : Précis, court, orienté action (max 50 caractères)</li>
-  <li><strong>Formule d'appel</strong> : Madame, Monsieur / Bonjour + prénom (selon le contexte)</li>
-  <li><strong>Corps</strong> : Contexte → Demande/Information → Action attendue</li>
-  <li><strong>Formule de politesse</strong> : Adaptée au niveau de formalité</li>
-  <li><strong>Signature</strong> : Nom, poste, contact, logo</li>
-</ol>
-<h3>Exemple : e-mail de suivi client</h3>
-<blockquote>
-<p><strong>Objet :</strong> Suivi de votre devis n°2024-087 — Praxisa Formation</p>
-<p>Madame Moreau,</p>
-<p>Suite à notre échange du 15 novembre, je me permets de revenir vers vous concernant le devis que nous vous avons adressé pour la formation Excel Avancé (référence 2024-087).</p>
-<p>Avez-vous pu étudier notre proposition ? Je suis disponible pour échanger par téléphone si vous avez des questions ou souhaitez ajuster le programme.</p>
-<p>Dans l'attente de votre retour, je reste à votre disposition.</p>
-<p>Cordialement,<br>Julien Martin<br>Responsable formation — Praxisa</p>
-</blockquote>
-<h3>Les erreurs à éviter</h3>
+    durationMinutes: 20,
+    contentBody: `<h2>Les TCC : principes fondamentaux</h2>
+<p>Les thérapies cognitives et comportementales (TCC) reposent sur l’idée que les troubles psychiques sont liés à des pensées dysfonctionnelles et des comportements inadaptés, qui peuvent être modifiés par un travail thérapeutique structuré.</p>
+<h3>Les trois vagues des TCC</h3>
 <ul>
-  <li>❌ Objet vague ("Question", "Important", "Re: Re: Re:")</li>
-  <li>❌ Paragraphes trop longs (plus de 5 lignes)</li>
-  <li>❌ Ton trop familier ou trop guindé selon le contexte</li>
-  <li>❌ Pièces jointes non mentionnées dans le corps</li>
-  <li>❌ Oublier de relire avant d'envoyer</li>
+  <li><strong>1ère vague : comportementale</strong> — Conditionnement classique (Pavlov), opérant (Skinner), exposition et désensibilisation.</li>
+  <li><strong>2ème vague : cognitive</strong> — Restructuration cognitive (Beck), thérapie rationnelle-émotive (Ellis), identification des schémas dysfonctionnels.</li>
+  <li><strong>3ème vague : émotionnelle et métacognitive</strong> — Pleine conscience (MBCT), ACT (Acceptance and Commitment Therapy), thérapie des schémas (Young).</li>
 </ul>`,
   });
 
   const c3m1l2 = await insertLesson({
     moduleId: c3m1,
-    title: "Guide de la communication écrite",
+    title: "La restructuration cognitive selon Beck",
     position: 1,
-    contentType: "pdf",
-    contentUrl:
-      "https://www.gouvernement.fr/sites/default/files/contenu/piece-jointe/2015/01/guide_redaction_administrative_2015.pdf",
-    durationMinutes: 25,
+    contentType: "video",
+    contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
+    durationMinutes: 18,
   });
 
-  const c3m1l3 = await insertLesson({
-    moduleId: c3m1,
-    title: "Quiz — Communication écrite",
-    position: 2,
-    contentType: "text",
-    durationMinutes: 5,
-  });
-  const c3m1e1 = await insertExercise(
-    c3m1l3,
-    "Quiz communication écrite",
-    "quiz",
-    0,
-    3,
-  );
-  await insertQuizQuestions(c3m1e1, [
-    {
-      questionText:
-        "Quelle est la longueur idéale pour l'objet d'un e-mail professionnel ?",
-      options: [
-        { id: "a", text: "Moins de 10 caractères" },
-        { id: "b", text: "Entre 40 et 50 caractères" },
-        { id: "c", text: "Plus de 100 caractères pour être précis" },
-        { id: "d", text: "La longueur n'a pas d'importance" },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "Un objet de 40-50 caractères est optimal : assez précis pour informer le destinataire, assez court pour être lu entièrement dans la boîte de réception.",
-    },
-    {
-      questionText:
-        "Dans quel cas utilise-t-on 'Veuillez agréer, Madame, Monsieur, l'expression de mes salutations distinguées' ?",
-      options: [
-        { id: "a", text: "Dans tous les e-mails professionnels" },
-        {
-          id: "b",
-          text: "Uniquement dans les courriers formels à des inconnus ou des administrations",
-        },
-        { id: "c", text: "Entre collègues du même service" },
-        { id: "d", text: "Jamais, cette formule est obsolète" },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "Cette formule très formelle est réservée aux courriers officiels. Entre professionnels qui se connaissent, 'Cordialement' ou 'Bien à vous' suffisent.",
-    },
-    {
-      questionText:
-        "Vous devez envoyer un document urgent à un client. Quelle est la bonne pratique ?",
-      options: [
-        { id: "a", text: "Envoyer le document sans texte dans le corps" },
-        {
-          id: "b",
-          text: "Mentionner la pièce jointe dans le corps ET vérifier qu'elle est bien attachée avant d'envoyer",
-        },
-        {
-          id: "c",
-          text: "Mettre 'URGENT' en majuscules dans l'objet et le corps",
-        },
-        {
-          id: "d",
-          text: "Envoyer depuis son adresse personnelle pour plus de rapidité",
-        },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "Toujours mentionner les pièces jointes dans le corps de l'e-mail, et vérifier leur présence avant l'envoi. Les majuscules dans l'objet sont à proscrire.",
-    },
-  ]);
-
+  // Module 2
   const c3m2 = await insertModule(
     course3Id,
-    "Communication Orale",
-    "Prises de parole, réunions et présentations",
+    "Approche systémique et familiale",
+    "Penser le symptôme dans le contexte du système familial et relationnel.",
     1,
   );
   const c3m2l1 = await insertLesson({
     moduleId: c3m2,
-    title: "Maîtriser sa prise de parole en public",
+    title: "Introduction à la pensée systémique",
     position: 0,
-    contentType: "video",
-    contentUrl: "https://www.youtube.com/embed/tShavGuo0_E",
-    durationMinutes: 20,
+    contentType: "text",
+    durationMinutes: 15,
   });
   const c3m2l2 = await insertLesson({
     moduleId: c3m2,
-    title: "Animer une réunion efficace",
+    title: "La thérapie familiale en pratique",
     position: 1,
-    contentType: "text",
-    durationMinutes: 15,
-    contentBody: `<h2>Les réunions inefficaces coûtent cher</h2>
-<p>En France, un cadre passe en moyenne 4h30 en réunion par semaine. Une réunion mal animée est une perte sèche de productivité pour toute l'équipe.</p>
-<h3>Avant la réunion : la préparation</h3>
-<ul>
-  <li>Définir un objectif précis et mesurable</li>
-  <li>N'inviter que les personnes indispensables</li>
-  <li>Envoyer l'ordre du jour 24h à l'avance</li>
-  <li>Préparer les documents supports</li>
-</ul>
-<h3>Pendant la réunion : l'animation</h3>
-<ul>
-  <li><strong>Démarrer à l'heure</strong> — ne pas récompenser les retardataires</li>
-  <li><strong>Rappeler l'objectif</strong> en introduction (1 minute)</li>
-  <li><strong>Timeboxer les points</strong> — allouer un temps par sujet</li>
-  <li><strong>Gérer la parole</strong> — distribuer, recadrer, synthétiser</li>
-  <li><strong>Prendre des décisions</strong> — ne pas repartir sans conclusion</li>
-</ul>
-<h3>Après la réunion : le suivi</h3>
-<p>Envoyer le compte-rendu dans les 24h avec : décisions prises, actions à mener, responsables, échéances.</p>`,
+    contentType: "video",
+    contentUrl: "https://www.youtube.com/embed/bixR-KIJKYM",
+    durationMinutes: 20,
   });
 
-  const c3m3 = await insertModule(
-    course3Id,
-    "Communication Interculturelle",
-    "Travailler efficacement dans un contexte international",
-    2,
-  );
-  const c3m3l1 = await insertLesson({
-    moduleId: c3m3,
-    title: "Les dimensions culturelles selon Hofstede",
-    position: 0,
-    contentType: "text",
-    durationMinutes: 18,
-    contentBody: `<h2>Comprendre les différences culturelles en entreprise</h2>
-<p>Geert Hofstede a identifié 6 dimensions culturelles qui expliquent les différences de comportement en milieu professionnel entre les pays.</p>
-<h3>Les 6 dimensions de Hofstede</h3>
-<ol>
-  <li><strong>Distance hiérarchique</strong> : Degré d'acceptation des inégalités de pouvoir</li>
-  <li><strong>Individualisme vs Collectivisme</strong> : Priorité à l'individu ou au groupe</li>
-  <li><strong>Masculinité vs Féminité</strong> : Compétition vs coopération</li>
-  <li><strong>Contrôle de l'incertitude</strong> : Tolérance à l'ambiguïté</li>
-  <li><strong>Orientation long terme vs court terme</strong></li>
-  <li><strong>Indulgence vs Retenue</strong></li>
-</ol>
-<h3>Exemple pratique : France vs Japon</h3>
-<table>
-  <tr><th>Dimension</th><th>France</th><th>Japon</th></tr>
-  <tr><td>Distance hiérarchique</td><td>68 (élevée)</td><td>54 (moyenne)</td></tr>
-  <tr><td>Individualisme</td><td>71 (fort)</td><td>46 (moyen)</td></tr>
-  <tr><td>Masculinité</td><td>43 (féminin)</td><td>95 (très masculin)</td></tr>
-</table>`,
-  });
-
-  const c3m3l2 = await insertLesson({
-    moduleId: c3m3,
-    title: "Quiz final — Communication",
-    position: 1,
-    contentType: "text",
-    durationMinutes: 6,
-  });
-  const c3m3e1 = await insertExercise(
-    c3m3l2,
-    "Quiz final communication",
-    "quiz",
-    0,
-    2,
-  );
-  await insertQuizQuestions(c3m3e1, [
-    {
-      questionText:
-        "Dans une culture à forte distance hiérarchique, comment les décisions sont-elles généralement prises ?",
-      options: [
-        { id: "a", text: "Par vote démocratique de l'équipe" },
-        { id: "b", text: "Par le supérieur hiérarchique, sans consultation" },
-        { id: "c", text: "Par consensus de tous les membres" },
-        { id: "d", text: "Par le membre le plus ancien" },
-      ],
-      correctOptionId: "b",
-      explanation:
-        "Dans les cultures à forte distance hiérarchique (ex: France, Chine), le pouvoir est concentré et les décisions viennent d'en haut.",
-    },
-    {
-      questionText:
-        "Un collègue japonais dit 'c'est difficile' à votre proposition. Que cela signifie-t-il probablement ?",
-      options: [
-        { id: "a", text: "Il a besoin d'aide technique" },
-        { id: "b", text: "Il souhaite un délai supplémentaire" },
-        { id: "c", text: "Il refuse poliment sans dire 'non' directement" },
-        { id: "d", text: "Il accepte mais avec des réserves mineures" },
-      ],
-      correctOptionId: "c",
-      explanation:
-        "Dans les cultures à communication indirecte (Japon, Corée, etc.), 'c'est difficile' est souvent un refus poli. Dire 'non' directement est considéré comme impoli.",
-    },
-  ]);
-
-  console.log("  ✓ Course 3 built");
-
-  // ── Enrolments + progress ─────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════════════════════
+  // ENROLMENTS & PROGRESS
+  // ═══════════════════════════════════════════════════════════════════════════
 
   console.log("  Creating enrolments and progress...");
 
-  // All lesson IDs per course for progress tracking
-  const course1Lessons = [
+  // Collect all lesson IDs for progress
+  const c1Lessons = [
     c1m1l1,
     c1m1l2,
     c1m1l3,
     c1m2l1,
     c1m2l2,
     c1m2l3,
+    c1m2l4,
     c1m3l1,
     c1m3l2,
+    c1m3l3,
+    c1m4l1,
+    c1m4l2,
   ];
-  const course2Lessons = [
-    c2m1l1,
-    c2m1l2,
-    c2m1l3,
-    c2m2l1,
-    c2m2l2,
-    c2m3l1,
-    c2m3l2,
-  ];
-  const course3Lessons = [
-    c3m1l1,
-    c3m1l2,
-    c3m1l3,
-    c3m2l1,
-    c3m2l2,
-    c3m3l1,
-    c3m3l2,
-  ];
+  const c2Lessons = [c2m1l1, c2m1l2, c2m1l3, c2m2l1, c2m2l2, c2m2l3];
+  const c3Lessons = [c3m1l1, c3m1l2, c3m2l1, c3m2l2];
 
-  // Enrol students in courses with varying completion levels
-  const enrolmentConfigs = [
-    // Students 0-4: course 1, varying progress
-    {
-      studentIdx: 0,
-      courseId: course1Id,
-      lessons: course1Lessons,
-      completedCount: 8,
-    }, // Marie — completed
-    {
-      studentIdx: 1,
-      courseId: course1Id,
-      lessons: course1Lessons,
-      completedCount: 5,
-    }, // Thomas — halfway
-    {
-      studentIdx: 2,
-      courseId: course1Id,
-      lessons: course1Lessons,
-      completedCount: 2,
-    }, // Léa — just started
-    {
-      studentIdx: 3,
-      courseId: course1Id,
-      lessons: course1Lessons,
-      completedCount: 0,
-    }, // Hugo — enrolled, not started
-    {
-      studentIdx: 4,
-      courseId: course1Id,
-      lessons: course1Lessons,
-      completedCount: 8,
-    }, // Emma — completed
+  // Enrol most students in course 1
+  for (let i = 0; i < 12; i++) {
+    const sid = studentIds[i];
+    if (sid === undefined) continue;
+    const enrolId = await enrol(sid, course1Id, adminId);
+    if (enrolId === undefined) continue;
 
-    // Students 5-9: course 2
-    {
-      studentIdx: 5,
-      courseId: course2Id,
-      lessons: course2Lessons,
-      completedCount: 7,
-    }, // Lucas — completed
-    {
-      studentIdx: 6,
-      courseId: course2Id,
-      lessons: course2Lessons,
-      completedCount: 4,
-    }, // Chloé — halfway
-    {
-      studentIdx: 7,
-      courseId: course2Id,
-      lessons: course2Lessons,
-      completedCount: 1,
-    }, // Nathan — started
-    {
-      studentIdx: 8,
-      courseId: course2Id,
-      lessons: course2Lessons,
-      completedCount: 6,
-    }, // Inès — almost done
-    {
-      studentIdx: 9,
-      courseId: course2Id,
-      lessons: course2Lessons,
-      completedCount: 3,
-    }, // Maxime
-
-    // Students 10-14: course 3
-    {
-      studentIdx: 10,
-      courseId: course3Id,
-      lessons: course3Lessons,
-      completedCount: 7,
-    }, // Camille — completed
-    {
-      studentIdx: 11,
-      courseId: course3Id,
-      lessons: course3Lessons,
-      completedCount: 2,
-    }, // Antoine
-    {
-      studentIdx: 12,
-      courseId: course3Id,
-      lessons: course3Lessons,
-      completedCount: 5,
-    }, // Juliette — halfway
-    {
-      studentIdx: 13,
-      courseId: course3Id,
-      lessons: course3Lessons,
-      completedCount: 0,
-    }, // Raphaël — enrolled
-    {
-      studentIdx: 14,
-      courseId: course3Id,
-      lessons: course3Lessons,
-      completedCount: 4,
-    }, // Océane
-
-    // Cross-enrolments: some students in multiple courses
-    {
-      studentIdx: 0,
-      courseId: course2Id,
-      lessons: course2Lessons,
-      completedCount: 3,
-    }, // Marie also in Excel
-    {
-      studentIdx: 5,
-      courseId: course3Id,
-      lessons: course3Lessons,
-      completedCount: 2,
-    }, // Lucas also in Comms
-    {
-      studentIdx: 10,
-      courseId: course1Id,
-      lessons: course1Lessons,
-      completedCount: 6,
-    }, // Camille also in Marketing
-  ];
-
-  for (const config of enrolmentConfigs) {
-    const studentId = studentIds[config.studentIdx];
-    if (studentId === undefined) continue;
-    const enrolmentId = await enrol(studentId, config.courseId, adminId);
-    if (enrolmentId === undefined) continue;
-
-    for (let i = 0; i < config.lessons.length; i++) {
-      const lessonId = config.lessons[i];
-      if (lessonId === undefined) continue;
-      let status: "not_started" | "in_progress" | "completed" = "not_started";
-      if (i < config.completedCount) status = "completed";
-      else if (i === config.completedCount) status = "in_progress";
-      if (status !== "not_started") {
-        await markProgress(enrolmentId, lessonId, status);
+    // Mark varied progress
+    if (i < 3) {
+      // First 3 students: nearly complete
+      for (const lid of c1Lessons) {
+        await markProgress(enrolId, lid, "completed");
+      }
+    } else if (i < 7) {
+      // Next 4: halfway through
+      for (let j = 0; j < 6; j++) {
+        const lid = c1Lessons[j];
+        if (lid === undefined) continue;
+        await markProgress(enrolId, lid, j < 5 ? "completed" : "in_progress");
+      }
+    } else {
+      // Rest: just started
+      const lid = c1Lessons[0];
+      if (lid !== undefined) {
+        await markProgress(enrolId, lid, "in_progress");
       }
     }
   }
 
-  console.log("  ✓ Enrolments and progress seeded");
+  // Enrol some in course 2
+  for (let i = 0; i < 8; i++) {
+    const sid = studentIds[i];
+    if (sid === undefined) continue;
+    const enrolId = await enrol(sid, course2Id, adminId);
+    if (enrolId === undefined) continue;
 
-  // ── Conversations & Messages ───────────────────
+    if (i < 2) {
+      for (const lid of c2Lessons) {
+        await markProgress(enrolId, lid, "completed");
+      }
+    } else if (i < 5) {
+      for (let j = 0; j < 3; j++) {
+        const lid = c2Lessons[j];
+        if (lid === undefined) continue;
+        await markProgress(enrolId, lid, j < 2 ? "completed" : "in_progress");
+      }
+    }
+  }
 
-  console.log("  Creating demo conversations...");
+  // Enrol some in course 3
+  for (let i = 2; i < 10; i++) {
+    const sid = studentIds[i];
+    if (sid === undefined) continue;
+    const enrolId = await enrol(sid, course3Id, adminId);
+    if (enrolId === undefined) continue;
 
-  const marieId = studentIds[0];
-  const thomasId = studentIds[1];
-  const leaId = studentIds[2];
+    if (i < 5) {
+      for (let j = 0; j < 2; j++) {
+        const lid = c3Lessons[j];
+        if (lid === undefined) continue;
+        await markProgress(enrolId, lid, "completed");
+      }
+    }
+  }
 
-  async function insertThread(
-    pA: string,
-    pB: string,
-    cId: string | null,
-    msgs: { senderId: string; body: string; hoursAgo: number; read: boolean }[],
-  ) {
-    const rows = await db
+  // ═══════════════════════════════════════════════════════════════════════════
+  // MESSAGES
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  console.log("  Creating messages...");
+
+  const s0 = studentIds[0];
+  const s1 = studentIds[1];
+  const s2 = studentIds[2];
+
+  if (s0 !== undefined && s1 !== undefined && s2 !== undefined) {
+    // Thread 1: student <-> teacher
+    const t1rows = await db
       .insert(messageThreads)
-      .values({ participantA: pA, participantB: pB, courseId: cId })
-      .onConflictDoNothing()
+      .values({ participantA: s0, participantB: clairembeaudId })
       .returning({ id: messageThreads.id });
-    const thread = rows[0];
-    if (thread === undefined) return;
-    for (const m of msgs) {
-      const ts = new Date(Date.now() - m.hoursAgo * 3600000);
+    const t1 = t1rows[0]?.id;
+    if (t1 !== undefined) {
       await db.insert(messages).values({
-        threadId: thread.id,
-        senderId: m.senderId,
-        body: m.body,
-        createdAt: ts,
-        readAt: m.read ? ts : null,
+        threadId: t1,
+        senderId: s0,
+        body: "Bonjour M. Clairembeaud, je ne comprends pas bien la différence entre un état-limite et une névrose grave. Pouvez-vous m’éclairer ?",
+        readAt: new Date(),
+      });
+      await db.insert(messages).values({
+        threadId: t1,
+        senderId: clairembeaudId,
+        body: "La différence fondamentale réside dans l’organisation défensive : l’état-limite utilise principalement le clivage de l’objet, tandis que la névrose grave emploie des mécanismes plus évolués comme le refoulement, même si intensifiés.",
       });
     }
-    await db
-      .update(messageThreads)
-      .set({ updatedAt: new Date() })
-      .where(eq(messageThreads.id, thread.id));
+
+    // Thread 2: admin -> student
+    const t2rows = await db
+      .insert(messageThreads)
+      .values({ participantA: adminId, participantB: s0 })
+      .returning({ id: messageThreads.id });
+    const t2 = t2rows[0]?.id;
+    if (t2 !== undefined) {
+      await db.insert(messages).values({
+        threadId: t2,
+        senderId: adminId,
+        body: "Bienvenue dans votre espace de formation ! N’hésitez pas à nous contacter si vous avez la moindre question.",
+      });
+    }
+
+    // Thread 3: student <-> teacher about child development
+    const t3rows = await db
+      .insert(messageThreads)
+      .values({ participantA: s1, participantB: leblancId })
+      .returning({ id: messageThreads.id });
+    const t3 = t3rows[0]?.id;
+    if (t3 !== undefined) {
+      await db.insert(messages).values({
+        threadId: t3,
+        senderId: s1,
+        body: "Madame Dubois-Faure, quelles sont les principales différences entre la théorie de Piaget et celle de Wallon ?",
+        readAt: new Date(),
+      });
+      await db.insert(messages).values({
+        threadId: t3,
+        senderId: leblancId,
+        body: "Excellente question ! Wallon intègre davantage la dimension émotionnelle et sociale dans le développement, là où Piaget se concentre sur la dimension cognitive. Pour Wallon, l’émotion est le premier mode de communication avec l’environnement.",
+      });
+    }
   }
 
-  // Thread 1: Martin <-> Marie (about Marketing Digital)
-  if (marieId !== undefined) {
-    await insertThread(martinId, marieId, course1Id, [
-      {
-        senderId: marieId,
-        body: "Bonjour Monsieur Martin, j’ai une question sur le module SEO. Pourriez-vous expliquer la différence entre backlinks dofollow et nofollow ?",
-        hoursAgo: 4,
-        read: true,
-      },
-      {
-        senderId: martinId,
-        body: "Bonjour Marie ! Bonne question. Un lien dofollow transmet du «jus SEO» au site cible, tandis qu’un nofollow indique aux moteurs de ne pas suivre ce lien.",
-        hoursAgo: 3,
-        read: true,
-      },
-      {
-        senderId: marieId,
-        body: "Merci beaucoup, c’est plus clair maintenant ! Je vais revoir le cours avec cette distinction en tête.",
-        hoursAgo: 2,
-        read: true,
-      },
-      {
-        senderId: martinId,
-        body: "Parfait ! N’hésitez pas si vous avez d’autres questions. Votre progression est excellente.",
-        hoursAgo: 1,
-        read: false,
-      },
-    ]);
-  }
+  // ═══════════════════════════════════════════════════════════════════════════
+  // NOTIFICATIONS
+  // ═══════════════════════════════════════════════════════════════════════════
 
-  // Thread 2: Martin <-> Thomas
-  if (thomasId !== undefined) {
-    await insertThread(martinId, thomasId, course1Id, [
-      {
-        senderId: thomasId,
-        body: "Bonjour, je n’arrive pas à accéder au PDF du guide SEO. Le lien semble cassé.",
-        hoursAgo: 14,
-        read: true,
-      },
-      {
-        senderId: martinId,
-        body: "Bonjour Thomas, merci de me le signaler. Je vais vérifier le lien. En attendant, les concepts clés sont dans la leçon texte précédente.",
-        hoursAgo: 12,
-        read: true,
-      },
-      {
-        senderId: thomasId,
-        body: "D’accord, merci pour la réactivité !",
-        hoursAgo: 10,
-        read: true,
-      },
-    ]);
-  }
+  console.log("  Creating notifications...");
 
-  // Thread 3: Martin <-> Léa (unread)
-  if (leaId !== undefined) {
-    await insertThread(martinId, leaId, course1Id, [
-      {
-        senderId: martinId,
-        body: "Bonjour Léa, je remarque que vous n’avez pas encore commencé le module 2. Avez-vous besoin d’aide pour avancer ?",
-        hoursAgo: 24,
-        read: false,
-      },
-    ]);
-  }
-
-  // Thread 4: Admin <-> Martin
-  await insertThread(adminId, martinId, null, [
-    {
-      senderId: adminId,
-      body: "Julien, nous préparons la prochaine cohorte pour septembre. Pourriez-vous mettre à jour le cours Marketing Digital ?",
-      hoursAgo: 48,
-      read: true,
-    },
-    {
-      senderId: martinId,
-      body: "Bien sûr Sophie, je m’en occupe cette semaine. Je prévois d’ajouter un module sur l’IA générative appliquée au marketing.",
-      hoursAgo: 44,
-      read: true,
-    },
-    {
-      senderId: adminId,
-      body: "Excellent ! C’est exactement ce que les entreprises demandent. Tenez-moi au courant.",
-      hoursAgo: 40,
-      read: true,
-    },
-  ]);
-
-  console.log("  ✓ Demo conversations created");
-
-  // ── Notifications ────────────────────────
-
-  console.log("  Creating demo notifications...");
-
-  await db.insert(notifications).values([
-    {
-      userId: martinId,
-      type: "new_message" as const,
-      title: "Nouveau message",
-      body: "Bonjour Monsieur Martin, j’ai une question sur le module SEO...",
-      entityType: "thread",
-      createdAt: new Date(Date.now() - 3600000),
-      readAt: new Date(),
-    },
-    {
-      userId: martinId,
-      type: "enrolment_created" as const,
-      title: "Nouvel inscrit",
-      body: "Un nouvel apprenant s’est inscrit à Fondamentaux du Marketing Digital.",
-      entityType: "course",
-      entityId: course1Id,
-      createdAt: new Date(Date.now() - 86400000),
-      readAt: null,
-    },
-    {
-      userId: martinId,
-      type: "enrolment_created" as const,
-      title: "Nouvel inscrit",
-      body: "Un nouvel apprenant s’est inscrit à Communication Professionnelle.",
-      entityType: "course",
-      entityId: course3Id,
-      createdAt: new Date(Date.now() - 172800000),
-      readAt: new Date(),
-    },
-  ]);
-
-  if (marieId !== undefined) {
+  if (s0 !== undefined) {
     await db.insert(notifications).values([
       {
-        userId: marieId,
-        type: "new_message" as const,
+        userId: s0,
+        type: "new_message",
         title: "Nouveau message",
-        body: "Parfait ! N’hésitez pas si vous avez d’autres questions...",
-        entityType: "thread",
-        createdAt: new Date(Date.now() - 3600000),
-        readAt: null,
+        body: "M. Clairembeaud a répondu à votre question sur les états-limites.",
+        entityType: "message",
+        entityId: "1",
       },
       {
-        userId: marieId,
-        type: "grading_returned" as const,
-        title: "Travail noté",
-        body: "Votre travail a été évalué.",
-        entityType: "submission",
-        createdAt: new Date(Date.now() - 259200000),
-        readAt: new Date(),
+        userId: s0,
+        type: "enrolment_created",
+        title: "Inscription confirmée",
+        body: "Vous êtes inscrit(e) à Psychologie clinique.",
+        entityType: "course",
+        entityId: course1Id,
       },
     ]);
   }
 
+  if (s1 !== undefined) {
+    await db.insert(notifications).values([
+      {
+        userId: s1,
+        type: "new_message",
+        title: "Nouveau message",
+        body: "Mme Dubois-Faure a répondu à votre question sur Piaget et Wallon.",
+        entityType: "message",
+        entityId: "1",
+      },
+    ]);
+  }
+
+  // Teacher notifications
   await db.insert(notifications).values([
     {
-      userId: adminId,
-      type: "enrolment_created" as const,
-      title: "Nouvel inscrit",
-      body: "Marie Dupont s’est inscrite à Excel pour les Professionnels.",
-      entityType: "course",
-      entityId: course2Id,
-      createdAt: new Date(Date.now() - 43200000),
-      readAt: null,
-    },
-    {
-      userId: adminId,
-      type: "new_message" as const,
+      userId: clairembeaudId,
+      type: "new_message",
       title: "Nouveau message",
-      body: "Bien sûr Sophie, je m’en occupe cette semaine...",
-      entityType: "thread",
-      createdAt: new Date(Date.now() - 14400000),
-      readAt: new Date(),
+      body: "Marie Dupont vous a envoyé une question sur les états-limites.",
+      entityType: "message",
+      entityId: "1",
     },
   ]);
 
-  if (leaId !== undefined) {
-    await db.insert(notifications).values({
-      userId: leaId,
-      type: "new_message" as const,
-      title: "Nouveau message",
-      body: "Bonjour Léa, je remarque que vous n’avez pas encore commencé...",
-      entityType: "thread",
-      createdAt: new Date(Date.now() - 86400000),
-      readAt: null,
-    });
-  }
-
-  console.log("  ✓ Demo notifications created");
+  // Admin notification
+  await db.insert(notifications).values([
+    {
+      userId: adminId,
+      type: "enrolment_created",
+      title: "Nouvelle inscription",
+      body: "12 étudiants se sont inscrits à Psychologie clinique.",
+      entityType: "course",
+      entityId: course1Id,
+    },
+  ]);
 
   console.log("\n✅ Seed complete!\n");
-  console.log("Demo accounts:");
-  console.log("  Admin    → admin@praxisa.fr       / Admin1234!");
-  console.log("  Teacher  → prof.martin@praxisa.fr / Teacher1234!");
-  console.log("  Teacher  → prof.leblanc@praxisa.fr / Teacher1234!");
-  console.log("  Student  → marie.dupont@praxisa.fr / Student1234!");
-  console.log("  (+ 14 more students with Student1234!)\n");
+  console.log("  Demo accounts:");
+  console.log("    Admin:   admin@praxisa.fr       / Admin1234!");
+  console.log("    Teacher: prof.martin@praxisa.fr / Teacher1234!");
+  console.log("             prof.leblanc@praxisa.fr / Teacher1234!");
+  console.log("    Student: marie.dupont@praxisa.fr / Student1234!");
 }
+
+// ── Run ──────────────────────────────────────────────────────────────────────
 
 seed()
   .catch((err: unknown) => {
-    console.error("Seed failed:", err);
+    console.error("❌ Seed failed:", err);
     process.exit(1);
   })
   .finally(() => {

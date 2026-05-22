@@ -75,7 +75,7 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-8 w-80 bg-white shadow-xl rounded-lg border border-rule z-50 overflow-hidden">
+        <div className="absolute left-0 bottom-full mb-1 w-80 bg-white shadow-xl rounded-lg border border-rule z-50 overflow-hidden">
           {items.length === 0 ? (
             <p className="py-8 text-center text-xs text-meta">
               Aucune notification

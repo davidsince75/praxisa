@@ -1,10 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import {
-  Users,
-  BookOpen,
-  GraduationCap,
-  TrendingUp,
-} from "lucide-react";
+import { Users, BookOpen, GraduationCap, TrendingUp } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   AdminOverviewResponse,
@@ -148,7 +143,9 @@ export function DashboardPage() {
         <StatCard
           label="Taux de compl\u00e9tion"
           value={
-            analytics !== undefined ? `${String(analytics.completionRate)}%` : "\u2014"
+            analytics !== undefined
+              ? `${String(analytics.completionRate)}%`
+              : "\u2014"
           }
           icon={<TrendingUp size={24} />}
           accent="text-teal"
@@ -194,7 +191,9 @@ export function DashboardPage() {
         <Card>
           <CardContent className="p-0">
             {auditData?.events.length === 0 && (
-              <p className="text-meta text-sm p-6">Aucun \u00e9v\u00e9nement.</p>
+              <p className="text-meta text-sm p-6">
+                Aucun \u00e9v\u00e9nement.
+              </p>
             )}
             <ul className="divide-y divide-rule">
               {auditData?.events.map((event) => (
@@ -207,7 +206,8 @@ export function DashboardPage() {
                       {event.eventType}
                     </span>
                     <span className="text-xs text-meta ml-3">
-                      {event.entityType} &middot; {event.entityId.slice(0, 8)}&hellip;
+                      {event.entityType} &middot; {event.entityId.slice(0, 8)}
+                      &hellip;
                     </span>
                   </div>
                   <span className="text-xs text-meta">

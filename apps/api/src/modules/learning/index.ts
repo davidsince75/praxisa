@@ -1230,6 +1230,191 @@ export const learningPlugin = (
     },
   );
 
+  // GET /students/:studentId/detail
+  // Forensic breakdown of a student's entire course history — instructor + admin
+  fastify.get(
+    "/students/:studentId/detail",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { studentId } = request.params as { studentId: string };
+      const { role, sub } = request.jwtPayload;
+
+      if (role !== "admin" && role !== "instructor") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      // Get student info
+      const studentRows = await fastify.db
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(eq(users.id, studentId))
+        .limit(1);
+
+      const student = studentRows[0];
+      if (student === undefined) {
+        return reply.status(404).send({ error: "Student not found" });
+      }
+
+      // Get all enrolments for this student
+      const enrolmentRows = await fastify.db
+        .select({
+          enrolmentId: enrolments.id,
+          courseId: courses.id,
+          courseTitle: courses.title,
+          courseSlug: courses.slug,
+          status: enrolments.status,
+          enrolledAt: enrolments.createdAt,
+          completedAt: enrolments.completedAt,
+        })
+        .from(enrolments)
+        .innerJoin(courses, eq(courses.id, enrolments.courseId))
+        .where(
+          and(
+            eq(enrolments.studentId, studentId),
+            isNull(enrolments.deletedAt),
+          ),
+        )
+        .orderBy(desc(enrolments.createdAt));
+
+      // For instructor, only show courses they teach
+      const filteredEnrolments =
+        role === "admin"
+          ? enrolmentRows
+          : enrolmentRows.filter((e) => {
+              // Check if instructor teaches this course (async below)
+              return true; // Filter after async check
+            });
+
+      // Build detailed progress for each enrolment
+      const detailed = await Promise.all(
+        filteredEnrolments.map(async (enrol) => {
+          // If instructor, verify they teach this course
+          if (role === "instructor") {
+            const courseCheck = await findActiveCourse(
+              fastify.db,
+              enrol.courseId,
+            );
+            if (courseCheck === undefined || !isInstructor(courseCheck, sub)) {
+              return null;
+            }
+          }
+
+          // Get modules and lessons for the course
+          const modulesRows = await fastify.db
+            .select()
+            .from(courseModules)
+            .where(eq(courseModules.courseId, enrol.courseId))
+            .orderBy(asc(courseModules.position));
+
+          const moduleIds = modulesRows.map((m) => m.id);
+          const lessonsRows =
+            moduleIds.length > 0
+              ? await fastify.db
+                  .select()
+                  .from(lessons)
+                  .where(inArray(lessons.moduleId, moduleIds))
+                  .orderBy(asc(lessons.position))
+              : [];
+
+          // Get lesson progress for this enrolment
+          const progressRows = await fastify.db
+            .select()
+            .from(lessonProgress)
+            .where(eq(lessonProgress.enrolmentId, enrol.enrolmentId));
+
+          const progressMap = new Map(progressRows.map((p) => [p.lessonId, p]));
+
+          // Build module->lesson tree with progress
+          const moduleTree = modulesRows.map((mod) => {
+            const modLessons = lessonsRows
+              .filter((l) => l.moduleId === mod.id)
+              .map((l) => {
+                const prog = progressMap.get(l.id);
+                return {
+                  id: l.id,
+                  title: l.title,
+                  contentType: l.contentType,
+                  durationMinutes: l.durationMinutes,
+                  status: prog?.status ?? "not_started",
+                  startedAt: prog?.startedAt ?? null,
+                  completedAt: prog?.completedAt ?? null,
+                  timeSpentSeconds: prog?.timeSpentSeconds ?? 0,
+                };
+              });
+            return {
+              id: mod.id,
+              title: mod.title,
+              position: mod.position,
+              lessons: modLessons,
+            };
+          });
+
+          // Get quiz attempts for this student in this course
+          const quizRows = await fastify.db
+            .select({
+              attemptId: quizAttempts.id,
+              exerciseId: quizAttempts.exerciseId,
+              exerciseTitle: exercises.title,
+              score: quizAttempts.score,
+              maxScore: quizAttempts.maxScore,
+              completedAt: quizAttempts.completedAt,
+            })
+            .from(quizAttempts)
+            .innerJoin(exercises, eq(exercises.id, quizAttempts.exerciseId))
+            .innerJoin(lessons, eq(lessons.id, exercises.lessonId))
+            .innerJoin(courseModules, eq(courseModules.id, lessons.moduleId))
+            .where(
+              and(
+                eq(quizAttempts.studentId, studentId),
+                eq(quizAttempts.enrolmentId, enrol.enrolmentId),
+                eq(courseModules.courseId, enrol.courseId),
+              ),
+            )
+            .orderBy(desc(quizAttempts.createdAt));
+
+          // Compute completion
+          const completionPct = computeCompletion(progressRows);
+
+          // Compute total time spent
+          const totalTimeSeconds = progressRows.reduce(
+            (sum, p) => sum + (p.timeSpentSeconds ?? 0),
+            0,
+          );
+
+          return {
+            enrolmentId: enrol.enrolmentId,
+            courseId: enrol.courseId,
+            courseTitle: enrol.courseTitle,
+            courseSlug: enrol.courseSlug,
+            status: enrol.status,
+            enrolledAt: enrol.enrolledAt,
+            completedAt: enrol.completedAt,
+            completionPct,
+            totalTimeSeconds,
+            modules: moduleTree,
+            quizAttempts: quizRows,
+          };
+        }),
+      );
+
+      // Filter out nulls (courses instructor doesn't teach)
+      const enrolmentsResult = detailed.filter(
+        (e): e is NonNullable<typeof e> => e !== null,
+      );
+
+      return reply.send({
+        student,
+        enrolments: enrolmentsResult,
+      });
+    },
+  );
+
   // ═════════════════════════════════════════════════════════════════════════
   // STUDENT: MY ENROLMENTS
   // ═════════════════════════════════════════════════════════════════════════
