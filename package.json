@@ -9,7 +9,9 @@
   },
   "scripts": {
     "build": "pnpm -r build",
-    "dev": "pnpm --filter @praxisa/api dev",
+    "dev": "pnpm --filter @praxisa/api dev & pnpm --filter @praxisa/web dev",
+    "dev:api": "pnpm --filter @praxisa/api dev",
+    "dev:web": "pnpm --filter @praxisa/web dev",
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --build",
     "test": "pnpm -r test",
@@ -18,7 +20,9 @@
     "audit:deps": "pnpm audit --audit-level=high",
     "audit:secrets": "trufflehog filesystem . --only-verified",
     "db:generate": "pnpm --filter @praxisa/api db:generate",
-    "db:migrate": "pnpm --filter @praxisa/api db:migrate"
+    "db:migrate": "pnpm --filter @praxisa/api db:migrate",
+    "db:seed": "pnpm --filter @praxisa/api db:seed",
+    "setup": "pnpm install && docker compose up -d && pnpm db:migrate && pnpm db:seed"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.0.0",
