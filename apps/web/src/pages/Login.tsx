@@ -1,21 +1,25 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 
+function roleBasedHome(role: string): string {
+  if (role === "admin") return "/";
+  if (role === "instructor") return "/teacher/courses";
+  return "/learn/catalog";
+}
+
 export function LoginPage() {
-  const { login, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
+  const { login, isAuthenticated, user } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  if (isAuthenticated) {
-    navigate("/", { replace: true });
-    return null;
+  if (isAuthenticated && user !== null) {
+    return <Navigate to={roleBasedHome(user.role)} replace />;
   }
 
   async function handleSubmit(e: FormEvent) {
@@ -24,10 +28,9 @@ export function LoginPage() {
     setLoading(true);
     try {
       await login(email, password);
-      navigate("/", { replace: true });
+      // Re-render will trigger <Navigate> above based on role
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Identifiants incorrects");
-    } finally {
       setLoading(false);
     }
   }

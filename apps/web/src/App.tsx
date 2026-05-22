@@ -35,9 +35,13 @@ import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
 import { DataImportPage } from "@/pages/import/DataImport.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, isInstructor, isStudent } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (!isAdmin) return <Navigate to="/teacher/courses" replace />;
+  if (!isAdmin) {
+    if (isInstructor) return <Navigate to="/teacher/courses" replace />;
+    if (isStudent) return <Navigate to="/learn/catalog" replace />;
+    return <Navigate to="/login" replace />;
+  }
   return <>{children}</>;
 }
 
