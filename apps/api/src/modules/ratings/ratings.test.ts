@@ -80,26 +80,33 @@ describe("courseRatings schema", () => {
   });
 });
 
+// ── Route access-control helpers (mirrors handler logic) ─────────────────────
+
+function isStudentOnly(role: string): boolean {
+  return role === "student";
+}
+
+function isAdminOrInstructor(role: string): boolean {
+  return role === "admin" || role === "instructor";
+}
+
+function canRate(enrolStatus: string): boolean {
+  return enrolStatus === "completed";
+}
+
 // ── Route behaviour: POST /courses/:courseId/ratings ──────────────────────────
 
 describe("POST /courses/:courseId/ratings", () => {
   it("rejects non-student roles (403 for instructor)", () => {
-    // The handler checks: if (role !== "student") return 403
-    const role: string = "instructor";
-    const forbidden = role !== "student";
-    expect(forbidden).toBe(true);
+    expect(isStudentOnly("instructor")).toBe(false);
   });
 
   it("rejects non-student roles (403 for admin)", () => {
-    const role: string = "admin";
-    const forbidden = role !== "student";
-    expect(forbidden).toBe(true);
+    expect(isStudentOnly("admin")).toBe(false);
   });
 
   it("allows student role", () => {
-    const role: string = "student";
-    const forbidden = role !== "student";
-    expect(forbidden).toBe(false);
+    expect(isStudentOnly("student")).toBe(true);
   });
 
   it("rejects rating out of range via Zod (0)", () => {
@@ -113,19 +120,15 @@ describe("POST /courses/:courseId/ratings", () => {
   });
 
   it("accepts valid rating for student on completed enrolment", () => {
-    const role: string = "student";
-    const enrolStatus: string = "completed";
-    const parse = ratingSchema.safeParse({ rating: 4, comment: "Très bien" });
-
-    expect(role).toBe("student");
-    expect(enrolStatus).toBe("completed");
-    expect(parse.success).toBe(true);
+    expect(isStudentOnly("student")).toBe(true);
+    expect(canRate("completed")).toBe(true);
+    expect(
+      ratingSchema.safeParse({ rating: 4, comment: "Très bien" }).success,
+    ).toBe(true);
   });
 
   it("rejects rating when enrolment is not completed", () => {
-    const enrolStatus: string = "active";
-    const canRate = enrolStatus === "completed";
-    expect(canRate).toBe(false);
+    expect(canRate("active")).toBe(false);
   });
 });
 
@@ -133,21 +136,15 @@ describe("POST /courses/:courseId/ratings", () => {
 
 describe("GET /courses/:courseId/ratings", () => {
   it("allows admin role (200)", () => {
-    const role: string = "admin";
-    const allowed = role === "admin" || role === "instructor";
-    expect(allowed).toBe(true);
+    expect(isAdminOrInstructor("admin")).toBe(true);
   });
 
   it("allows instructor role (200)", () => {
-    const role: string = "instructor";
-    const allowed = role === "admin" || role === "instructor";
-    expect(allowed).toBe(true);
+    expect(isAdminOrInstructor("instructor")).toBe(true);
   });
 
   it("rejects student role (403)", () => {
-    const role: string = "student";
-    const allowed = role === "admin" || role === "instructor";
-    expect(allowed).toBe(false);
+    expect(isAdminOrInstructor("student")).toBe(false);
   });
 
   it("returns ratings array, averageRating, and totalCount shape", () => {
@@ -179,9 +176,7 @@ describe("GET /courses/:courseId/ratings", () => {
 
 describe("GET /courses/:courseId/my-rating", () => {
   it("rejects non-student roles", () => {
-    const role: string = "instructor";
-    const forbidden = role !== "student";
-    expect(forbidden).toBe(true);
+    expect(isStudentOnly("instructor")).toBe(false);
   });
 
   it("returns { rating: CourseRating | null } shape", () => {
