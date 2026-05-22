@@ -19,26 +19,19 @@ import { Card, CardContent } from "@/components/ui/card.js";
 
 type ImportMode = "users" | "enrolments";
 
-interface ParsedRow {
-  [key: string]: string;
-}
+type ParsedRow = Record<string, string>;
 
 function parseCsv(text: string): { headers: string[]; rows: ParsedRow[] } {
   const lines = text.split(/\r?\n/).filter((line) => line.trim().length > 0);
   if (lines.length === 0) return { headers: [], rows: [] };
 
-  const headerLine = lines[0];
-  if (headerLine === undefined) return { headers: [], rows: [] };
-
-  const headers = headerLine
+  const headers = lines[0]
     .split(",")
     .map((h) => h.trim().replace(/^"|"$/g, ""));
   const rows: ParsedRow[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i];
-    if (line === undefined) continue;
-
     const values = line.split(",").map((v) => v.trim().replace(/^"|"$/g, ""));
     const row: ParsedRow = {};
     headers.forEach((header, idx) => {
@@ -92,10 +85,10 @@ export function DataImportPage() {
     mutationFn: (rows: ParsedRow[]) =>
       api.post<ImportUsersResponse>("/import/users", {
         rows: rows.map((r) => ({
-          firstName: r["firstName"] ?? "",
-          lastName: r["lastName"] ?? "",
-          email: r["email"] ?? "",
-          role: r["role"] ?? "student",
+          firstName: r.firstName ?? "",
+          lastName: r.lastName ?? "",
+          email: r.email ?? "",
+          role: r.role ?? "student",
         })),
       }),
     onSuccess: (data) => {
@@ -107,11 +100,11 @@ export function DataImportPage() {
     mutationFn: (rows: ParsedRow[]) =>
       api.post<ImportEnrolmentsResponse>("/import/enrolments", {
         rows: rows.map((r) => ({
-          studentEmail: r["studentEmail"] ?? "",
-          courseSlug: r["courseSlug"] ?? "",
-          status: r["status"] ?? "active",
-          enrolledAt: r["enrolledAt"] ?? undefined,
-          completedAt: r["completedAt"] ?? undefined,
+          studentEmail: r.studentEmail ?? "",
+          courseSlug: r.courseSlug ?? "",
+          status: r.status ?? "active",
+          enrolledAt: r.enrolledAt ?? undefined,
+          completedAt: r.completedAt ?? undefined,
         })),
       }),
     onSuccess: (data) => {
@@ -340,7 +333,7 @@ export function DataImportPage() {
       )}
 
       {/* Error */}
-      {mutationError !== null && mutationError !== undefined && (
+      {mutationError !== null && (
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center gap-2 text-rose">

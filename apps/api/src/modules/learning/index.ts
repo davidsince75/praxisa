@@ -1282,18 +1282,9 @@ export const learningPlugin = (
         )
         .orderBy(desc(enrolments.createdAt));
 
-      // For instructor, only show courses they teach
-      const filteredEnrolments =
-        role === "admin"
-          ? enrolmentRows
-          : enrolmentRows.filter((e) => {
-              // Check if instructor teaches this course (async below)
-              return true; // Filter after async check
-            });
-
       // Build detailed progress for each enrolment
       const detailed = await Promise.all(
-        filteredEnrolments.map(async (enrol) => {
+        enrolmentRows.map(async (enrol) => {
           // If instructor, verify they teach this course
           if (role === "instructor") {
             const courseCheck = await findActiveCourse(
@@ -1383,7 +1374,7 @@ export const learningPlugin = (
 
           // Compute total time spent
           const totalTimeSeconds = progressRows.reduce(
-            (sum, p) => sum + (p.timeSpentSeconds ?? 0),
+            (sum, p) => sum + p.timeSpentSeconds,
             0,
           );
 
