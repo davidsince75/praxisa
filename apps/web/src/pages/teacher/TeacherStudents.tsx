@@ -79,7 +79,7 @@ export function TeacherStudentsPage() {
   })[] = [];
   myCourses.forEach((course, idx) => {
     const query = studentQueries[idx];
-    if (query?.data?.students) {
+    if (query.data?.students) {
       for (const s of query.data.students) {
         allStudents.push({
           ...s,

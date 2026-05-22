@@ -113,8 +113,8 @@ export function DashboardPage() {
   const pending =
     dsrData?.requests.filter((r) => r.status === "pending").length ?? 0;
 
-  const studentCount = analytics?.usersByRole["student"] ?? 0;
-  const instructorCount = analytics?.usersByRole["instructor"] ?? 0;
+  const studentCount = analytics?.usersByRole.student ?? 0;
+  const instructorCount = analytics?.usersByRole.instructor ?? 0;
 
   return (
     <div className="space-y-8">
