@@ -727,3 +727,24 @@ export interface ImportEnrolmentsResponse {
   created: number;
   errors: { row: number; reason: string }[];
 }
+// ── Student Submissions (teacher view) ───────────────────────────────────────
+
+export interface StudentSubmission {
+  id: string;
+  body: string;
+  status: SubmissionStatus;
+  score: number | null;
+  feedback: string | null;
+  createdAt: string;
+  gradedAt: string | null;
+  exerciseId: string;
+  exerciseTitle: string;
+  exerciseType: string;
+  maxScore: number | null;
+  enrolmentId: string;
+  courseTitle: string;
+}
+
+export interface StudentSubmissionsResponse {
+  submissions: StudentSubmission[];
+}

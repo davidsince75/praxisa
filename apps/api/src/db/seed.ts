@@ -30,6 +30,7 @@ import {
   messageThreads,
   messages,
   notifications,
+  submissions,
 } from "./schema/index.js";
 
 // ── DB connection ─────────────────────────────────────────────────────────────
@@ -875,6 +876,35 @@ async function seed() {
   });
 
   // ═══════════════════════════════════════════════════════════════════════════
+
+  // ======================================================================
+
+  console.log("  Creating assignment exercises...");
+
+  const c1m1a1 = await insertExercise(
+    c1m1l1,
+    "Analyse de cas clinique — Structure névrotique",
+    "assignment",
+    1,
+    20,
+  );
+
+  const c1m1a2 = await insertExercise(
+    c1m1l2,
+    "Réflexion — Mécanismes de défense observés en stage",
+    "reflection",
+    1,
+    10,
+  );
+
+  const c1m2a1 = await insertExercise(
+    c1m2l1,
+    "Étude de cas — Diagnostic différentiel névrose vs psychose",
+    "assignment",
+    1,
+    20,
+  );
+
   // ENROLMENTS & PROGRESS
   // ═══════════════════════════════════════════════════════════════════════════
 
@@ -898,12 +928,15 @@ async function seed() {
   const c2Lessons = [c2m1l1, c2m1l2, c2m1l3, c2m2l1, c2m2l2, c2m2l3];
   const c3Lessons = [c3m1l1, c3m1l2, c3m2l1, c3m2l2];
 
+  const c1EnrolIds: { studentId: string; enrolId: string }[] = [];
+
   // Enrol most students in course 1
   for (let i = 0; i < 12; i++) {
     const sid = studentIds[i];
     if (sid === undefined) continue;
     const enrolId = await enrol(sid, course1Id, adminId);
     if (enrolId === undefined) continue;
+    c1EnrolIds.push({ studentId: sid, enrolId });
 
     // Mark varied progress
     if (i < 3) {
@@ -961,6 +994,92 @@ async function seed() {
         await markProgress(enrolId, lid, "completed");
       }
     }
+  }
+
+  // ======================================================================
+  // SAMPLE SUBMISSIONS (HOMEWORK)
+  // ======================================================================
+
+  console.log("  Creating sample submissions...");
+
+  const e0 = c1EnrolIds[0];
+  if (e0 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a1,
+      enrolmentId: e0.enrolId,
+      studentId: e0.studentId,
+      body: "Dans ce cas clinique, le patient présente une organisation névrotique de type hystérique. L’angoisse de castration est manifeste dans les symptômes de conversion. Les mécanismes de défense prédominants sont le refoulement et la conversion somatique. Le conflit intrapsychique se situe au niveau œdipien. La relation d’objet est de type génitale, bien que marquée par l’ambivalence.",
+      status: "graded",
+      score: 17,
+      feedback:
+        "Très bonne analyse structurale. Vous identifiez correctement les mécanismes de défense et le niveau de conflit. Attention à ne pas négliger les éléments dépressifs sous-jacents. Approfondissez la question du narcissisme.",
+      gradedBy: clairembeaudId,
+      gradedAt: new Date(Date.now() - 2 * 86400000),
+    });
+  }
+
+  const e1 = c1EnrolIds[1];
+  if (e1 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a1,
+      enrolmentId: e1.enrolId,
+      studentId: e1.studentId,
+      body: "Le patient présente selon moi une structure psychotique décompensée. Les hallucinations auditives et le délire de persécution sont au premier plan. L’angoisse est de type morcellement. Les mécanismes de défense sont archaïques : déni de la réalité, projection, clivage du moi.",
+      status: "submitted",
+    });
+  }
+
+  const e2 = c1EnrolIds[2];
+  if (e2 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a1,
+      enrolmentId: e2.enrolId,
+      studentId: e2.studentId,
+      body: "L’examen clinique révèle un fonctionnement limite (borderline). L’angoisse d’abandon domine le tableau clinique, se manifestant par des conduites autodestructrices et une instabilité relationnelle majeure. Le clivage de l’objet est le mécanisme de défense principal.",
+      status: "submitted",
+    });
+  }
+
+  if (e0 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a2,
+      enrolmentId: e0.enrolId,
+      studentId: e0.studentId,
+      body: "Durant mon stage en service de psychiatrie adulte, j’ai pu observer plusieurs mécanismes de défense. Un patient présentant un trouble obsessionnel utilisait massivement l’isolation de l’affect et l’annulation rétroactive. Ce qui m’a le plus frappé, c’est la différence entre les défenses névrotiques et psychotiques.",
+      status: "graded",
+      score: 8,
+      feedback:
+        "Bonne observation clinique. Vous faites bien la distinction entre défenses névrotiques et psychotiques. Essayez d’approfondir la notion de contre-transfert.",
+      gradedBy: clairembeaudId,
+      gradedAt: new Date(Date.now() - 3 * 86400000),
+    });
+  }
+
+  const e3 = c1EnrolIds[3];
+  if (e3 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m2a1,
+      enrolmentId: e3.enrolId,
+      studentId: e3.studentId,
+      body: "Le diagnostic différentiel entre névrose grave et psychose repose sur plusieurs critères : la nature de l’angoisse, l’épreuve de réalité, et les mécanismes de défense. Dans le cas présenté, je penche pour un diagnostic de névrose grave car l’épreuve de réalité est préservée.",
+      status: "submitted",
+    });
+  }
+
+  const e4 = c1EnrolIds[4];
+  if (e4 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m2a1,
+      enrolmentId: e4.enrolId,
+      studentId: e4.studentId,
+      body: "La question du diagnostic différentiel se pose ici de manière particulièrement aiguë. L’analyse approfondie révèle un fonctionnement névrotique : le refoulement est le mécanisme central, l’angoisse est liée à la castration symbolique.",
+      status: "graded",
+      score: 16,
+      feedback:
+        "Analyse nuancée et bien argumentée. Vous pourriez aller plus loin dans l’analyse du transfert.",
+      gradedBy: clairembeaudId,
+      gradedAt: new Date(Date.now() - 86400000),
+    });
   }
 
   // ═══════════════════════════════════════════════════════════════════════════

@@ -428,4 +428,45 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       return reply.send({ stats });
     },
   );
+
+  // ── GET /students/:studentId/submissions ──────────────────────────────────
+  // All submissions for a specific student — instructor / admin only.
+  fastify.get(
+    "/students/:studentId/submissions",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role } = request.jwtPayload;
+      const { studentId } = request.params as { studentId: string };
+
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const rows = await fastify.db
+        .select({
+          id: submissions.id,
+          body: submissions.body,
+          status: submissions.status,
+          score: submissions.score,
+          feedback: submissions.feedback,
+          createdAt: submissions.createdAt,
+          gradedAt: submissions.gradedAt,
+          exerciseId: submissions.exerciseId,
+          exerciseTitle: exercises.title,
+          exerciseType: exercises.type,
+          maxScore: exercises.maxScore,
+          enrolmentId: submissions.enrolmentId,
+          courseTitle: courses.title,
+        })
+        .from(submissions)
+        .innerJoin(exercises, eq(exercises.id, submissions.exerciseId))
+        .innerJoin(lessons, eq(lessons.id, exercises.lessonId))
+        .innerJoin(courseModules, eq(courseModules.id, lessons.moduleId))
+        .innerJoin(courses, eq(courses.id, courseModules.courseId))
+        .where(eq(submissions.studentId, studentId))
+        .orderBy(desc(submissions.createdAt));
+
+      return reply.send({ submissions: rows });
+    },
+  );
 }

@@ -532,11 +532,30 @@ function LessonViewer({
           {lesson.contentType === "pdf" && (
             <>
               {lesson.contentUrl !== null ? (
-                <iframe
-                  src={lesson.contentUrl}
-                  className="w-full h-[600px] border-0 rounded"
-                  title={lesson.title}
-                />
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 p-4 bg-cream/50 rounded-lg border border-rule">
+                    <File size={20} className="text-teal flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-dark truncate">
+                        {lesson.title}
+                      </p>
+                      <p className="text-xs text-meta">Document PDF</p>
+                    </div>
+                    <a
+                      href={lesson.contentUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors border border-teal/30 rounded px-3 py-1.5"
+                    >
+                      Ouvrir le PDF ↗
+                    </a>
+                  </div>
+                  <iframe
+                    src={`https://docs.google.com/viewer?url=${encodeURIComponent(lesson.contentUrl)}&embedded=true`}
+                    className="w-full h-[600px] border border-rule rounded"
+                    title={lesson.title}
+                  />
+                </div>
               ) : (
                 <p className="text-meta text-sm italic">PDF non disponible.</p>
               )}

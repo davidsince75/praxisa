@@ -12,6 +12,7 @@ import {
 } from "recharts";
 import { api } from "@/lib/api.js";
 import type { CourseListResponse, CourseAnalyticsResponse } from "@/lib/api.js";
+import { useAuth } from "@/hooks/useAuth.js";
 
 const BUCKET_ORDER = ["0%", "1-25%", "26-50%", "51-75%", "76-99%", "100%"];
 const BAR_COLORS = [
@@ -24,11 +25,12 @@ const BAR_COLORS = [
 ];
 
 export function TeacherAnalytics() {
+  const { user } = useAuth();
   const [selectedCourseId, setSelectedCourseId] = useState<string>("");
 
   const { data: coursesData } = useQuery<CourseListResponse>({
-    queryKey: ["teacher-courses"],
-    queryFn: () => api.get<CourseListResponse>("/courses/mine"),
+    queryKey: ["courses"],
+    queryFn: () => api.get<CourseListResponse>("/courses"),
   });
 
   const { data, isLoading, error } = useQuery<CourseAnalyticsResponse>({
@@ -40,7 +42,9 @@ export function TeacherAnalytics() {
     enabled: selectedCourseId !== "",
   });
 
-  const courses = coursesData?.courses ?? [];
+  const courses = (coursesData?.courses ?? []).filter(
+    (c) => c.instructorId === user?.id,
+  );
 
   const sortedDist = (data?.progressDistribution ?? [])
     .slice()

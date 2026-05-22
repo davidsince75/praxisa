@@ -307,15 +307,34 @@ function LessonModal({
               form.contentType === "pdf" ||
               form.contentType === "audio") && (
               <div className="space-y-1.5">
-                <Label htmlFor="les-url">URL du contenu</Label>
+                <Label htmlFor="les-url">
+                  {form.contentType === "video"
+                    ? "URL de la vid\u00e9o"
+                    : form.contentType === "pdf"
+                      ? "URL du document PDF"
+                      : "URL du fichier audio"}
+                </Label>
                 <Input
                   id="les-url"
                   value={form.contentUrl}
                   onChange={(e) => {
                     setForm((f) => ({ ...f, contentUrl: e.target.value }));
                   }}
-                  placeholder="https://…"
+                  placeholder={
+                    form.contentType === "video"
+                      ? "https://www.youtube.com/watch?v=... ou lien Vimeo"
+                      : form.contentType === "pdf"
+                        ? "https://drive.google.com/file/d/... ou lien direct .pdf"
+                        : "https://drive.google.com/file/d/... ou lien direct .mp3"
+                  }
                 />
+                <p className="text-xs text-meta">
+                  {form.contentType === "video"
+                    ? "Collez un lien YouTube, Vimeo, ou tout lien vid\u00e9o public."
+                    : form.contentType === "pdf"
+                      ? "Collez un lien Google Drive (acc\u00e8s public), Dropbox, ou un lien direct vers le PDF."
+                      : "Collez un lien Google Drive (acc\u00e8s public), Dropbox, ou un lien direct vers le fichier audio."}
+                </p>
               </div>
             )}
 
