@@ -85,10 +85,10 @@ export function DataImportPage() {
     mutationFn: (rows: ParsedRow[]) =>
       api.post<ImportUsersResponse>("/import/users", {
         rows: rows.map((r) => ({
-          firstName: r.firstName ?? "",
-          lastName: r.lastName ?? "",
-          email: r.email ?? "",
-          role: r.role ?? "student",
+          firstName: r.firstName,
+          lastName: r.lastName,
+          email: r.email,
+          role: r.role || "student",
         })),
       }),
     onSuccess: (data) => {
@@ -100,11 +100,11 @@ export function DataImportPage() {
     mutationFn: (rows: ParsedRow[]) =>
       api.post<ImportEnrolmentsResponse>("/import/enrolments", {
         rows: rows.map((r) => ({
-          studentEmail: r.studentEmail ?? "",
-          courseSlug: r.courseSlug ?? "",
-          status: r.status ?? "active",
-          enrolledAt: r.enrolledAt ?? undefined,
-          completedAt: r.completedAt ?? undefined,
+          studentEmail: r.studentEmail,
+          courseSlug: r.courseSlug,
+          status: r.status || "active",
+          enrolledAt: r.enrolledAt || undefined,
+          completedAt: r.completedAt || undefined,
         })),
       }),
     onSuccess: (data) => {
