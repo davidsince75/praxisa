@@ -4,7 +4,6 @@ import { z } from "zod";
 import {
   forumThreads,
   forumReplies,
-  courses,
   enrolments,
   users,
 } from "../../db/schema/index.js";

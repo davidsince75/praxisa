@@ -209,7 +209,7 @@ function AppearanceTab() {
     queryFn: () => api.get<PreferencesResponse>("/settings/preferences"),
   });
 
-  const theme = data?.preferences?.theme ?? "system";
+  const theme = data?.preferences.theme ?? "system";
 
   const mutation = useMutation({
     mutationFn: (t: string) => api.patch("/settings/preferences", { theme: t }),
@@ -260,7 +260,7 @@ function NotificationsTab() {
     queryFn: () => api.get<PreferencesResponse>("/settings/preferences"),
   });
 
-  const prefs = data?.preferences?.emailNotifications ?? {
+  const prefs = data?.preferences.emailNotifications ?? {
     messages: true,
     grading: true,
     campaigns: true,

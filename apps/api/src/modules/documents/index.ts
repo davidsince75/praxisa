@@ -4,7 +4,6 @@ import { z } from "zod";
 import {
   studentDocuments,
   courses,
-  enrolments,
   users,
 } from "../../db/schema/index.js";
 import { createNotification } from "../notifications/service.js";
