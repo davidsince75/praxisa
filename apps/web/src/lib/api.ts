@@ -159,6 +159,18 @@ export interface UserListResponse {
   meta: { total: number; page: number; limit: number; pages: number };
 }
 
+export interface UserSearchResult {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: UserRole;
+}
+
+export interface UserSearchResponse {
+  users: UserSearchResult[];
+}
+
 // ── Courses ────────────────────────────────────────────────────────────────────
 
 export interface Course {

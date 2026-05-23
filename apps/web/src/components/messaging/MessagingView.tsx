@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { MessageSquare, Send, ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,8 @@ import type {
   MessageThreadsResponse,
   MessageThreadDetailResponse,
   SendMessageResponse,
+  UserSearchResponse,
+  UserSearchResult,
 } from "@/lib/api.js";
 
 function formatDate(iso: string): string {
@@ -24,31 +26,117 @@ interface NewThreadFormProps {
   sending: boolean;
 }
 
-// Shown as a modal-like panel when composing a new message
+function useDebounce(value: string, ms: number): string {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebounced(value);
+    }, ms);
+    return () => {
+      clearTimeout(t);
+    };
+  }, [value, ms]);
+  return debounced;
+}
+
 function NewThreadForm({ onSend, sending }: NewThreadFormProps) {
-  const [recipientId, setRecipientId] = useState("");
+  const [search, setSearch] = useState("");
+  const [selectedUser, setSelectedUser] = useState<UserSearchResult | null>(
+    null,
+  );
   const [body, setBody] = useState("");
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { data: searchData } = useQuery<UserSearchResponse>({
+    queryKey: ["user-search", debouncedSearch],
+    queryFn: () =>
+      api.get<UserSearchResponse>(
+        `/users/search?q=${encodeURIComponent(debouncedSearch)}`,
+      ),
+    enabled: debouncedSearch.length >= 2 && selectedUser === null,
+  });
+
+  const suggestions = searchData?.users ?? [];
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!recipientId.trim() || !body.trim()) return;
-    onSend(recipientId.trim(), body.trim());
+    if (selectedUser === null || !body.trim()) return;
+    onSend(selectedUser.id, body.trim());
   }
+
+  const ROLE_LABELS: Record<string, string> = {
+    admin: "Admin",
+    instructor: "Formateur",
+    student: "Apprenant",
+    migration_lead: "Migration",
+  };
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1">
-          Destinataire (ID utilisateur)
+          Destinataire
         </label>
-        <input
-          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
-          placeholder="UUID du destinataire"
-          value={recipientId}
-          onChange={(e) => {
-            setRecipientId(e.target.value);
-          }}
-        />
+        {selectedUser !== null ? (
+          <div className="flex items-center justify-between rounded-md border border-teal-200 bg-teal-50 px-3 py-2">
+            <span className="text-sm font-medium text-slate-800">
+              {selectedUser.firstName} {selectedUser.lastName}{" "}
+              <span className="text-xs text-slate-500">
+                ({selectedUser.email})
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedUser(null);
+                setSearch("");
+              }}
+              className="text-xs text-slate-400 hover:text-slate-600"
+            >
+              Changer
+            </button>
+          </div>
+        ) : (
+          <div className="relative">
+            <input
+              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              placeholder="Rechercher par nom ou email…"
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+              }}
+              autoFocus
+            />
+            {suggestions.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                {suggestions.map((u) => (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedUser(u);
+                      setSearch("");
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-b-0"
+                  >
+                    <span className="text-sm font-medium text-slate-800">
+                      {u.firstName} {u.lastName}
+                    </span>
+                    <span className="text-xs text-slate-400 ml-2">
+                      {u.email} · {ROLE_LABELS[u.role] ?? u.role}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
+            {debouncedSearch.length >= 2 && suggestions.length === 0 && (
+              <p className="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg px-3 py-2 text-xs text-slate-400">
+                Aucun utilisateur trouvé
+              </p>
+            )}
+          </div>
+        )}
       </div>
       <div>
         <label className="block text-xs font-medium text-slate-500 mb-1">
@@ -66,7 +154,7 @@ function NewThreadForm({ onSend, sending }: NewThreadFormProps) {
       </div>
       <Button
         type="submit"
-        disabled={sending || !recipientId.trim() || !body.trim()}
+        disabled={sending || selectedUser === null || !body.trim()}
       >
         <Send size={14} className="mr-1.5" />
         Envoyer

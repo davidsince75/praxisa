@@ -108,6 +108,48 @@ export const usersPlugin = (
     },
   );
 
+  // ── GET /users/search ────────────────────────────────────────────────────────
+  // Lightweight user search for all authenticated users (compose message, etc.)
+  fastify.get(
+    "/users/search",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { sub: currentId } = request.jwtPayload;
+      const { q } = request.query as { q?: string };
+
+      if (q === undefined || q.trim().length < 2) {
+        return reply.send({ users: [] });
+      }
+
+      const pattern = `%${q.trim()}%`;
+      const rows = await fastify.db
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          role: users.role,
+        })
+        .from(users)
+        .where(
+          and(
+            isNull(users.deletedAt),
+            eq(users.isActive, true),
+            sql`${users.id} != ${currentId}`,
+            or(
+              ilike(users.email, pattern),
+              ilike(users.firstName, pattern),
+              ilike(users.lastName, pattern),
+            ) ?? sql`true`,
+          ),
+        )
+        .orderBy(asc(users.lastName))
+        .limit(10);
+
+      return reply.send({ users: rows });
+    },
+  );
+
   // ── GET /users/:userId ───────────────────────────────────────────────────────
 
   fastify.get(
