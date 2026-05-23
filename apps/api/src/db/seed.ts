@@ -31,6 +31,11 @@ import {
   messages,
   notifications,
   submissions,
+  studentDocuments,
+  forumThreads,
+  forumReplies,
+  campaigns,
+  courseRatings,
 } from "./schema/index.js";
 
 // ── DB connection ─────────────────────────────────────────────────────────────
@@ -222,7 +227,7 @@ async function seed() {
   // ── Clean slate ─────────────────────────────────────────────────────────
   console.log("  Clearing existing demo data...");
   await db.execute(
-    sql`TRUNCATE notifications, messages, message_threads, quiz_attempts, quiz_questions, exercises, lesson_progress, enrolments, lessons, course_modules, course_ratings, courses, users CASCADE`,
+    sql`TRUNCATE forum_replies, forum_threads, student_documents, campaigns, notifications, messages, message_threads, quiz_attempts, quiz_questions, exercises, lesson_progress, enrolments, lessons, course_modules, course_ratings, courses, users CASCADE`,
   );
 
   // ── Users ─────────────────────────────────────────────────────────────────
@@ -1211,6 +1216,398 @@ async function seed() {
       entityId: course1Id,
     },
   ]);
+
+  // ======================================================================
+  // ADDITIONAL SUBMISSIONS (more items in the grading queue)
+  // ======================================================================
+
+  console.log("  Creating additional submissions...");
+
+  const e5 = c1EnrolIds[5];
+  if (e5 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a1,
+      enrolmentId: e5.enrolId,
+      studentId: e5.studentId,
+      body: "Mon analyse porte sur un cas clinique de structure névrotique obsessionnelle. Le patient présente des rituels de vérification et des pensées intrusives. Les mécanismes de défense identifiés sont l’isolation de l’affect et l’annulation rétroactive. Le conflit œdipien est central, avec une culpabilité surmoïque marquée.",
+      status: "submitted",
+    });
+  }
+
+  const e6 = c1EnrolIds[6];
+  if (e6 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a1,
+      enrolmentId: e6.enrolId,
+      studentId: e6.studentId,
+      body: "Ce cas présente les caractéristiques d’une organisation névrotique phobique. L’angoisse de castration se manifeste par un déplacement sur des situations sociales spécifiques. Le mécanisme d’évitement est prédominant. Le transfert en séance révèle une ambivalence typiquement névrotique.",
+      status: "submitted",
+    });
+  }
+
+  const e7 = c1EnrolIds[7];
+  if (e7 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m2a1,
+      enrolmentId: e7.enrolId,
+      studentId: e7.studentId,
+      body: "Le diagnostic différentiel entre névrose et psychose s’appuie ici sur l’épreuve de réalité qui reste préservée. Le patient conserve une capacité de mentalisation malgré la gravité des symptômes anxieux. Les mécanismes de défense (refoulement, déplacement) confirment une organisation névrotique.",
+      status: "submitted",
+    });
+    await db.insert(submissions).values({
+      exerciseId: c1m1a2,
+      enrolmentId: e7.enrolId,
+      studentId: e7.studentId,
+      body: "En observation clinique, j’ai remarqué chez un patient hospitalisé l’utilisation massive de la projection. Le patient attribuait systématiquement aux soignants ses propres sentiments d’hostilité. Ce mécanisme archaïque orientait vers une organisation psychotique, confirmée par le bilan psychologique.",
+      status: "graded",
+      score: 7,
+      feedback:
+        "Observation pertinente. Vous identifiez bien la projection comme mécanisme archaïque. Développez davantage les implications pour la prise en charge thérapeutique.",
+      gradedBy: clairembeaudId,
+      gradedAt: new Date(Date.now() - 4 * 86400000),
+    });
+  }
+
+  const e8 = c1EnrolIds[8];
+  if (e8 !== undefined) {
+    await db.insert(submissions).values({
+      exerciseId: c1m1a1,
+      enrolmentId: e8.enrolId,
+      studentId: e8.studentId,
+      body: "L’analyse de ce cas clinique met en évidence un aménagement état-limite avec des traits narcissiques. L’oscillation entre idéalisation et dévalorisation est manifeste dans le discours du patient. L’angoisse d’abandon est le moteur principal des passages à l’acte. La relation d’objet est anaclitique.",
+      status: "graded",
+      score: 15,
+      feedback:
+        "Très bonne identification de l’aménagement état-limite. L’analyse de la relation d’objet anaclitique est pertinente. Précisez les implications contre-transférentielles.",
+      gradedBy: clairembeaudId,
+      gradedAt: new Date(Date.now() - 5 * 86400000),
+    });
+  }
+
+  // ======================================================================
+  // STUDENT DOCUMENTS (notes)
+  // ======================================================================
+
+  console.log("  Creating student documents...");
+
+  if (s0 !== undefined) {
+    await db.insert(studentDocuments).values({
+      studentId: s0,
+      courseId: course1Id,
+      title: "Notes — Structures de la personnalité",
+      body: "<h2>Résumé U1 — Structures</h2><p>Trois structures principales : névrotique, psychotique, état-limite.</p><ul><li>Névrotique : angoisse de castration, refoulement</li><li>Psychotique : angoisse de morcellement, déni</li><li>État-limite : angoisse d’abandon, clivage</li></ul><p>Bergeret est la référence clé pour la nosographie structurale française.</p>",
+      status: "draft",
+    });
+  }
+
+  if (s1 !== undefined) {
+    await db.insert(studentDocuments).values({
+      studentId: s1,
+      courseId: course1Id,
+      title: "Notes — Psychopathologie fondamentale",
+      body: "<h2>Névroses et psychoses</h2><p>Les névroses conservent l’épreuve de réalité. Les psychoses l’altèrent profondément.</p><p>Hystérie : conversion somatique. TOC : pensées intrusives + rituels. Phobie : déplacement de l’angoisse.</p><p>Schizophrénie vs paranoïa : délire non systématisé vs systématisé.</p>",
+      status: "draft",
+    });
+  }
+
+  if (s2 !== undefined) {
+    await db.insert(studentDocuments).values({
+      studentId: s2,
+      courseId: course2Id,
+      title: "Notes — Développement de l’enfant (Piaget)",
+      body: "<h2>Les 4 stades de Piaget</h2><ol><li>Sensori-moteur (0–2 ans) : permanence de l’objet</li><li>Préopératoire (2–7 ans) : égocentrisme</li><li>Opérations concrètes (7–11 ans) : conservation</li><li>Opérations formelles (11+) : abstraction</li></ol><p>Wallon ajoute la dimension émotionnelle au développement.</p>",
+      status: "published",
+      publishedAt: new Date(Date.now() - 7 * 86400000),
+    });
+  }
+
+  // ======================================================================
+  // FORUM THREADS
+  // ======================================================================
+
+  console.log("  Creating forum threads...");
+
+  if (s0 !== undefined && s1 !== undefined && s2 !== undefined) {
+    // Forum thread 1: Course 1, student question about defense mechanisms
+    const ft1rows = await db
+      .insert(forumThreads)
+      .values({
+        courseId: course1Id,
+        authorId: s0,
+        title: "Différence entre clivage de l’objet et clivage du moi ?",
+        body: "Bonjour à tous, je n’arrive pas à bien distinguer ces deux concepts. Le clivage de l’objet (états-limites) et le clivage du moi (psychose) semblent proches. Quelqu’un peut m’expliquer la nuance ?",
+      })
+      .returning({ id: forumThreads.id });
+    const ft1 = ft1rows[0]?.id;
+    if (ft1 !== undefined) {
+      await db.insert(forumReplies).values({
+        threadId: ft1,
+        authorId: s1,
+        body: "De ce que j’ai compris, le clivage de l’objet concerne la relation à l’autre (bon objet / mauvais objet), tandis que le clivage du moi concerne le sujet lui-même (une partie du moi dénie la réalité).",
+      });
+      await db.insert(forumReplies).values({
+        threadId: ft1,
+        authorId: clairembeaudId,
+        body: "Excellente question et bonne réponse de Thomas. Pour préciser : le clivage de l’objet (Kernberg) est un mécanisme de l’état-limite qui alterne idéalisation et dévalorisation. Le clivage du moi (Freud) dans la psychose est un processus plus radical où une partie du moi refuse la réalité.",
+      });
+    }
+
+    // Forum thread 2: Course 1, pinned announcement
+    await db.insert(forumThreads).values({
+      courseId: course1Id,
+      authorId: clairembeaudId,
+      title: "Rappel : date limite pour le devoir U2",
+      body: "Chers étudiants, je vous rappelle que l’étude de cas sur le diagnostic différentiel névrose/psychose doit être rendue avant le 15 juin. N’hésitez pas à me contacter pour toute question.",
+      isPinned: true,
+    });
+
+    // Forum thread 3: Course 2, student question
+    const ft3rows = await db
+      .insert(forumThreads)
+      .values({
+        courseId: course2Id,
+        authorId: s2,
+        title: "Ressources complémentaires sur l’attachement désorganisé",
+        body: "Est-ce que quelqu’un connaît de bons articles ou livres sur l’attachement désorganisé chez l’enfant ? Le cours mentionne brièvement ce style mais j’aimerais approfondir.",
+      })
+      .returning({ id: forumThreads.id });
+    const ft3 = ft3rows[0]?.id;
+    if (ft3 !== undefined) {
+      await db.insert(forumReplies).values({
+        threadId: ft3,
+        authorId: leblancId,
+        body: "Je vous recommande les travaux de Mary Main et Erik Hesse sur l’attachement désorganisé. Leur article de 1990 est fondateur. Vous pouvez aussi consulter le livre de Boris Cyrulnik sur la résilience qui aborde ce thème.",
+      });
+    }
+  }
+
+  // ======================================================================
+  // EMAIL CAMPAIGNS
+  // ======================================================================
+
+  console.log("  Creating email campaigns...");
+
+  await db.insert(campaigns).values([
+    {
+      name: "Rentrée 2026",
+      subject: "Bienvenue à la rentrée 2026 — Praxisa",
+      body: "<h2>Bienvenue !</h2><p>Chers étudiants, nous sommes ravis de vous accueillir pour cette nouvelle année de formation. Vos accès sont désormais actifs. Connectez-vous à votre espace apprenant pour découvrir vos cours.</p><p>L’équipe Praxisa</p>",
+      targetType: "all_students",
+      status: "sent",
+      recipientCount: 15,
+      sentAt: new Date(Date.now() - 30 * 86400000),
+      createdBy: adminId,
+    },
+    {
+      name: "Rappel soumission U1",
+      subject: "Rappel : devoir U1 à rendre avant le 15 juin",
+      body: "<h2>Rappel important</h2><p>N’oubliez pas de soumettre votre analyse de cas clinique pour l’unité U1 — Structures de la personnalité. Date limite : 15 juin 2026.</p><p>Cordialement,<br/>L’équipe pédagogique</p>",
+      targetType: "course_enrolled",
+      targetCourseId: course1Id,
+      status: "sent",
+      recipientCount: 12,
+      sentAt: new Date(Date.now() - 7 * 86400000),
+      createdBy: adminId,
+    },
+    {
+      name: "Journée portes ouvertes",
+      subject: "Journée portes ouvertes — Découvrez nos formations",
+      body: "<h2>Journée portes ouvertes</h2><p>Praxisa organise une journée portes ouvertes virtuelle le 20 juin 2026. Venez découvrir nos formations en psychologie clinique et échangez avec nos formateurs.</p><p>Inscription gratuite sur notre site.</p>",
+      targetType: "all_students",
+      status: "draft",
+      createdBy: adminId,
+    },
+  ]);
+
+  // ======================================================================
+  // COURSE RATINGS
+  // ======================================================================
+
+  console.log("  Creating course ratings...");
+
+  if (s0 !== undefined && s1 !== undefined && s2 !== undefined) {
+    await db.insert(courseRatings).values([
+      {
+        courseId: course1Id,
+        studentId: s0,
+        rating: 5,
+        comment:
+          "Formation exceptionnelle. Le contenu sur les structures de la personnalité est très approfondi et les exercices pratiques sont pertinents.",
+      },
+      {
+        courseId: course1Id,
+        studentId: s1,
+        rating: 4,
+        comment:
+          "Très bon cours, bien structuré. J’aurais aimé plus de vidéos d’entretiens cliniques réels.",
+      },
+      {
+        courseId: course1Id,
+        studentId: s2,
+        rating: 5,
+        comment:
+          "M. Clairembeaud est un excellent formateur. Les quiz permettent de bien consolider les connaissances.",
+      },
+    ]);
+
+    await db.insert(courseRatings).values([
+      {
+        courseId: course2Id,
+        studentId: s0,
+        rating: 4,
+        comment:
+          "Bonne formation sur le développement de l’enfant. Les théories de Piaget et Wallon sont bien expliquées.",
+      },
+      {
+        courseId: course2Id,
+        studentId: s1,
+        rating: 5,
+        comment:
+          "Cours passionnant. Mme Dubois-Faure rend les théories accessibles avec des exemples concrets du quotidien.",
+      },
+    ]);
+  }
+
+  // ======================================================================
+  // ADDITIONAL MESSAGE THREADS (prospective students, info requests)
+  // ======================================================================
+
+  console.log("  Creating additional message threads...");
+
+  const s3 = studentIds[3];
+  const s4 = studentIds[4];
+  const s5 = studentIds[5];
+  const s6 = studentIds[6];
+
+  if (s3 !== undefined) {
+    // Prospective student asking about prerequisites
+    const t4rows = await db
+      .insert(messageThreads)
+      .values({ participantA: s3, participantB: adminId })
+      .returning({ id: messageThreads.id });
+    const t4 = t4rows[0]?.id;
+    if (t4 !== undefined) {
+      await db.insert(messages).values({
+        threadId: t4,
+        senderId: s3,
+        body: "Bonjour, je suis intéressé par la formation en psychologie clinique. Quels sont les prérequis ? Faut-il un diplôme universitaire en psychologie ?",
+      });
+      await db.insert(messages).values({
+        threadId: t4,
+        senderId: adminId,
+        body: "Bonjour Hugo, merci pour votre intérêt. Notre formation est ouverte à tous les professionnels de la relation d’aide (psychologues, éducateurs, infirmiers psychiatriques, etc.). Un entretien préalable est nécessaire pour valider votre projet. Souhaitez-vous prendre rendez-vous ?",
+        readAt: new Date(),
+      });
+    }
+  }
+
+  if (s4 !== undefined) {
+    // Student asking about CPF funding
+    const t5rows = await db
+      .insert(messageThreads)
+      .values({ participantA: s4, participantB: adminId })
+      .returning({ id: messageThreads.id });
+    const t5 = t5rows[0]?.id;
+    if (t5 !== undefined) {
+      await db.insert(messages).values({
+        threadId: t5,
+        senderId: s4,
+        body: "Bonjour, est-il possible de financer la formation via le CPF (Compte Personnel de Formation) ? Si oui, quel est le code CPF ?",
+      });
+      await db.insert(messages).values({
+        threadId: t5,
+        senderId: adminId,
+        body: "Bonjour Emma, oui la formation est éligible au CPF. Notre certification Qualiopi nous permet de proposer un financement via votre compte formation. Je vous envoie les détails par email. Cordialement, Sophie Bernard.",
+      });
+    }
+  }
+
+  if (s5 !== undefined) {
+    // Student asking about internship
+    const t6rows = await db
+      .insert(messageThreads)
+      .values({ participantA: s5, participantB: clairembeaudId })
+      .returning({ id: messageThreads.id });
+    const t6 = t6rows[0]?.id;
+    if (t6 !== undefined) {
+      await db.insert(messages).values({
+        threadId: t6,
+        senderId: s5,
+        body: "M. Clairembeaud, dans le cadre de l’U2 vous mentionnez l’importance de l’observation clinique. Proposez-vous des stages conventionnés dans des structures partenaires ?",
+      });
+      await db.insert(messages).values({
+        threadId: t6,
+        senderId: clairembeaudId,
+        body: "Bonjour Lucas, nous avons en effet des partenariats avec plusieurs CMP et hôpitaux psychiatriques. Je peux vous mettre en relation avec notre coordinateur de stages. Envoyez-moi votre CV et une lettre de motivation.",
+      });
+    }
+  }
+
+  if (s6 !== undefined) {
+    // Certification inquiry
+    const t7rows = await db
+      .insert(messageThreads)
+      .values({ participantA: s6, participantB: adminId })
+      .returning({ id: messageThreads.id });
+    const t7 = t7rows[0]?.id;
+    if (t7 !== undefined) {
+      await db.insert(messages).values({
+        threadId: t7,
+        senderId: s6,
+        body: "Bonjour, je voudrais savoir : le certificat délivré à la fin de la formation est-il reconnu par la Fédération Française de Psychothérapie ?",
+      });
+    }
+  }
+
+  // ======================================================================
+  // ADDITIONAL NOTIFICATIONS
+  // ======================================================================
+
+  console.log("  Creating additional notifications...");
+
+  if (s3 !== undefined) {
+    await db.insert(notifications).values({
+      userId: adminId,
+      type: "new_message",
+      title: "Nouveau message",
+      body: "Hugo Durand vous a envoyé une question sur les prérequis de la formation.",
+      entityType: "message",
+      entityId: "1",
+    });
+  }
+
+  if (s5 !== undefined) {
+    await db.insert(notifications).values({
+      userId: clairembeaudId,
+      type: "new_message",
+      title: "Nouveau message",
+      body: "Lucas Simon vous a posé une question sur les stages conventionnés.",
+      entityType: "message",
+      entityId: "1",
+    });
+  }
+
+  if (e5 !== undefined) {
+    await db.insert(notifications).values({
+      userId: clairembeaudId,
+      type: "new_message",
+      title: "Devoir soumis",
+      body: "Un étudiant a soumis une analyse de cas clinique (U1).",
+      entityType: "submission",
+      entityId: "1",
+    });
+  }
+
+  if (s6 !== undefined) {
+    await db.insert(notifications).values({
+      userId: adminId,
+      type: "new_message",
+      title: "Nouveau message",
+      body: "Chloé Michel vous a envoyé une question sur la certification.",
+      entityType: "message",
+      entityId: "1",
+    });
+  }
 
   console.log("\n✅ Seed complete!\n");
   console.log("  Demo accounts:");
