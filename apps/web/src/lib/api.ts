@@ -798,6 +798,20 @@ export interface DocumentResponse {
   document: StudentDocumentDetail;
 }
 
+// ── Tags ─────────────────────────────────────────────────────────────────────
+
+export interface TagRow {
+  id: string;
+  name: string;
+  color: string;
+  userId: string;
+  createdAt: string;
+}
+
+export interface TagsResponse {
+  tags: TagRow[];
+}
+
 // ── Discussion Forums ────────────────────────────────────────────────────────
 
 export interface ForumThreadRow {

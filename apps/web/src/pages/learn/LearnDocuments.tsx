@@ -8,12 +8,16 @@ import {
   ChevronDown,
   ChevronRight,
   MessageSquare,
+  Tag,
+  X,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   DocumentsResponse,
   DocumentResponse,
   StudentDocumentRow,
+  TagRow,
+  TagsResponse,
 } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
@@ -99,7 +103,94 @@ function CreateDocForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function DocRow({ doc }: { doc: StudentDocumentRow }) {
+interface DocTagChipsProps {
+  documentId: string;
+  allTags: TagRow[];
+}
+
+function DocTagChips({ documentId, allTags }: DocTagChipsProps) {
+  const qc = useQueryClient();
+
+  const { data } = useQuery<TagsResponse>({
+    queryKey: ["doc-tags", documentId],
+    queryFn: () => api.get<TagsResponse>(`/documents/${documentId}/tags`),
+  });
+
+  const addMutation = useMutation({
+    mutationFn: (tagId: string) =>
+      api.post(`/documents/${documentId}/tags`, { tagId }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["doc-tags", documentId] });
+    },
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: (tagId: string) =>
+      api.delete(`/documents/${documentId}/tags/${tagId}`),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["doc-tags", documentId] });
+    },
+  });
+
+  const docTags = data?.tags ?? [];
+  const docTagIds = new Set(docTags.map((t) => t.id));
+  const available = allTags.filter((t) => !docTagIds.has(t.id));
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-bold text-meta uppercase tracking-wider">
+        <Tag size={10} className="inline mr-1" />
+        Tags
+      </p>
+      <div className="flex flex-wrap gap-1.5">
+        {docTags.map((t) => (
+          <span
+            key={t.id}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+            style={{ backgroundColor: t.color }}
+          >
+            {t.name}
+            <button
+              type="button"
+              onClick={() => {
+                removeMutation.mutate(t.id);
+              }}
+              className="hover:opacity-70"
+            >
+              <X size={10} />
+            </button>
+          </span>
+        ))}
+        {available.length > 0 && (
+          <select
+            className="h-6 px-1.5 text-[10px] border border-rule rounded bg-white text-meta"
+            value=""
+            onChange={(e) => {
+              if (e.target.value !== "") {
+                addMutation.mutate(e.target.value);
+              }
+            }}
+          >
+            <option value="">+ Ajouter</option>
+            {available.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function DocRow({
+  doc,
+  allTags,
+}: {
+  doc: StudentDocumentRow;
+  allTags: TagRow[];
+}) {
   const [expanded, setExpanded] = useState(false);
   const qc = useQueryClient();
 
@@ -172,6 +263,7 @@ function DocRow({ doc }: { doc: StudentDocumentRow }) {
                   </p>
                 </div>
               )}
+              <DocTagChips documentId={doc.id} allTags={allTags} />
               {doc.status === "draft" && (
                 <div className="flex gap-2">
                   <Button
@@ -207,8 +299,32 @@ function DocRow({ doc }: { doc: StudentDocumentRow }) {
 }
 
 export function LearnDocumentsPage() {
+  const qc = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [filter, setFilter] = useState("");
+  const [newTagName, setNewTagName] = useState("");
+
+  const { data: tagsData } = useQuery<TagsResponse>({
+    queryKey: ["my-tags"],
+    queryFn: () => api.get<TagsResponse>("/tags"),
+  });
+
+  const createTagMutation = useMutation({
+    mutationFn: (name: string) => api.post("/tags", { name }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["my-tags"] });
+      setNewTagName("");
+    },
+  });
+
+  const deleteTagMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/tags/${id}`),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["my-tags"] });
+    },
+  });
+
+  const allTags = tagsData?.tags ?? [];
 
   const { data, isLoading } = useQuery<DocumentsResponse>({
     queryKey: ["my-documents", filter],
@@ -254,6 +370,63 @@ export function LearnDocumentsPage() {
         ))}
       </div>
 
+      {/* Tags */}
+      {allTags.length > 0 && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-[10px] font-bold text-meta uppercase tracking-wider mr-1">
+            <Tag size={10} className="inline mr-0.5" />
+            Mes tags :
+          </span>
+          {allTags.map((t) => (
+            <span
+              key={t.id}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+              style={{ backgroundColor: t.color }}
+            >
+              {t.name}
+              <button
+                type="button"
+                onClick={() => {
+                  deleteTagMutation.mutate(t.id);
+                }}
+                className="hover:opacity-70"
+              >
+                <X size={9} />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Create tag */}
+      <div className="flex items-center gap-2">
+        <input
+          value={newTagName}
+          onChange={(e) => {
+            setNewTagName(e.target.value);
+          }}
+          placeholder="Nouveau tag…"
+          className="h-8 w-40 px-2 text-xs border border-rule rounded bg-white focus:outline-none focus:ring-1 focus:ring-teal"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && newTagName.trim().length > 0) {
+              createTagMutation.mutate(newTagName.trim());
+            }
+          }}
+        />
+        <button
+          type="button"
+          disabled={
+            createTagMutation.isPending || newTagName.trim().length === 0
+          }
+          onClick={() => {
+            createTagMutation.mutate(newTagName.trim());
+          }}
+          className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider rounded bg-teal/10 text-teal hover:bg-teal/20 disabled:opacity-40 transition-colors"
+        >
+          {createTagMutation.isPending ? "…" : "+ Tag"}
+        </button>
+      </div>
+
       {creating && (
         <CreateDocForm
           onDone={() => {
@@ -277,7 +450,7 @@ export function LearnDocumentsPage() {
 
       <div className="space-y-2">
         {docs.map((doc) => (
-          <DocRow key={doc.id} doc={doc} />
+          <DocRow key={doc.id} doc={doc} allTags={allTags} />
         ))}
       </div>
     </div>

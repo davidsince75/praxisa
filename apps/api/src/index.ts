@@ -29,6 +29,7 @@ import { importPlugin } from "./modules/import/index.js";
 import { documentsPlugin } from "./modules/documents/index.js";
 import { forumsPlugin } from "./modules/forums/index.js";
 import { settingsPlugin } from "./modules/settings/index.js";
+import { tagsPlugin } from "./modules/tags/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -85,6 +86,7 @@ await app.register(importPlugin, { prefix: "/v1" });
 await app.register(documentsPlugin, { prefix: "/v1" });
 await app.register(forumsPlugin, { prefix: "/v1" });
 await app.register(settingsPlugin, { prefix: "/v1" });
+await app.register(tagsPlugin, { prefix: "/v1" });
 await app.register(aiPlugin, {
   prefix: "/v1",
   ...(config.mistralApiKey !== undefined

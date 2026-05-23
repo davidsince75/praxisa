@@ -99,6 +99,13 @@
       "when": 1748563200000,
       "tag": "0013_documents_forums_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1748649600000,
+      "tag": "0014_document_tags",
+      "breakpoints": true
     }
   ]
 }
