@@ -1,5 +1,5 @@
 import type { FastifyInstance } from "fastify";
-import { and, eq, desc, inArray } from "drizzle-orm";
+import { and, eq, desc } from "drizzle-orm";
 import { z } from "zod";
 import { tags, documentTags, studentDocuments } from "../../db/schema/index.js";
 
