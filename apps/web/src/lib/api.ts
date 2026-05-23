@@ -229,6 +229,7 @@ export interface LessonExercise {
   title: string;
   type: string;
   position: number;
+  dueAt: string | null;
 }
 
 export interface LessonItem {

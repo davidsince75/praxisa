@@ -70,6 +70,7 @@ export const createExerciseSchema = z.object({
   type: z.enum(["quiz", "assignment", "reflection"]),
   maxScore: z.number().int().min(0).optional(),
   isRequired: z.boolean().default(true),
+  dueAt: z.string().datetime().optional().nullable(),
 });
 
 export const updateExerciseSchema = createExerciseSchema.partial();

@@ -239,7 +239,13 @@ export const learningPlugin = (
       const allLessons = Object.values(lessonsByModule).flat();
       const exercisesByLesson: Record<
         string,
-        { id: string; title: string; type: string; position: number }[]
+        {
+          id: string;
+          title: string;
+          type: string;
+          position: number;
+          dueAt: Date | null;
+        }[]
       > = {};
       for (const les of allLessons) {
         const exs = await fastify.db
@@ -248,6 +254,7 @@ export const learningPlugin = (
             title: exercises.title,
             type: exercises.type,
             position: exercises.position,
+            dueAt: exercises.dueAt,
           })
           .from(exercises)
           .where(eq(exercises.lessonId, les.id))
@@ -700,6 +707,10 @@ export const learningPlugin = (
           type: body.type,
           maxScore: body.maxScore ?? null,
           isRequired: body.isRequired,
+          dueAt:
+            body.dueAt !== undefined && body.dueAt !== null
+              ? new Date(body.dueAt)
+              : null,
         })
         .returning();
 
@@ -738,9 +749,20 @@ export const learningPlugin = (
         return reply.status(400).send({ error: parse.error.flatten() });
       }
 
+      const setData: Record<string, unknown> = {
+        ...parse.data,
+        updatedAt: new Date(),
+      };
+      if ("dueAt" in parse.data) {
+        setData["dueAt"] =
+          parse.data.dueAt !== undefined && parse.data.dueAt !== null
+            ? new Date(parse.data.dueAt)
+            : null;
+      }
+
       const updated = await fastify.db
         .update(exercises)
-        .set({ ...parse.data, updatedAt: new Date() })
+        .set(setData)
         .where(
           and(eq(exercises.id, exerciseId), eq(exercises.lessonId, lessonId)),
         )

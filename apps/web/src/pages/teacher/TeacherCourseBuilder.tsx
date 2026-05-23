@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Calendar,
   ChevronDown,
   ChevronRight,
   Plus,
@@ -21,6 +22,7 @@ import type {
   CourseDetailResponse,
   ModuleWithLessons,
   LessonItem,
+  LessonExercise,
   LessonContentType,
 } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
@@ -440,6 +442,78 @@ function DeleteModal({
   );
 }
 
+// ── Exercise deadline row ─────────────────────────────────────────────────────
+
+interface ExerciseDeadlineRowProps {
+  courseId: string;
+  moduleId: string;
+  lessonId: string;
+  exercise: LessonExercise;
+  onRefresh: () => void;
+}
+
+function ExerciseDeadlineRow({
+  courseId,
+  moduleId,
+  lessonId,
+  exercise,
+  onRefresh,
+}: ExerciseDeadlineRowProps) {
+  const deadlineMutation = useMutation({
+    mutationFn: (dueAt: string | null) =>
+      api.patch(
+        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/exercises/${exercise.id}`,
+        { dueAt },
+      ),
+    onSuccess: () => {
+      onRefresh();
+    },
+  });
+
+  const typeLabels: Record<string, string> = {
+    quiz: "Quiz",
+    assignment: "Devoir",
+    reflection: "Réflexion",
+  };
+
+  const currentDate =
+    exercise.dueAt !== null ? exercise.dueAt.slice(0, 10) : "";
+
+  return (
+    <div className="flex items-center gap-2 px-10 py-1.5 bg-cream/20">
+      <span className="text-[10px] font-bold uppercase tracking-wider text-meta border border-rule px-1.5 py-0.5 rounded">
+        {typeLabels[exercise.type] ?? exercise.type}
+      </span>
+      <span className="flex-1 text-xs text-dark truncate">
+        {exercise.title}
+      </span>
+      <Calendar size={11} className="text-meta flex-shrink-0" />
+      <input
+        type="date"
+        value={currentDate}
+        onChange={(e) => {
+          const val = e.target.value;
+          const dueAt =
+            val.length > 0 ? new Date(val + "T23:59:59").toISOString() : null;
+          deadlineMutation.mutate(dueAt);
+        }}
+        className="text-xs border border-rule rounded px-1.5 py-0.5 w-32 bg-white text-dark focus:outline-none focus:ring-1 focus:ring-teal"
+      />
+      {exercise.dueAt !== null && (
+        <button
+          onClick={() => {
+            deadlineMutation.mutate(null);
+          }}
+          className="text-[10px] text-meta hover:text-rose transition-colors"
+          title="Supprimer l'échéance"
+        >
+          ✕
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ── Module row ─────────────────────────────────────────────────────────────────
 
 interface ModuleRowProps {
@@ -515,40 +589,55 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
       {expanded && (
         <div className="border-t border-rule divide-y divide-rule">
           {mod.lessons.map((les) => (
-            <div
-              key={les.id}
-              className="flex items-center gap-2 px-6 py-2.5 hover:bg-cream/40 transition-colors"
-            >
-              {contentIcon(les.contentType)}
-              <span className="flex-1 text-sm text-dark truncate">
-                {les.title}
-              </span>
-              {les.durationMinutes !== null && (
-                <span className="text-xs text-meta mr-2">
-                  {String(les.durationMinutes)} min
+            <div key={les.id}>
+              <div className="flex items-center gap-2 px-6 py-2.5 hover:bg-cream/40 transition-colors">
+                {contentIcon(les.contentType)}
+                <span className="flex-1 text-sm text-dark truncate">
+                  {les.title}
                 </span>
-              )}
-              {les.isFreePreview && (
-                <span className="text-[10px] font-bold uppercase tracking-wider text-teal border border-teal/30 px-1.5 py-0.5 rounded mr-1">
-                  Aperçu
-                </span>
-              )}
-              <button
-                onClick={() => {
-                  setEditLesson(les);
-                }}
-                className="text-meta hover:text-dark transition-colors p-1"
-              >
-                <Pencil size={12} />
-              </button>
-              <button
-                onClick={() => {
-                  setDeleteLesson(les);
-                }}
-                className="text-meta hover:text-rose transition-colors p-1"
-              >
-                <Trash2 size={12} />
-              </button>
+                {les.exercises.length > 0 && (
+                  <span className="text-[10px] text-meta mr-1">
+                    {String(les.exercises.length)} exercice
+                    {les.exercises.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+                {les.durationMinutes !== null && (
+                  <span className="text-xs text-meta mr-2">
+                    {String(les.durationMinutes)} min
+                  </span>
+                )}
+                {les.isFreePreview && (
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal border border-teal/30 px-1.5 py-0.5 rounded mr-1">
+                    Aperçu
+                  </span>
+                )}
+                <button
+                  onClick={() => {
+                    setEditLesson(les);
+                  }}
+                  className="text-meta hover:text-dark transition-colors p-1"
+                >
+                  <Pencil size={12} />
+                </button>
+                <button
+                  onClick={() => {
+                    setDeleteLesson(les);
+                  }}
+                  className="text-meta hover:text-rose transition-colors p-1"
+                >
+                  <Trash2 size={12} />
+                </button>
+              </div>
+              {les.exercises.map((ex) => (
+                <ExerciseDeadlineRow
+                  key={ex.id}
+                  courseId={courseId}
+                  moduleId={mod.id}
+                  lessonId={les.id}
+                  exercise={ex}
+                  onRefresh={onRefresh}
+                />
+              ))}
             </div>
           ))}
           <div className="px-6 py-2.5">

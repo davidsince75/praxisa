@@ -15,6 +15,7 @@ import {
   HelpCircle,
   PenLine,
   StickyNote,
+  Calendar,
   Bot,
   Star,
   type LucideIcon,
@@ -339,6 +340,7 @@ interface SubmissionFormProps {
   enrolmentId: string;
   exerciseTitle: string;
   exerciseType: string;
+  dueAt: string | null;
 }
 
 function SubmissionForm({
@@ -346,6 +348,7 @@ function SubmissionForm({
   enrolmentId,
   exerciseTitle,
   exerciseType,
+  dueAt,
 }: SubmissionFormProps) {
   const queryClient = useQueryClient();
   const [body, setBody] = useState("");
@@ -385,9 +388,28 @@ function SubmissionForm({
 
   return (
     <div className="border border-slate-200 rounded-xl p-5 space-y-4">
-      <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
-        <PenLine size={15} className="text-teal" />
-        {typeLabel} : {exerciseTitle}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+          <PenLine size={15} className="text-teal" />
+          {typeLabel} : {exerciseTitle}
+        </div>
+        {dueAt !== null && (
+          <span
+            className={cn(
+              "flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
+              new Date(dueAt) < new Date()
+                ? "text-rose bg-rose/10"
+                : "text-meta bg-cream",
+            )}
+          >
+            <Calendar size={10} />
+            {new Date(dueAt).toLocaleDateString("fr-FR", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })}
+          </span>
+        )}
       </div>
 
       {saved !== null && saved.status === "graded" && (
@@ -796,6 +818,7 @@ function LessonViewer({
             enrolmentId={enrolmentId}
             exerciseTitle={ex.title}
             exerciseType={ex.type}
+            dueAt={ex.dueAt}
           />
         ))}
 
