@@ -1,11 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { and, eq, desc } from "drizzle-orm";
 import { z } from "zod";
-import {
-  studentDocuments,
-  courses,
-  users,
-} from "../../db/schema/index.js";
+import { studentDocuments, courses, users } from "../../db/schema/index.js";
 import { createNotification } from "../notifications/service.js";
 
 const createSchema = z.object({

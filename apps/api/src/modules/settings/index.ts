@@ -247,12 +247,10 @@ export function settingsPlugin(fastify: FastifyInstance) {
         })
         .returning();
 
-      return reply
-        .status(201)
-        .send({
-          request: inserted[0],
-          message: "Data export request submitted",
-        });
+      return reply.status(201).send({
+        request: inserted[0],
+        message: "Data export request submitted",
+      });
     },
   );
 
