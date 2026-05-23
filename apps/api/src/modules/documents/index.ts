@@ -31,8 +31,9 @@ export function documentsPlugin(fastify: FastifyInstance) {
     { preHandler: [fastify.authenticate] },
     async (request, reply) => {
       const { sub: userId, role } = request.jwtPayload;
-      const { courseId, status } = request.query as {
+      const { courseId, lessonId, status } = request.query as {
         courseId?: string;
+        lessonId?: string;
         status?: string;
       };
 
@@ -51,6 +52,9 @@ export function documentsPlugin(fastify: FastifyInstance) {
 
       if (courseId !== undefined && courseId !== "") {
         conditions.push(eq(studentDocuments.courseId, courseId));
+      }
+      if (lessonId !== undefined && lessonId !== "") {
+        conditions.push(eq(studentDocuments.lessonId, lessonId));
       }
       if (status !== undefined && status !== "" && role === "student") {
         conditions.push(
