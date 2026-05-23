@@ -8,6 +8,8 @@ import {
   Bot,
   Users,
   ClipboardList,
+  MessageCircle,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -36,6 +38,18 @@ const nav = [
     end: false,
   },
   { to: "/teacher/ai", label: "IA", icon: Bot, end: false },
+  {
+    to: "/teacher/forums",
+    label: "Forum",
+    icon: MessageCircle,
+    end: false,
+  },
+  {
+    to: "/teacher/settings",
+    label: "Paramètres",
+    icon: Settings,
+    end: false,
+  },
 ];
 
 export function TeacherSidebar() {

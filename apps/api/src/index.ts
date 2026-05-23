@@ -26,6 +26,9 @@ import { campaignsPlugin } from "./modules/campaigns/index.js";
 import { notificationsPlugin } from "./modules/notifications/index.js";
 import { ratingsPlugin } from "./modules/ratings/index.js";
 import { importPlugin } from "./modules/import/index.js";
+import { documentsPlugin } from "./modules/documents/index.js";
+import { forumsPlugin } from "./modules/forums/index.js";
+import { settingsPlugin } from "./modules/settings/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -79,6 +82,9 @@ await app.register(campaignsPlugin, { prefix: "/v1" });
 await app.register(notificationsPlugin, { prefix: "/v1" });
 await app.register(ratingsPlugin, { prefix: "/v1" });
 await app.register(importPlugin, { prefix: "/v1" });
+await app.register(documentsPlugin, { prefix: "/v1" });
+await app.register(forumsPlugin, { prefix: "/v1" });
+await app.register(settingsPlugin, { prefix: "/v1" });
 await app.register(aiPlugin, {
   prefix: "/v1",
   ...(config.mistralApiKey !== undefined

@@ -132,6 +132,7 @@ export const exercises = pgTable("exercises", {
   type: exerciseTypeEnum("type").notNull(),
   maxScore: integer("max_score"),
   isRequired: boolean("is_required").notNull().default(true),
+  dueAt: timestamp("due_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -7,6 +7,9 @@ import {
   MessageSquare,
   Bot,
   Award,
+  FileText,
+  MessageCircle,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -45,6 +48,24 @@ const nav = [
     end: false,
   },
   { to: "/learn/ai", label: "IA", icon: Bot, end: false },
+  {
+    to: "/learn/documents",
+    label: "Mes documents",
+    icon: FileText,
+    end: false,
+  },
+  {
+    to: "/learn/forums",
+    label: "Forum",
+    icon: MessageCircle,
+    end: false,
+  },
+  {
+    to: "/learn/settings",
+    label: "Paramètres",
+    icon: Settings,
+    end: false,
+  },
 ];
 
 export function LearnSidebar() {

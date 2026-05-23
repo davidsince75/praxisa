@@ -11,6 +11,8 @@ import {
   Bot,
   Mail,
   Upload,
+  MessageCircle,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -28,6 +30,8 @@ const nav = [
   { to: "/import", label: "Import", icon: Upload, end: false },
   { to: "/gdpr", label: "DSR Queue", icon: ShieldCheck, end: false },
   { to: "/audit", label: "Audit Log", icon: ScrollText, end: false },
+  { to: "/forums", label: "Forum", icon: MessageCircle, end: false },
+  { to: "/settings", label: "Paramètres", icon: Settings, end: false },
 ];
 
 export function Sidebar() {

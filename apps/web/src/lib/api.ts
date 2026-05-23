@@ -748,3 +748,121 @@ export interface StudentSubmission {
 export interface StudentSubmissionsResponse {
   submissions: StudentSubmission[];
 }
+
+// ── Student Documents ────────────────────────────────────────────────────────
+
+export type DocumentStatus = "draft" | "published" | "evaluated";
+
+export interface StudentDocumentRow {
+  id: string;
+  title: string;
+  status: DocumentStatus;
+  courseId: string | null;
+  moduleId: string | null;
+  lessonId: string | null;
+  exerciseId: string | null;
+  score: number | null;
+  publishedAt: string | null;
+  evaluatedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  studentId: string;
+  studentFirstName: string;
+  studentLastName: string;
+}
+
+export interface StudentDocumentDetail {
+  id: string;
+  studentId: string;
+  courseId: string | null;
+  moduleId: string | null;
+  lessonId: string | null;
+  exerciseId: string | null;
+  title: string;
+  body: string;
+  status: DocumentStatus;
+  publishedAt: string | null;
+  evaluatedAt: string | null;
+  evaluatedBy: string | null;
+  feedback: string | null;
+  score: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DocumentsResponse {
+  documents: StudentDocumentRow[];
+}
+
+export interface DocumentResponse {
+  document: StudentDocumentDetail;
+}
+
+// ── Discussion Forums ────────────────────────────────────────────────────────
+
+export interface ForumThreadRow {
+  id: string;
+  courseId: string;
+  lessonId: string | null;
+  title: string;
+  body: string;
+  isPinned: boolean;
+  isLocked: boolean;
+  createdAt: string;
+  authorId: string;
+  authorFirstName: string;
+  authorLastName: string;
+  authorRole: string;
+  replyCount: number;
+}
+
+export interface ForumReplyRow {
+  id: string;
+  body: string;
+  createdAt: string;
+  authorId: string;
+  authorFirstName: string;
+  authorLastName: string;
+  authorRole: string;
+}
+
+export interface ForumThreadsResponse {
+  threads: ForumThreadRow[];
+}
+
+export interface ForumThreadDetailResponse {
+  thread: ForumThreadRow & { replyCount?: number };
+  replies: ForumReplyRow[];
+}
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+
+export interface UserProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  createdAt: string;
+}
+
+export interface ProfileResponse {
+  profile: UserProfile;
+}
+
+export interface EmailNotificationPrefs {
+  messages: boolean;
+  grading: boolean;
+  campaigns: boolean;
+  forums: boolean;
+}
+
+export interface UserPreferencesData {
+  theme: string;
+  locale: string;
+  emailNotifications: EmailNotificationPrefs;
+}
+
+export interface PreferencesResponse {
+  preferences: UserPreferencesData;
+}

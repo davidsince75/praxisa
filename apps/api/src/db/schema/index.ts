@@ -10,3 +10,6 @@ export * from "./submissions.js";
 export * from "./campaigns.js";
 export * from "./notifications.js";
 export * from "./ratings.js";
+export * from "./documents.js";
+export * from "./forums.js";
+export * from "./preferences.js";

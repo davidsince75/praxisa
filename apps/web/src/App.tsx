@@ -33,6 +33,10 @@ import { TeacherAIIngestPage } from "@/pages/teacher/TeacherAIIngest.js";
 import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
 import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
 import { DataImportPage } from "@/pages/import/DataImport.js";
+import { SettingsPage } from "@/pages/settings/SettingsPage.js";
+import { LearnDocumentsPage } from "@/pages/learn/LearnDocuments.js";
+import { ForumsPage } from "@/pages/learn/LearnForums.js";
+import { ForumThreadPage } from "@/pages/learn/LearnForumThread.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, isInstructor, isStudent } = useAuth();
@@ -82,6 +86,12 @@ export function App() {
                 <Route path="/ai-assistant" element={<AdminAIDraftPage />} />
                 <Route path="/campaigns" element={<AdminCampaignsPage />} />
                 <Route path="/import" element={<DataImportPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/forums" element={<ForumsPage basePath="" />} />
+                <Route
+                  path="/forums/:threadId"
+                  element={<ForumThreadPage backPath="/forums" />}
+                />
               </Routes>
             </Shell>
           </RequireAdmin>
@@ -120,6 +130,15 @@ export function App() {
                   element={<TeacherGradingPage />}
                 />
                 <Route path="/ai" element={<TeacherAIIngestPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route
+                  path="/forums"
+                  element={<ForumsPage basePath="/teacher" />}
+                />
+                <Route
+                  path="/forums/:threadId"
+                  element={<ForumThreadPage backPath="/teacher/forums" />}
+                />
               </Routes>
             </TeacherShell>
           </RequireTeacher>
@@ -150,6 +169,16 @@ export function App() {
                 />
                 <Route path="/messages" element={<LearnMessagesPage />} />
                 <Route path="/ai" element={<LearnAIChatPage />} />
+                <Route path="/documents" element={<LearnDocumentsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route
+                  path="/forums"
+                  element={<ForumsPage basePath="/learn" />}
+                />
+                <Route
+                  path="/forums/:threadId"
+                  element={<ForumThreadPage backPath="/learn/forums" />}
+                />
               </Routes>
             </LearnShell>
           </RequireStudent>
