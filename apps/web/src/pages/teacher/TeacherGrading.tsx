@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, CheckCircle2, Clock, Award } from "lucide-react";
+import { ArrowLeft, CheckCircle2, Clock, Award, Sparkles } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   CourseSubmissionsResponse,
   CourseSubmissionRow,
   SubmissionDetailResponse,
+  AiGradeSuggestion,
 } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
 import { Badge } from "@/components/ui/badge.js";
@@ -37,7 +38,23 @@ function GradeForm({
   const [score, setScore] = useState("");
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [aiUsed, setAiUsed] = useState(false);
   const qc = useQueryClient();
+
+  const aiSuggestMutation = useMutation({
+    mutationFn: () =>
+      api.post<AiGradeSuggestion>("/ai/grade-suggest", { submissionId }),
+    onSuccess: (data) => {
+      setScore(data.suggestedScore.toString());
+      setFeedback(data.suggestedFeedback);
+      setAiUsed(true);
+    },
+    onError: (err: unknown) => {
+      setError(
+        err instanceof Error ? err.message : "Erreur lors de la suggestion IA",
+      );
+    },
+  });
 
   const gradeMutation = useMutation({
     mutationFn: () =>
@@ -96,6 +113,12 @@ function GradeForm({
           />
         </div>
       </div>
+      {aiUsed && (
+        <p className="text-xs text-purple-600 bg-purple-50 px-3 py-2 rounded-lg flex items-center gap-1.5">
+          <Sparkles size={12} />
+          Suggestion IA appliquée — vérifiez et ajustez avant de valider.
+        </p>
+      )}
       <div className="flex gap-2">
         <Button
           size="sm"
@@ -106,6 +129,17 @@ function GradeForm({
         >
           <Award size={13} className="mr-1.5" />
           {gradeMutation.isPending ? "Envoi…" : "Valider la note"}
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={aiSuggestMutation.isPending || gradeMutation.isPending}
+          onClick={() => {
+            aiSuggestMutation.mutate();
+          }}
+        >
+          <Sparkles size={13} className="mr-1.5" />
+          {aiSuggestMutation.isPending ? "Analyse IA…" : "Suggestion IA"}
         </Button>
         <Button size="sm" variant="ghost" onClick={onDone}>
           Annuler

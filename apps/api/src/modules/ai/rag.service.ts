@@ -138,3 +138,64 @@ export async function generateAdminDraft(
     };
   }
 }
+
+// ── Tier 3: Grading suggestion ────────────────────────────────────────────────
+
+const GRADING_SYSTEM_PROMPT = `Tu es un assistant pédagogique pour Praxisa, une plateforme de formation en psychologie clinique.
+Tu reçois le travail soumis par un étudiant pour un exercice. Évalue la qualité de la réponse et propose une note et un commentaire constructif.
+
+Retourne ton évaluation au format JSON strict :
+{
+  "suggestedScore": <nombre entier>,
+  "suggestedFeedback": "<commentaire en français>"
+}
+
+Le commentaire doit :
+- Reconnaître les points forts du travail
+- Identifier les axes d'amélioration
+- Être encourageant et pédagogiquement constructif
+- Faire 2 à 4 phrases
+- Être rédigé en français`;
+
+export interface GradingSuggestion {
+  suggestedScore: number;
+  suggestedFeedback: string;
+}
+
+/**
+ * Generate a grading suggestion for a student submission.
+ * The suggestion is NEVER applied automatically — the teacher must review and confirm.
+ */
+export async function generateGradingSuggestion(
+  submissionBody: string,
+  exerciseTitle: string,
+  exerciseType: string,
+  maxScore: number,
+  mistralApiKey: string,
+): Promise<GradingSuggestion> {
+  const raw = await chatComplete(
+    [
+      { role: "system", content: GRADING_SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `Exercice : ${exerciseTitle} (type : ${exerciseType})\nNote maximale : ${String(maxScore)}\n\nTravail de l'étudiant :\n${submissionBody}`,
+      },
+    ],
+    MISTRAL_SMALL,
+    mistralApiKey,
+  );
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<GradingSuggestion>;
+    const score = parsed.suggestedScore ?? Math.round(maxScore * 0.7);
+    return {
+      suggestedScore: Math.min(Math.max(score, 0), maxScore),
+      suggestedFeedback: parsed.suggestedFeedback ?? raw,
+    };
+  } catch {
+    return {
+      suggestedScore: Math.round(maxScore * 0.7),
+      suggestedFeedback: raw,
+    };
+  }
+}

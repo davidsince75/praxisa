@@ -6,12 +6,22 @@ import {
   retrieveChunks,
   generateAnswer,
   generateAdminDraft,
+  generateGradingSuggestion,
 } from "./rag.service.js";
 import {
   aiQueryBodySchema,
   aiAdminDraftBodySchema,
   aiIngestBodySchema,
+  aiGradeSuggestBodySchema,
 } from "./types.js";
+import {
+  submissions,
+  exercises,
+  lessons,
+  courseModules,
+  courses,
+} from "../../db/schema/index.js";
+import { eq } from "drizzle-orm";
 
 interface AiPluginOptions {
   mistralApiKey?: string;
@@ -180,6 +190,79 @@ export const aiPlugin = (
       });
 
       return reply.send({ draft });
+    },
+  );
+
+  // ── POST /v1/ai/grade-suggest ────────────────────────────────────────────────
+  // Teacher requests AI-powered grading suggestion for a student submission.
+  // The suggestion is NEVER applied automatically — teacher must review and confirm.
+
+  fastify.post(
+    "/ai/grade-suggest",
+    { preHandler: [fastify.authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { sub: actorId, role } = request.jwtPayload;
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const parse = aiGradeSuggestBodySchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+
+      if (!mistralApiKey) {
+        return reply.status(503).send({ error: "AI service not configured" });
+      }
+
+      const { submissionId } = parse.data;
+
+      // Load submission + exercise details + course ownership check
+      const rows = await fastify.db
+        .select({
+          body: submissions.body,
+          exerciseTitle: exercises.title,
+          exerciseType: exercises.type,
+          maxScore: exercises.maxScore,
+          instructorId: courses.instructorId,
+        })
+        .from(submissions)
+        .innerJoin(exercises, eq(exercises.id, submissions.exerciseId))
+        .innerJoin(lessons, eq(lessons.id, exercises.lessonId))
+        .innerJoin(courseModules, eq(courseModules.id, lessons.moduleId))
+        .innerJoin(courses, eq(courses.id, courseModules.courseId))
+        .where(eq(submissions.id, submissionId))
+        .limit(1);
+
+      const row = rows[0];
+      if (row === undefined) {
+        return reply.status(404).send({ error: "Submission not found" });
+      }
+
+      if (role === "instructor" && row.instructorId !== actorId) {
+        return reply.status(403).send({ error: "Forbidden" });
+      }
+
+      const suggestion = await generateGradingSuggestion(
+        row.body,
+        row.exerciseTitle,
+        row.exerciseType,
+        row.maxScore ?? 20,
+        mistralApiKey,
+      );
+
+      await emitEvent({
+        actorUserId: actorId,
+        eventType: "ai.grade.suggestion_generated",
+        entityType: "submission",
+        entityId: submissionId,
+        dataClassification: "non-pii",
+        requestId: request.id,
+        sourceIp: request.ip,
+        metadata: { suggestedScore: suggestion.suggestedScore },
+      });
+
+      return reply.send(suggestion);
     },
   );
 

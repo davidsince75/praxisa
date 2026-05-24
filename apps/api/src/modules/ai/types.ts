@@ -52,3 +52,16 @@ export interface AiIngestResponse {
   lessonId: string;
   chunksStored: number;
 }
+
+// ── Tier 3: Grading suggestion ────────────────────────────────────────────────
+
+export const aiGradeSuggestBodySchema = z.object({
+  submissionId: z.string().uuid(),
+});
+
+export type AiGradeSuggestBody = z.infer<typeof aiGradeSuggestBodySchema>;
+
+export interface AiGradeSuggestion {
+  suggestedScore: number;
+  suggestedFeedback: string;
+}

@@ -563,6 +563,11 @@ export interface SubmissionDetailResponse {
   maxScore: number | null;
 }
 
+export interface AiGradeSuggestion {
+  suggestedScore: number;
+  suggestedFeedback: string;
+}
+
 export interface SubmissionStatsResponse {
   stats: { submitted: number; grading: number; graded: number };
 }
