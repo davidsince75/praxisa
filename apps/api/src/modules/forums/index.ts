@@ -45,7 +45,7 @@ export function forumsPlugin(fastify: FastifyInstance) {
         if (enrolRows.length === 0) {
           return reply
             .status(403)
-            .send({ error: "Not enrolled in this course" });
+            .send({ error: "Vous n'êtes pas inscrit(e) à ce cours" });
         }
       }
 
@@ -104,7 +104,9 @@ export function forumsPlugin(fastify: FastifyInstance) {
 
       const thread = threadRows[0];
       if (thread === undefined) {
-        return reply.status(404).send({ error: "Thread not found" });
+        return reply
+          .status(404)
+          .send({ error: "Fil de discussion introuvable" });
       }
 
       const replies = await fastify.db
@@ -185,10 +187,14 @@ export function forumsPlugin(fastify: FastifyInstance) {
 
       const thread = threadRows[0];
       if (thread === undefined) {
-        return reply.status(404).send({ error: "Thread not found" });
+        return reply
+          .status(404)
+          .send({ error: "Fil de discussion introuvable" });
       }
       if (thread.isLocked) {
-        return reply.status(400).send({ error: "Thread is locked" });
+        return reply
+          .status(400)
+          .send({ error: "Ce fil de discussion est verrouillé" });
       }
 
       const inserted = await fastify.db
@@ -226,7 +232,7 @@ export function forumsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { role } = request.jwtPayload;
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { threadId } = request.params as { threadId: string };
@@ -249,7 +255,7 @@ export function forumsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { role } = request.jwtPayload;
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { threadId } = request.params as { threadId: string };

@@ -50,7 +50,7 @@ export const usersPlugin = (
     async (request, reply) => {
       const { role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const qParse = listUsersQuerySchema.safeParse(request.query);
@@ -161,7 +161,7 @@ export const usersPlugin = (
 
       // Admin can view anyone; users can view their own profile
       if (role !== "admin" && sub !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const rows = await fastify.db
@@ -182,7 +182,7 @@ export const usersPlugin = (
         .limit(1);
 
       if (rows[0] === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       return reply.send({ user: rows[0] });
@@ -197,7 +197,7 @@ export const usersPlugin = (
     async (request, reply) => {
       const { role, sub } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = createUserSchema.safeParse(request.body);
@@ -213,7 +213,9 @@ export const usersPlugin = (
         .where(eq(users.email, body.email.toLowerCase()))
         .limit(1);
       if (existing.length > 0) {
-        return reply.status(409).send({ error: "Email already in use" });
+        return reply
+          .status(409)
+          .send({ error: "Cette adresse email est déjà utilisée" });
       }
 
       const passwordHash = await hash(body.password, {
@@ -272,7 +274,7 @@ export const usersPlugin = (
       const { userId } = request.params as { userId: string };
 
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const existing = await fastify.db
@@ -281,7 +283,7 @@ export const usersPlugin = (
         .where(and(eq(users.id, userId), isNull(users.deletedAt)))
         .limit(1);
       if (existing[0] === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       const parse = updateUserSchema.safeParse(request.body);
@@ -329,12 +331,12 @@ export const usersPlugin = (
       const { userId } = request.params as { userId: string };
 
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (userId === sub) {
         return reply
           .status(409)
-          .send({ error: "Cannot deactivate your own account" });
+          .send({ error: "Impossible de désactiver votre propre compte" });
       }
 
       const existing = await fastify.db
@@ -343,7 +345,7 @@ export const usersPlugin = (
         .where(and(eq(users.id, userId), isNull(users.deletedAt)))
         .limit(1);
       if (existing[0] === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       await fastify.db

@@ -21,7 +21,7 @@ function requireRole(
   allowed: string[],
 ): boolean {
   if (!allowed.includes(role)) {
-    void reply.status(403).send({ error: "Forbidden" });
+    void reply.status(403).send({ error: "Accès interdit" });
     return false;
   }
   return true;
@@ -180,7 +180,7 @@ export const migrationPlugin = (
 
       const batch = batchRows[0];
       if (batch === undefined) {
-        return reply.status(404).send({ error: "Batch not found" });
+        return reply.status(404).send({ error: "Lot introuvable" });
       }
 
       const rowList = await fastify.db
@@ -239,7 +239,7 @@ export const migrationPlugin = (
 
       const batch = batchRows[0];
       if (batch === undefined) {
-        return reply.status(404).send({ error: "Batch not found" });
+        return reply.status(404).send({ error: "Lot introuvable" });
       }
       if (batch.status !== "validated") {
         return reply.status(409).send({
@@ -383,7 +383,7 @@ export const migrationPlugin = (
 
       const batch = batchRows[0];
       if (batch === undefined) {
-        return reply.status(404).send({ error: "Batch not found" });
+        return reply.status(404).send({ error: "Lot introuvable" });
       }
 
       const allRows = await fastify.db

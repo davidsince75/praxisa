@@ -530,7 +530,7 @@ function LessonNotes({
       <div className="flex items-center justify-between px-5 py-3 bg-cream/40 border-b border-rule">
         <span className="flex items-center gap-2 text-sm font-semibold text-dark">
           <StickyNote size={14} className="text-teal" />
-          Mes notes ({String(notes.length)})
+          Mes documents / notes ({String(notes.length)})
         </span>
         {!creating && (
           <button
@@ -695,7 +695,7 @@ function LessonViewer({
               )}
             >
               <StickyNote size={11} />
-              Notes
+              Documents / Notes +
             </button>
             <Link
               to={`/learn/ai?lessonId=${lesson.id}&lessonTitle=${encodeURIComponent(lesson.title)}`}

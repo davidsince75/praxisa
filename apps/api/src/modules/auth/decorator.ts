@@ -25,7 +25,7 @@ export const authDecoratorPlugin = fp(
       async (request: FastifyRequest, reply: FastifyReply) => {
         const auth = request.headers.authorization;
         if (!auth?.startsWith("Bearer ")) {
-          return reply.status(401).send({ error: "Unauthorized" });
+          return reply.status(401).send({ error: "Non autorisé" });
         }
         try {
           request.jwtPayload = await verifyToken(
@@ -33,7 +33,7 @@ export const authDecoratorPlugin = fp(
             config.jwt.publicKey,
           );
         } catch {
-          return reply.status(401).send({ error: "Invalid or expired token" });
+          return reply.status(401).send({ error: "Jeton invalide ou expiré" });
         }
       },
     );

@@ -47,7 +47,9 @@ export const authPlugin = (
         .where(eq(users.email, body.email))
         .limit(1);
       if (existing.length > 0) {
-        return reply.status(409).send({ error: "Email already registered" });
+        return reply
+          .status(409)
+          .send({ error: "Cette adresse email est déjà enregistrée" });
       }
 
       const passwordHash = await hashPassword(body.password);
@@ -134,10 +136,10 @@ export const authPlugin = (
         : await verifyPassword(dummyHash, body.password).then(() => false);
 
       if (!user || !valid) {
-        return reply.status(401).send({ error: "Invalid credentials" });
+        return reply.status(401).send({ error: "Identifiants incorrects" });
       }
       if (!user.isActive) {
-        return reply.status(403).send({ error: "Account disabled" });
+        return reply.status(403).send({ error: "Compte désactivé" });
       }
 
       await fastify.db
@@ -196,7 +198,7 @@ export const authPlugin = (
 
       const user = rows[0];
       if (user === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
       return reply.send({ user });
     },
@@ -220,7 +222,7 @@ export const authPlugin = (
           config.jwt.publicKey,
         );
       } catch {
-        return reply.status(400).send({ error: "Invalid or expired token" });
+        return reply.status(400).send({ error: "Jeton invalide ou expiré" });
       }
 
       await fastify.db
@@ -348,7 +350,7 @@ export const authPlugin = (
           config.jwt.publicKey,
         );
       } catch {
-        return reply.status(400).send({ error: "Invalid or expired token" });
+        return reply.status(400).send({ error: "Jeton invalide ou expiré" });
       }
 
       const passwordHash = await hashPassword(parse.data.password);

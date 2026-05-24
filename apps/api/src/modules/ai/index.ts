@@ -43,7 +43,7 @@ export const aiPlugin = (
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { role } = request.jwtPayload;
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = aiIngestBodySchema.safeParse(request.body);
@@ -52,7 +52,9 @@ export const aiPlugin = (
       }
 
       if (!mistralApiKey) {
-        return reply.status(503).send({ error: "AI service not configured" });
+        return reply
+          .status(503)
+          .send({ error: "Le service IA n'est pas configuré" });
       }
 
       const { lessonId, text } = parse.data;
@@ -97,17 +99,20 @@ export const aiPlugin = (
       if (hasClinicalIntent(question)) {
         return reply.status(422).send({
           error:
-            "Query contains clinical or crisis content — please contact support.",
+            "Votre question semble contenir du contenu clinique ou de crise — veuillez contacter le support.",
         });
       }
       if (hasPii(question)) {
         return reply.status(422).send({
-          error: "Query appears to contain personal data — please rephrase.",
+          error:
+            "Votre question semble contenir des données personnelles — veuillez reformuler.",
         });
       }
 
       if (!mistralApiKey) {
-        return reply.status(503).send({ error: "AI service not configured" });
+        return reply
+          .status(503)
+          .send({ error: "Le service IA n'est pas configuré" });
       }
 
       const chunks = await retrieveChunks(fastify.db, question, mistralApiKey);
@@ -152,7 +157,7 @@ export const aiPlugin = (
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = aiAdminDraftBodySchema.safeParse(request.body);
@@ -164,12 +169,15 @@ export const aiPlugin = (
 
       if (hasPii(intent)) {
         return reply.status(422).send({
-          error: "Intent contains personal data — please rephrase.",
+          error:
+            "L'intention semble contenir des données personnelles — veuillez reformuler.",
         });
       }
 
       if (!mistralApiKey) {
-        return reply.status(503).send({ error: "AI service not configured" });
+        return reply
+          .status(503)
+          .send({ error: "Le service IA n'est pas configuré" });
       }
 
       const draft = await generateAdminDraft(
@@ -203,7 +211,7 @@ export const aiPlugin = (
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { sub: actorId, role } = request.jwtPayload;
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = aiGradeSuggestBodySchema.safeParse(request.body);
@@ -212,7 +220,9 @@ export const aiPlugin = (
       }
 
       if (!mistralApiKey) {
-        return reply.status(503).send({ error: "AI service not configured" });
+        return reply
+          .status(503)
+          .send({ error: "Le service IA n'est pas configuré" });
       }
 
       const { submissionId } = parse.data;
@@ -236,11 +246,11 @@ export const aiPlugin = (
 
       const row = rows[0];
       if (row === undefined) {
-        return reply.status(404).send({ error: "Submission not found" });
+        return reply.status(404).send({ error: "Soumission introuvable" });
       }
 
       if (role === "instructor" && row.instructorId !== actorId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const suggestion = await generateGradingSuggestion(

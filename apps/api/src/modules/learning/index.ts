@@ -153,7 +153,7 @@ export const learningPlugin = (
     async (request, reply) => {
       const { role, sub } = request.jwtPayload;
       if (role !== "admin" && role !== "instructor") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = createCourseSchema.safeParse(request.body);
@@ -211,10 +211,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (role === "student" && course.status !== "published") {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
 
       const mods = await fastify.db
@@ -284,10 +284,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = updateCourseSchema.safeParse(request.body);
@@ -327,10 +327,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (course.status === "published") {
         return reply.status(409).send({ error: "Course is already published" });
@@ -368,12 +368,12 @@ export const learningPlugin = (
       const { courseId } = request.params as { courseId: string };
       const { role, sub } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
 
       await fastify.db
@@ -409,10 +409,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = createModuleSchema.safeParse(request.body);
@@ -443,10 +443,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const mod = await findModule(fastify.db, moduleId, courseId);
@@ -479,10 +479,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = reorderModulesSchema.safeParse(request.body);
@@ -521,10 +521,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const mod = await findModule(fastify.db, moduleId, courseId);
@@ -557,10 +557,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const mod = await findModule(fastify.db, moduleId, courseId);
@@ -606,10 +606,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const lesson = await findLesson(fastify.db, lessonId, moduleId);
@@ -646,10 +646,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const lesson = await findLesson(fastify.db, lessonId, moduleId);
@@ -680,10 +680,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const lesson = await findLesson(fastify.db, lessonId, moduleId);
@@ -733,10 +733,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const lesson = await findLesson(fastify.db, lessonId, moduleId);
@@ -769,7 +769,7 @@ export const learningPlugin = (
         .returning();
 
       if (updated[0] === undefined) {
-        return reply.status(404).send({ error: "Exercise not found" });
+        return reply.status(404).send({ error: "Exercice introuvable" });
       }
 
       return reply.send({ exercise: updated[0] });
@@ -791,10 +791,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const lesson = await findLesson(fastify.db, lessonId, moduleId);
@@ -834,15 +834,15 @@ export const learningPlugin = (
         role === "admin" && body.studentId !== undefined ? body.studentId : sub;
 
       if (body.studentId !== undefined && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const course = await findActiveCourse(fastify.db, body.courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (role === "student" && course.status !== "published") {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
 
       const existing = await findExistingEnrolment(
@@ -942,10 +942,10 @@ export const learningPlugin = (
 
       const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
       if (enrolment === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrolment.studentId !== sub) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const progress = await fastify.db
@@ -971,10 +971,10 @@ export const learningPlugin = (
 
       const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
       if (enrolment === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrolment.studentId !== sub) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const updated = await fastify.db
@@ -1011,10 +1011,10 @@ export const learningPlugin = (
 
       const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
       if (enrolment === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrolment.studentId !== sub) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const progress = await fastify.db
@@ -1042,10 +1042,10 @@ export const learningPlugin = (
 
       const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
       if (enrolment === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrolment.studentId !== sub) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (enrolment.status !== "active") {
         return reply.status(409).send({
@@ -1153,10 +1153,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Fetch enrolments with student info
@@ -1204,10 +1204,10 @@ export const learningPlugin = (
 
       const course = await findActiveCourse(fastify.db, courseId);
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
       if (!canManageCourse(course, sub, role)) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const [totals] = await fastify.db
@@ -1262,7 +1262,7 @@ export const learningPlugin = (
       const { role, sub } = request.jwtPayload;
 
       if (role !== "admin" && role !== "instructor") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Get student info
@@ -1503,10 +1503,10 @@ export const learningPlugin = (
       // Verify enrolment ownership
       const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
       if (enrolment === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrolment.studentId !== sub) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Fetch exercise
@@ -1517,7 +1517,7 @@ export const learningPlugin = (
         .limit(1);
       const exercise = exerciseRows[0];
       if (exercise === undefined) {
-        return reply.status(404).send({ error: "Exercise not found" });
+        return reply.status(404).send({ error: "Exercice introuvable" });
       }
       if (exercise.type !== "quiz") {
         return reply.status(400).send({ error: "Exercise is not a quiz" });
@@ -1623,7 +1623,7 @@ export const learningPlugin = (
         .limit(1);
       const exercise = exerciseRows[0];
       if (exercise === undefined) {
-        return reply.status(404).send({ error: "Exercise not found" });
+        return reply.status(404).send({ error: "Exercice introuvable" });
       }
 
       const questions = await fastify.db

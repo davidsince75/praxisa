@@ -45,7 +45,7 @@ export const importPlugin = (
     async (request, reply) => {
       const { role, sub } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = importUsersSchema.safeParse(request.body);
@@ -124,7 +124,7 @@ export const importPlugin = (
     async (request, reply) => {
       const { role, sub } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = importEnrolmentsSchema.safeParse(request.body);

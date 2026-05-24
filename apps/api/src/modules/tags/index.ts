@@ -75,10 +75,10 @@ export function tagsPlugin(fastify: FastifyInstance) {
 
       const tag = rows[0];
       if (tag === undefined) {
-        return reply.status(404).send({ error: "Tag not found" });
+        return reply.status(404).send({ error: "Tag introuvable" });
       }
       if (tag.userId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       await fastify.db.delete(tags).where(eq(tags.id, id));
@@ -109,10 +109,10 @@ export function tagsPlugin(fastify: FastifyInstance) {
 
       const doc = docRows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
       if (doc.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Verify tag ownership
@@ -124,10 +124,10 @@ export function tagsPlugin(fastify: FastifyInstance) {
 
       const tag = tagRows[0];
       if (tag === undefined) {
-        return reply.status(404).send({ error: "Tag not found" });
+        return reply.status(404).send({ error: "Tag introuvable" });
       }
       if (tag.userId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Upsert — ignore if already exists
@@ -161,10 +161,10 @@ export function tagsPlugin(fastify: FastifyInstance) {
 
       const doc = docRows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
       if (doc.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       await fastify.db

@@ -47,7 +47,7 @@ export function documentsPlugin(fastify: FastifyInstance) {
           conditions.push(eq(studentDocuments.status, "published"));
         }
       } else {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       if (courseId !== undefined && courseId !== "") {
@@ -109,18 +109,20 @@ export function documentsPlugin(fastify: FastifyInstance) {
 
       const doc = rows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
 
       // Access: owner, or teacher/admin for published/evaluated
       if (role === "student" && doc.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (
         (role === "instructor" || role === "admin") &&
         doc.status === "draft"
       ) {
-        return reply.status(403).send({ error: "Document is still a draft" });
+        return reply
+          .status(403)
+          .send({ error: "Ce document est encore en brouillon" });
       }
 
       return reply.send({ document: doc });
@@ -135,7 +137,7 @@ export function documentsPlugin(fastify: FastifyInstance) {
       const { sub: userId, role } = request.jwtPayload;
 
       if (role !== "student" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = createSchema.safeParse(request.body);
@@ -187,15 +189,17 @@ export function documentsPlugin(fastify: FastifyInstance) {
 
       const doc = rows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
       if (doc.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (doc.status !== "draft") {
         return reply
           .status(400)
-          .send({ error: "Only draft documents can be edited" });
+          .send({
+            error: "Seuls les documents en brouillon peuvent être modifiés",
+          });
       }
 
       await fastify.db
@@ -237,15 +241,13 @@ export function documentsPlugin(fastify: FastifyInstance) {
 
       const doc = rows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
       if (doc.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (doc.status !== "draft") {
-        return reply
-          .status(400)
-          .send({ error: "Document is already published" });
+        return reply.status(400).send({ error: "Ce document est déjà publié" });
       }
 
       await fastify.db
@@ -302,7 +304,7 @@ export function documentsPlugin(fastify: FastifyInstance) {
       const { id } = request.params as { id: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = evaluateSchema.safeParse(request.body);
@@ -321,12 +323,12 @@ export function documentsPlugin(fastify: FastifyInstance) {
 
       const doc = rows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
       if (doc.status !== "published") {
         return reply
           .status(400)
-          .send({ error: "Only published documents can be evaluated" });
+          .send({ error: "Seuls les documents publiés peuvent être évalués" });
       }
 
       await fastify.db
@@ -380,15 +382,17 @@ export function documentsPlugin(fastify: FastifyInstance) {
 
       const doc = rows[0];
       if (doc === undefined) {
-        return reply.status(404).send({ error: "Document not found" });
+        return reply.status(404).send({ error: "Document introuvable" });
       }
       if (doc.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
       if (doc.status !== "draft") {
         return reply
           .status(400)
-          .send({ error: "Only draft documents can be deleted" });
+          .send({
+            error: "Seuls les documents en brouillon peuvent être supprimés",
+          });
       }
 
       await fastify.db

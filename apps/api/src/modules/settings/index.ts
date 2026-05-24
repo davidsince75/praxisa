@@ -58,7 +58,7 @@ export function settingsPlugin(fastify: FastifyInstance) {
 
       const user = rows[0];
       if (user === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       return reply.send({ profile: user });
@@ -130,14 +130,14 @@ export function settingsPlugin(fastify: FastifyInstance) {
 
       const user = rows[0];
       if (user === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       const valid = await verify(user.passwordHash, parse.data.currentPassword);
       if (!valid) {
         return reply
           .status(400)
-          .send({ error: "Current password is incorrect" });
+          .send({ error: "Le mot de passe actuel est incorrect" });
       }
 
       const newHash = await hash(parse.data.newPassword);

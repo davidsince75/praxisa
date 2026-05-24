@@ -140,7 +140,9 @@ export function messagingPlugin(fastify: FastifyInstance) {
       const { recipientId, courseId, body } = parse.data;
 
       if (recipientId === senderId) {
-        return reply.status(400).send({ error: "Cannot message yourself" });
+        return reply
+          .status(400)
+          .send({ error: "Vous ne pouvez pas vous envoyer un message" });
       }
 
       // Access control: verify relationship exists
@@ -182,7 +184,8 @@ export function messagingPlugin(fastify: FastifyInstance) {
 
         if (enrolRows.length === 0) {
           return reply.status(403).send({
-            error: "You can only message students enrolled in your courses",
+            error:
+              "Vous ne pouvez envoyer des messages qu'aux étudiants inscrits à vos cours",
           });
         }
       }
@@ -279,7 +282,9 @@ export function messagingPlugin(fastify: FastifyInstance) {
 
       const thread = threadRows[0];
       if (thread === undefined) {
-        return reply.status(404).send({ error: "Thread not found" });
+        return reply
+          .status(404)
+          .send({ error: "Fil de discussion introuvable" });
       }
 
       // Load messages
@@ -335,7 +340,9 @@ export function messagingPlugin(fastify: FastifyInstance) {
         .limit(1);
 
       if (threadRows.length === 0) {
-        return reply.status(404).send({ error: "Thread not found" });
+        return reply
+          .status(404)
+          .send({ error: "Fil de discussion introuvable" });
       }
 
       const inserted = await fastify.db
@@ -405,7 +412,9 @@ export function messagingPlugin(fastify: FastifyInstance) {
         .limit(1);
 
       if (threadRows.length === 0) {
-        return reply.status(404).send({ error: "Thread not found" });
+        return reply
+          .status(404)
+          .send({ error: "Fil de discussion introuvable" });
       }
 
       await fastify.db

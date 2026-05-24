@@ -36,7 +36,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       };
 
       if (role !== "student" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = submitSchema.safeParse(request.body);
@@ -55,10 +55,10 @@ export function submissionsPlugin(fastify: FastifyInstance) {
 
       const enrol = enrolRows[0];
       if (enrol === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrol.studentId !== studentId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Verify exercise exists and is submittable type
@@ -70,12 +70,14 @@ export function submissionsPlugin(fastify: FastifyInstance) {
 
       const exercise = exRows[0];
       if (exercise === undefined) {
-        return reply.status(404).send({ error: "Exercise not found" });
+        return reply.status(404).send({ error: "Exercice introuvable" });
       }
       if (exercise.type === "quiz") {
         return reply
           .status(400)
-          .send({ error: "Quiz exercises use the quiz endpoint" });
+          .send({
+            error: "Les exercices de type quiz utilisent un autre endpoint",
+          });
       }
 
       // One submission per student per exercise — upsert logic: if exists update
@@ -153,10 +155,10 @@ export function submissionsPlugin(fastify: FastifyInstance) {
 
       const enrol = enrolRows[0];
       if (enrol === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (role !== "admin" && enrol.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const rows = await fastify.db
@@ -190,7 +192,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       const { status } = request.query as { status?: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Ownership check for instructors
@@ -203,10 +205,10 @@ export function submissionsPlugin(fastify: FastifyInstance) {
 
         const course = courseRows[0];
         if (course === undefined) {
-          return reply.status(404).send({ error: "Course not found" });
+          return reply.status(404).send({ error: "Cours introuvable" });
         }
         if (course.instructorId !== actorId) {
-          return reply.status(403).send({ error: "Forbidden" });
+          return reply.status(403).send({ error: "Accès interdit" });
         }
       }
 
@@ -280,7 +282,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
 
       const row = rows[0];
       if (row === undefined) {
-        return reply.status(404).send({ error: "Submission not found" });
+        return reply.status(404).send({ error: "Soumission introuvable" });
       }
 
       // Access: student owns it, or instructor owns the course, or admin
@@ -289,7 +291,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       const isAdmin = role === "admin";
 
       if (!isOwner && !isInstructor && !isAdmin) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       return reply.send({
@@ -311,7 +313,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       const { submissionId } = request.params as { submissionId: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = gradeSchema.safeParse(request.body);
@@ -337,17 +339,17 @@ export function submissionsPlugin(fastify: FastifyInstance) {
 
       const row = rows[0];
       if (row === undefined) {
-        return reply.status(404).send({ error: "Submission not found" });
+        return reply.status(404).send({ error: "Soumission introuvable" });
       }
 
       if (role === "instructor" && row.instructorId !== graderId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Validate score against maxScore if set
       if (row.maxScore !== null && parse.data.score > row.maxScore) {
         return reply.status(400).send({
-          error: `Score ${parse.data.score.toString()} exceeds max score ${row.maxScore.toString()}`,
+          error: `La note ${parse.data.score.toString()} dépasse le maximum de ${row.maxScore.toString()}`,
         });
       }
 
@@ -395,7 +397,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       const { courseId } = request.params as { courseId: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       if (role === "instructor") {
@@ -406,7 +408,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
           .limit(1);
 
         if (courseRows[0]?.instructorId !== actorId) {
-          return reply.status(403).send({ error: "Forbidden" });
+          return reply.status(403).send({ error: "Accès interdit" });
         }
       }
 
@@ -439,7 +441,7 @@ export function submissionsPlugin(fastify: FastifyInstance) {
       const { studentId } = request.params as { studentId: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const rows = await fastify.db

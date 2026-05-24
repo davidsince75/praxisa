@@ -42,7 +42,7 @@ export const auditPlugin = (
     async (request: FastifyRequest, reply: FastifyReply) => {
       const { role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = auditQuerySchema.safeParse(request.query);

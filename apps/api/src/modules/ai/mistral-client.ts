@@ -27,7 +27,7 @@ async function mistralPost<T>(
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Mistral API error ${String(res.status)}: ${text}`);
+    throw new Error(`Erreur API Mistral ${String(res.status)}: ${text}`);
   }
 
   return res.json() as Promise<T>;
@@ -51,7 +51,8 @@ export async function chatComplete(
   );
 
   const content = data.choices[0]?.message.content;
-  if (content === undefined) throw new Error("Mistral returned no content");
+  if (content === undefined)
+    throw new Error("L'API Mistral n'a retourné aucun contenu");
   return content;
 }
 

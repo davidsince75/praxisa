@@ -18,7 +18,7 @@ export function ratingsPlugin(fastify: FastifyInstance) {
       const { courseId } = request.params as { courseId: string };
 
       if (role !== "student") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = ratingSchema.safeParse(request.body);
@@ -39,12 +39,14 @@ export function ratingsPlugin(fastify: FastifyInstance) {
 
       const enrol = enrolRows[0];
       if (enrol === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (enrol.status !== "completed") {
         return reply
           .status(400)
-          .send({ error: "Course must be completed before rating" });
+          .send({
+            error: "Le cours doit être terminé avant de pouvoir l'évaluer",
+          });
       }
 
       const inserted = await fastify.db
@@ -77,7 +79,7 @@ export function ratingsPlugin(fastify: FastifyInstance) {
       const { role } = request.jwtPayload;
 
       if (role !== "admin" && role !== "instructor") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { courseId } = request.params as { courseId: string };
@@ -113,7 +115,7 @@ export function ratingsPlugin(fastify: FastifyInstance) {
       const { sub: studentId, role } = request.jwtPayload;
 
       if (role !== "student") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { courseId } = request.params as { courseId: string };

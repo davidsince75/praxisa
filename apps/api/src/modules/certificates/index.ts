@@ -47,18 +47,21 @@ export function certificatesPlugin(fastify: FastifyInstance) {
 
       const row = rows[0];
       if (row === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
 
       // Access control: only the student themselves or an admin
       if (role !== "admin" && row.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       if (row.status !== "completed") {
         return reply
           .status(400)
-          .send({ error: "Course not yet completed", status: row.status });
+          .send({
+            error: "Le cours n'est pas encore terminé",
+            status: row.status,
+          });
       }
 
       return reply.send({
@@ -84,7 +87,7 @@ export function certificatesPlugin(fastify: FastifyInstance) {
       const { courseId } = request.params as { courseId: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = teacherEnrolSchema.safeParse(request.body);
@@ -106,11 +109,11 @@ export function certificatesPlugin(fastify: FastifyInstance) {
 
       const course = courseRows[0];
       if (course === undefined) {
-        return reply.status(404).send({ error: "Course not found" });
+        return reply.status(404).send({ error: "Cours introuvable" });
       }
 
       if (role === "instructor" && course.instructorId !== actorId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Find student by email
@@ -130,7 +133,9 @@ export function certificatesPlugin(fastify: FastifyInstance) {
       if (student === undefined) {
         return reply
           .status(404)
-          .send({ error: "No student account found for that email" });
+          .send({
+            error: "Aucun compte étudiant trouvé pour cette adresse email",
+          });
       }
 
       // Check for existing active enrolment
@@ -149,7 +154,7 @@ export function certificatesPlugin(fastify: FastifyInstance) {
       if (existingRows.length > 0) {
         return reply
           .status(409)
-          .send({ error: "Student is already enrolled in this course" });
+          .send({ error: "L'étudiant est déjà inscrit à ce cours" });
       }
 
       const returned = await fastify.db
@@ -198,7 +203,7 @@ export function certificatesPlugin(fastify: FastifyInstance) {
       const { enrolmentId } = request.params as { enrolmentId: string };
 
       if (role !== "instructor" && role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Load enrolment + course
@@ -217,11 +222,11 @@ export function certificatesPlugin(fastify: FastifyInstance) {
 
       const row = rows[0];
       if (row === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
 
       if (role === "instructor" && row.instructorId !== actorId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       await fastify.db
@@ -283,11 +288,11 @@ export function certificatesPlugin(fastify: FastifyInstance) {
 
       const enrol = enrolRows[0];
       if (enrol === undefined) {
-        return reply.status(404).send({ error: "Enrolment not found" });
+        return reply.status(404).send({ error: "Inscription introuvable" });
       }
 
       if (role !== "admin" && enrol.studentId !== userId) {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const totalRows = await fastify.db

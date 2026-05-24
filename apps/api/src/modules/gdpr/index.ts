@@ -66,7 +66,7 @@ export const gdprPlugin = (
 
       const user = userRows[0];
       if (user === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       const enrolmentIds = enrolmentRows.map((e) => e.id);
@@ -122,7 +122,7 @@ export const gdprPlugin = (
         .limit(1);
       const user = userRows[0];
       if (user === undefined || user.deletedAt !== null) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       // Check no duplicate pending erasure request
@@ -140,7 +140,7 @@ export const gdprPlugin = (
       if (existing.length > 0) {
         return reply
           .status(409)
-          .send({ error: "An erasure request is already pending" });
+          .send({ error: "Une demande de suppression est déjà en cours" });
       }
 
       // Soft-delete user
@@ -218,7 +218,7 @@ export const gdprPlugin = (
         });
 
       if (updated.length === 0) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       // Record rectification for audit trail
@@ -254,7 +254,7 @@ export const gdprPlugin = (
     async (request, reply) => {
       const { role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { status } = request.query as { status?: string };
@@ -293,7 +293,7 @@ export const gdprPlugin = (
     async (request, reply) => {
       const { role, sub } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const paramsParse = completeRequestParamsSchema.safeParse(request.params);
@@ -330,7 +330,9 @@ export const gdprPlugin = (
       if (updated.length === 0) {
         return reply
           .status(404)
-          .send({ error: "No pending requests found for this user" });
+          .send({
+            error: "Aucune demande en attente trouvée pour cet utilisateur",
+          });
       }
 
       await emitEvent({
@@ -438,7 +440,7 @@ export const gdprPlugin = (
     async (request, reply) => {
       const { role, sub } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const paramsParse = z
@@ -486,7 +488,7 @@ export const gdprPlugin = (
 
       const user = userRows[0];
       if (user === undefined) {
-        return reply.status(404).send({ error: "User not found" });
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
       const enrolmentIds = enrolmentRows.map((e) => e.id);

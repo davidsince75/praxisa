@@ -9,7 +9,7 @@ export function analyticsPlugin(fastify: FastifyInstance) {
     { preHandler: [fastify.authenticate] },
     async (request, reply) => {
       if (request.jwtPayload.role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Users by role
@@ -101,10 +101,10 @@ export function analyticsPlugin(fastify: FastifyInstance) {
           )
           .limit(1);
         if (course.length === 0) {
-          return reply.status(403).send({ error: "Forbidden" });
+          return reply.status(403).send({ error: "Accès interdit" });
         }
       } else if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       // Enrolment counts

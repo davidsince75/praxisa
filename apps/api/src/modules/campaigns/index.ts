@@ -30,7 +30,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const rows = await fastify.db
@@ -60,7 +60,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { sub: actorId, role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const parse = createCampaignSchema.safeParse(request.body);
@@ -112,7 +112,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { id } = request.params as { id: string };
@@ -125,7 +125,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
 
       const campaign = rows[0];
       if (campaign === undefined) {
-        return reply.status(404).send({ error: "Campaign not found" });
+        return reply.status(404).send({ error: "Campagne introuvable" });
       }
 
       return reply.send({ campaign });
@@ -139,7 +139,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { sub: actorId, role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { id } = request.params as { id: string };
@@ -152,12 +152,14 @@ export function campaignsPlugin(fastify: FastifyInstance) {
 
       const existing = rows[0];
       if (existing === undefined) {
-        return reply.status(404).send({ error: "Campaign not found" });
+        return reply.status(404).send({ error: "Campagne introuvable" });
       }
       if (existing.status !== "draft") {
         return reply
           .status(409)
-          .send({ error: "Only draft campaigns can be edited" });
+          .send({
+            error: "Seules les campagnes en brouillon peuvent être modifiées",
+          });
       }
 
       const parse = updateCampaignSchema.safeParse(request.body);
@@ -192,7 +194,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { sub: actorId, role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { id } = request.params as { id: string };
@@ -205,12 +207,14 @@ export function campaignsPlugin(fastify: FastifyInstance) {
 
       const existing = rows[0];
       if (existing === undefined) {
-        return reply.status(404).send({ error: "Campaign not found" });
+        return reply.status(404).send({ error: "Campagne introuvable" });
       }
       if (existing.status !== "draft") {
         return reply
           .status(409)
-          .send({ error: "Only draft campaigns can be deleted" });
+          .send({
+            error: "Seules les campagnes en brouillon peuvent être supprimées",
+          });
       }
 
       await fastify.db.delete(campaigns).where(eq(campaigns.id, id));
@@ -236,7 +240,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
     async (request, reply) => {
       const { sub: actorId, role } = request.jwtPayload;
       if (role !== "admin") {
-        return reply.status(403).send({ error: "Forbidden" });
+        return reply.status(403).send({ error: "Accès interdit" });
       }
 
       const { id } = request.params as { id: string };
@@ -249,12 +253,12 @@ export function campaignsPlugin(fastify: FastifyInstance) {
 
       const campaign = rows[0];
       if (campaign === undefined) {
-        return reply.status(404).send({ error: "Campaign not found" });
+        return reply.status(404).send({ error: "Campagne introuvable" });
       }
       if (campaign.status !== "draft") {
         return reply
           .status(409)
-          .send({ error: "Campaign has already been sent" });
+          .send({ error: "Cette campagne a déjà été envoyée" });
       }
 
       // Mark as sending
@@ -284,7 +288,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
             .where(eq(campaigns.id, id));
           return reply
             .status(400)
-            .send({ error: "No target course configured" });
+            .send({ error: "Aucun cours cible configuré" });
         }
         const enrolRows = await fastify.db
           .select({
