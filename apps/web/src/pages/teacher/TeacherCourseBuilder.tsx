@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
@@ -165,234 +165,6 @@ function ModuleModal({
   );
 }
 
-// ── Lesson modal ───────────────────────────────────────────────────────────────
-
-interface LessonModalProps {
-  courseId: string;
-  moduleId: string;
-  lesson?: LessonItem;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  onSuccess: () => void;
-}
-
-interface LessonForm {
-  title: string;
-  description: string;
-  contentType: LessonContentType;
-  contentUrl: string;
-  contentBody: string;
-  durationMinutes: string;
-  isFreePreview: boolean;
-}
-
-function LessonModal({
-  courseId,
-  moduleId,
-  lesson,
-  open,
-  onOpenChange,
-  onSuccess,
-}: LessonModalProps) {
-  const isEdit = lesson !== undefined;
-  const [form, setForm] = useState<LessonForm>({
-    title: lesson?.title ?? "",
-    description: lesson?.description ?? "",
-    contentType: lesson?.contentType ?? "text",
-    contentUrl: lesson?.contentUrl ?? "",
-    contentBody: lesson?.contentBody ?? "",
-    durationMinutes:
-      lesson?.durationMinutes !== null && lesson?.durationMinutes !== undefined
-        ? String(lesson.durationMinutes)
-        : "",
-    isFreePreview: lesson?.isFreePreview ?? false,
-  });
-  const [error, setError] = useState("");
-
-  const mutation = useMutation({
-    mutationFn: () => {
-      const dur =
-        form.durationMinutes.length > 0
-          ? Number(form.durationMinutes)
-          : undefined;
-      const body = {
-        title: form.title,
-        description: form.description.length > 0 ? form.description : undefined,
-        contentType: form.contentType,
-        contentUrl: form.contentUrl.length > 0 ? form.contentUrl : undefined,
-        contentBody: form.contentBody.length > 0 ? form.contentBody : undefined,
-        durationMinutes: dur,
-        isFreePreview: form.isFreePreview,
-      };
-      return isEdit
-        ? api.patch(
-            `/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`,
-            body,
-          )
-        : api.post(`/courses/${courseId}/modules/${moduleId}/lessons`, body);
-    },
-    onSuccess: () => {
-      onSuccess();
-      onOpenChange(false);
-      setError("");
-    },
-    onError: (err: unknown) => {
-      setError(err instanceof Error ? err.message : "Erreur");
-    },
-  });
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError("");
-    mutation.mutate();
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
-        <DialogHeader>
-          <DialogTitle>
-            {isEdit ? "Modifier la leçon" : "Nouvelle leçon"}
-          </DialogTitle>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="px-6 py-4 space-y-4">
-            <div className="space-y-1.5">
-              <Label htmlFor="les-title">Titre</Label>
-              <Input
-                id="les-title"
-                value={form.title}
-                onChange={(e) => {
-                  setForm((f) => ({ ...f, title: e.target.value }));
-                }}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label htmlFor="les-type">Type de contenu</Label>
-                <select
-                  id="les-type"
-                  value={form.contentType}
-                  onChange={(e) => {
-                    setForm((f) => ({
-                      ...f,
-                      contentType: e.target.value as LessonContentType,
-                    }));
-                  }}
-                  className="w-full h-10 px-3 text-sm border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                >
-                  {CONTENT_TYPES.map((ct) => (
-                    <option key={ct.value} value={ct.value}>
-                      {ct.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="space-y-1.5">
-                <Label htmlFor="les-duration">Durée (min)</Label>
-                <Input
-                  id="les-duration"
-                  type="number"
-                  min="1"
-                  value={form.durationMinutes}
-                  onChange={(e) => {
-                    setForm((f) => ({ ...f, durationMinutes: e.target.value }));
-                  }}
-                  placeholder="ex. 15"
-                />
-              </div>
-            </div>
-
-            {(form.contentType === "video" ||
-              form.contentType === "pdf" ||
-              form.contentType === "audio") && (
-              <div className="space-y-1.5">
-                <Label htmlFor="les-url">
-                  {form.contentType === "video"
-                    ? "URL de la vid\u00e9o"
-                    : form.contentType === "pdf"
-                      ? "URL du document PDF"
-                      : "URL du fichier audio"}
-                </Label>
-                <Input
-                  id="les-url"
-                  value={form.contentUrl}
-                  onChange={(e) => {
-                    setForm((f) => ({ ...f, contentUrl: e.target.value }));
-                  }}
-                  placeholder={
-                    form.contentType === "video"
-                      ? "https://www.youtube.com/watch?v=... ou lien Vimeo"
-                      : form.contentType === "pdf"
-                        ? "https://drive.google.com/file/d/... ou lien direct .pdf"
-                        : "https://drive.google.com/file/d/... ou lien direct .mp3"
-                  }
-                />
-                <p className="text-xs text-meta">
-                  {form.contentType === "video"
-                    ? "Collez un lien YouTube, Vimeo, ou tout lien vid\u00e9o public."
-                    : form.contentType === "pdf"
-                      ? "Collez un lien Google Drive (acc\u00e8s public), Dropbox, ou un lien direct vers le PDF."
-                      : "Collez un lien Google Drive (acc\u00e8s public), Dropbox, ou un lien direct vers le fichier audio."}
-                </p>
-              </div>
-            )}
-
-            {form.contentType === "text" && (
-              <div className="space-y-1.5">
-                <Label htmlFor="les-body">Contenu texte</Label>
-                <textarea
-                  id="les-body"
-                  value={form.contentBody}
-                  onChange={(e) => {
-                    setForm((f) => ({ ...f, contentBody: e.target.value }));
-                  }}
-                  rows={4}
-                  className="w-full px-3 py-2 text-sm border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                  placeholder="Contenu de la leçon…"
-                />
-              </div>
-            )}
-
-            <div className="flex items-center gap-3">
-              <input
-                id="les-free"
-                type="checkbox"
-                checked={form.isFreePreview}
-                onChange={(e) => {
-                  setForm((f) => ({ ...f, isFreePreview: e.target.checked }));
-                }}
-                className="h-4 w-4 accent-teal"
-              />
-              <Label htmlFor="les-free" className="cursor-pointer">
-                Aperçu gratuit
-              </Label>
-            </div>
-
-            {error.length > 0 && <p className="text-xs text-rose">{error}</p>}
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline" size="sm">
-                Annuler
-              </Button>
-            </DialogClose>
-            <Button type="submit" size="sm" disabled={mutation.isPending}>
-              {mutation.isPending
-                ? "Sauvegarde…"
-                : isEdit
-                  ? "Enregistrer"
-                  : "Créer"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 // ── Delete confirm modal ───────────────────────────────────────────────────────
 
 interface DeleteModalProps {
@@ -523,11 +295,10 @@ interface ModuleRowProps {
 }
 
 function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
+  const navigate = useNavigate();
   const [expanded, setExpanded] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
-  const [addLessonOpen, setAddLessonOpen] = useState(false);
-  const [editLesson, setEditLesson] = useState<LessonItem | null>(null);
   const [deleteLesson, setDeleteLesson] = useState<LessonItem | null>(null);
 
   const deleteMod = useMutation({
@@ -613,9 +384,12 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
                 )}
                 <button
                   onClick={() => {
-                    setEditLesson(les);
+                    navigate(
+                      `/teacher/courses/${courseId}/modules/${mod.id}/lessons/${les.id}`,
+                    );
                   }}
                   className="text-meta hover:text-dark transition-colors p-1"
+                  title="Ouvrir l'editeur"
                 >
                   <Pencil size={12} />
                 </button>
@@ -643,7 +417,9 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
           <div className="px-6 py-2.5">
             <button
               onClick={() => {
-                setAddLessonOpen(true);
+                navigate(
+                  `/teacher/courses/${courseId}/modules/${mod.id}/lessons/new`,
+                );
               }}
               className="flex items-center gap-1.5 text-xs text-meta hover:text-teal transition-colors"
             >
@@ -671,29 +447,6 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
         }}
         isPending={deleteMod.isPending}
       />
-
-      {/* Add lesson modal */}
-      <LessonModal
-        courseId={courseId}
-        moduleId={mod.id}
-        open={addLessonOpen}
-        onOpenChange={setAddLessonOpen}
-        onSuccess={onRefresh}
-      />
-
-      {/* Edit lesson modal */}
-      {editLesson !== null && (
-        <LessonModal
-          courseId={courseId}
-          moduleId={mod.id}
-          lesson={editLesson}
-          open
-          onOpenChange={(v) => {
-            if (!v) setEditLesson(null);
-          }}
-          onSuccess={onRefresh}
-        />
-      )}
 
       {/* Delete lesson modal */}
       {deleteLesson !== null && (

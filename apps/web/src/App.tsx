@@ -13,6 +13,7 @@ import { AuditLogPage } from "@/pages/audit/AuditLog.js";
 import { TeacherCoursesPage } from "@/pages/teacher/TeacherCourses.js";
 import { TeacherCourseDetailPage } from "@/pages/teacher/TeacherCourseDetail.js";
 import { TeacherCourseBuilderPage } from "@/pages/teacher/TeacherCourseBuilder.js";
+import { TeacherLessonEditorPage } from "@/pages/teacher/TeacherLessonEditor.js";
 import { LearnCatalogPage } from "@/pages/learn/LearnCatalog.js";
 import { LearnMyCoursesPage } from "@/pages/learn/LearnMyCourses.js";
 import { LearnCoursePlayerPage } from "@/pages/learn/LearnCoursePlayer.js";
@@ -118,6 +119,10 @@ export function App() {
                 <Route
                   path="/courses/:courseId/builder"
                   element={<TeacherCourseBuilderPage />}
+                />
+                <Route
+                  path="/courses/:courseId/modules/:moduleId/lessons/:lessonId"
+                  element={<TeacherLessonEditorPage />}
                 />
                 <Route path="/analytics" element={<TeacherAnalytics />} />
                 <Route

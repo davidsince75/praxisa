@@ -104,8 +104,8 @@ function GradeForm({
             Commentaire
           </label>
           <textarea
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
-            rows={2}
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-teal-500"
+            rows={4}
             value={feedback}
             onChange={(e) => {
               setFeedback(e.target.value);

@@ -122,18 +122,22 @@ export async function generateAdminDraft(
     mistralApiKey,
   );
 
-  // Parse JSON response — if malformed, return a safe fallback
+  // Strip markdown code fences that Mistral sometimes wraps around JSON
+  const cleanedAdmin = raw
+    .replace(/^```(?:json)?\s*\n?/i, "")
+    .replace(/\n?```\s*$/i, "")
+    .trim();
   try {
-    const parsed = JSON.parse(raw) as Partial<AdminDraft>;
+    const parsed = JSON.parse(cleanedAdmin) as Partial<AdminDraft>;
     return {
-      subject: parsed.subject ?? "(No subject generated)",
-      body: parsed.body ?? raw,
+      subject: parsed.subject ?? "(Aucun objet généré)",
+      body: parsed.body ?? cleanedAdmin,
       intentClassification: parsed.intentClassification ?? "unknown",
     };
   } catch {
     return {
-      subject: "(Draft — review required)",
-      body: raw,
+      subject: "(Brouillon — vérification requise)",
+      body: cleanedAdmin,
       intentClassification: "unknown",
     };
   }
@@ -185,17 +189,22 @@ export async function generateGradingSuggestion(
     mistralApiKey,
   );
 
+  // Strip markdown code fences that Mistral sometimes wraps around JSON
+  const cleaned = raw
+    .replace(/^```(?:json)?\s*\n?/i, "")
+    .replace(/\n?```\s*$/i, "")
+    .trim();
   try {
-    const parsed = JSON.parse(raw) as Partial<GradingSuggestion>;
+    const parsed = JSON.parse(cleaned) as Partial<GradingSuggestion>;
     const score = parsed.suggestedScore ?? Math.round(maxScore * 0.7);
     return {
       suggestedScore: Math.min(Math.max(score, 0), maxScore),
-      suggestedFeedback: parsed.suggestedFeedback ?? raw,
+      suggestedFeedback: parsed.suggestedFeedback ?? cleaned,
     };
   } catch {
     return {
       suggestedScore: Math.round(maxScore * 0.7),
-      suggestedFeedback: raw,
+      suggestedFeedback: cleaned,
     };
   }
 }
