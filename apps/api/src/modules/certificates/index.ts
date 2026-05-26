@@ -56,12 +56,10 @@ export function certificatesPlugin(fastify: FastifyInstance) {
       }
 
       if (row.status !== "completed") {
-        return reply
-          .status(400)
-          .send({
-            error: "Le cours n'est pas encore terminé",
-            status: row.status,
-          });
+        return reply.status(400).send({
+          error: "Le cours n'est pas encore terminé",
+          status: row.status,
+        });
       }
 
       return reply.send({
@@ -131,11 +129,9 @@ export function certificatesPlugin(fastify: FastifyInstance) {
 
       const student = studentRows[0];
       if (student === undefined) {
-        return reply
-          .status(404)
-          .send({
-            error: "Aucun compte étudiant trouvé pour cette adresse email",
-          });
+        return reply.status(404).send({
+          error: "Aucun compte étudiant trouvé pour cette adresse email",
+        });
       }
 
       // Check for existing active enrolment

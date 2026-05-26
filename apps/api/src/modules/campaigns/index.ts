@@ -155,11 +155,9 @@ export function campaignsPlugin(fastify: FastifyInstance) {
         return reply.status(404).send({ error: "Campagne introuvable" });
       }
       if (existing.status !== "draft") {
-        return reply
-          .status(409)
-          .send({
-            error: "Seules les campagnes en brouillon peuvent être modifiées",
-          });
+        return reply.status(409).send({
+          error: "Seules les campagnes en brouillon peuvent être modifiées",
+        });
       }
 
       const parse = updateCampaignSchema.safeParse(request.body);
@@ -210,11 +208,9 @@ export function campaignsPlugin(fastify: FastifyInstance) {
         return reply.status(404).send({ error: "Campagne introuvable" });
       }
       if (existing.status !== "draft") {
-        return reply
-          .status(409)
-          .send({
-            error: "Seules les campagnes en brouillon peuvent être supprimées",
-          });
+        return reply.status(409).send({
+          error: "Seules les campagnes en brouillon peuvent être supprimées",
+        });
       }
 
       await fastify.db.delete(campaigns).where(eq(campaigns.id, id));

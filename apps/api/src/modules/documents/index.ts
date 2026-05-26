@@ -195,11 +195,9 @@ export function documentsPlugin(fastify: FastifyInstance) {
         return reply.status(403).send({ error: "Accès interdit" });
       }
       if (doc.status !== "draft") {
-        return reply
-          .status(400)
-          .send({
-            error: "Seuls les documents en brouillon peuvent être modifiés",
-          });
+        return reply.status(400).send({
+          error: "Seuls les documents en brouillon peuvent être modifiés",
+        });
       }
 
       await fastify.db
@@ -388,11 +386,9 @@ export function documentsPlugin(fastify: FastifyInstance) {
         return reply.status(403).send({ error: "Accès interdit" });
       }
       if (doc.status !== "draft") {
-        return reply
-          .status(400)
-          .send({
-            error: "Seuls les documents en brouillon peuvent être supprimés",
-          });
+        return reply.status(400).send({
+          error: "Seuls les documents en brouillon peuvent être supprimés",
+        });
       }
 
       await fastify.db

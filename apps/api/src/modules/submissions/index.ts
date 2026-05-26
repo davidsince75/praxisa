@@ -73,11 +73,9 @@ export function submissionsPlugin(fastify: FastifyInstance) {
         return reply.status(404).send({ error: "Exercice introuvable" });
       }
       if (exercise.type === "quiz") {
-        return reply
-          .status(400)
-          .send({
-            error: "Les exercices de type quiz utilisent un autre endpoint",
-          });
+        return reply.status(400).send({
+          error: "Les exercices de type quiz utilisent un autre endpoint",
+        });
       }
 
       // One submission per student per exercise — upsert logic: if exists update

@@ -328,11 +328,9 @@ export const gdprPlugin = (
         .returning();
 
       if (updated.length === 0) {
-        return reply
-          .status(404)
-          .send({
-            error: "Aucune demande en attente trouvée pour cet utilisateur",
-          });
+        return reply.status(404).send({
+          error: "Aucune demande en attente trouvée pour cet utilisateur",
+        });
       }
 
       await emitEvent({

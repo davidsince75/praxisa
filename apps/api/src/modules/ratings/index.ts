@@ -42,11 +42,9 @@ export function ratingsPlugin(fastify: FastifyInstance) {
         return reply.status(404).send({ error: "Inscription introuvable" });
       }
       if (enrol.status !== "completed") {
-        return reply
-          .status(400)
-          .send({
-            error: "Le cours doit être terminé avant de pouvoir l'évaluer",
-          });
+        return reply.status(400).send({
+          error: "Le cours doit être terminé avant de pouvoir l'évaluer",
+        });
       }
 
       const inserted = await fastify.db
