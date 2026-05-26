@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api.js";
 import type { NotificationsResponse } from "@/lib/api.js";
+import { useAuth } from "@/hooks/useAuth.js";
 
 function relativeTime(dateStr: string): string {
   const now = Date.now();
@@ -17,10 +19,35 @@ function relativeTime(dateStr: string): string {
   return `Il y a ${String(diffDay)} j`;
 }
 
+function getNotificationHref(
+  entityType: string | null,
+  entityId: string | null,
+  role: string,
+): string | null {
+  if (!entityType) return null;
+  const prefix =
+    role === "admin" ? "" : role === "instructor" ? "/teacher" : "/learn";
+
+  switch (entityType) {
+    case "thread":
+      return `${prefix}/messages`;
+    case "forum_thread":
+      return entityId ? `${prefix}/forums/${entityId}` : `${prefix}/forums`;
+    case "document":
+      return role === "instructor" ? "/teacher/grading" : "/learn/documents";
+    case "submission":
+      return role === "instructor" ? "/teacher/grading" : "/learn/progress";
+    default:
+      return null;
+  }
+}
+
 export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   const { data } = useQuery<NotificationsResponse>({
     queryKey: ["notifications"],
@@ -83,25 +110,36 @@ export function NotificationBell() {
           ) : (
             <>
               <div className="max-h-72 overflow-y-auto">
-                {items.map((n) => (
-                  <button
-                    key={n.id}
-                    onClick={() => {
-                      markReadMutation.mutate(n.id);
-                    }}
-                    className={`w-full text-left px-4 py-3 border-b border-rule last:border-0 hover:bg-gray-50 transition-colors ${
-                      n.readAt === null ? "bg-teal/5" : ""
-                    }`}
-                  >
-                    <p className="text-xs font-bold text-dark truncate">
-                      {n.title}
-                    </p>
-                    <p className="text-[11px] text-meta truncate">{n.body}</p>
-                    <p className="text-[10px] text-meta/60 mt-0.5">
-                      {relativeTime(n.createdAt)}
-                    </p>
-                  </button>
-                ))}
+                {items.map((n) => {
+                  const href = getNotificationHref(
+                    n.entityType,
+                    n.entityId,
+                    user?.role ?? "student",
+                  );
+                  return (
+                    <button
+                      key={n.id}
+                      onClick={() => {
+                        markReadMutation.mutate(n.id);
+                        if (href) {
+                          navigate(href);
+                        }
+                        setOpen(false);
+                      }}
+                      className={`w-full text-left px-4 py-3 border-b border-rule last:border-0 hover:bg-gray-50 transition-colors cursor-pointer ${
+                        n.readAt === null ? "bg-teal/5" : ""
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-dark truncate">
+                        {n.title}
+                      </p>
+                      <p className="text-[11px] text-meta truncate">{n.body}</p>
+                      <p className="text-[10px] text-meta/60 mt-0.5">
+                        {relativeTime(n.createdAt)}
+                      </p>
+                    </button>
+                  );
+                })}
               </div>
               {unreadCount > 0 && (
                 <button
