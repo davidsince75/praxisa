@@ -78,8 +78,10 @@ export function loadConfig(): AppConfig {
       ? {
           accessToken: process.env["GOCARDLESS_ACCESS_TOKEN"],
           environment:
-            (process.env["GOCARDLESS_ENVIRONMENT"] as "sandbox" | "live") ??
-            "sandbox",
+            (process.env["GOCARDLESS_ENVIRONMENT"] as
+              | "sandbox"
+              | "live"
+              | undefined) ?? "sandbox",
         }
       : undefined,
   });

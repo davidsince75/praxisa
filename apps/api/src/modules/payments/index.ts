@@ -66,22 +66,25 @@ export function paymentsPlugin(fastify: FastifyInstance) {
         params as Parameters<typeof client.payments.list>[0],
       );
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const payments = (res.payments ?? []).map((p: any) => ({
-        id: p.id,
-        amount: p.amount,
-        currency: p.currency,
-        status: p.status,
-        description: p.description,
-        reference: p.reference,
-        createdAt: p.created_at,
-        chargeDate: p.charge_date,
-        metadata: p.metadata,
+      /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
+      const raw = (res.payments as unknown as Record<string, unknown>[]) ?? [];
+      const payments = raw.map((p) => ({
+        id: p["id"] as string,
+        amount: p["amount"] as number,
+        currency: p["currency"] as string,
+        status: p["status"] as string,
+        description: p["description"] as string | null,
+        reference: p["reference"] as string | null,
+        createdAt: p["created_at"] as string,
+        chargeDate: p["charge_date"] as string | null,
+        metadata: (p["metadata"] ?? {}) as Record<string, string>,
       }));
+      /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 
+      const cursors = res.meta?.cursors;
       return reply.send({
         payments,
-        nextCursor: res.meta?.cursors?.after ?? null,
+        nextCursor: cursors?.after ?? null,
       });
     },
   );
@@ -157,20 +160,17 @@ export function paymentsPlugin(fastify: FastifyInstance) {
         },
       });
 
+      const baseUrl =
+        (
+          fastify as unknown as {
+            config?: { appBaseUrl?: string };
+          }
+        ).config?.appBaseUrl ?? "";
+
       const flow = await client.billingRequestFlows.create({
-        redirect_uri:
-          (
-            fastify as unknown as {
-              config?: { appBaseUrl?: string };
-            }
-          ).config?.appBaseUrl + "/payments?success=true",
-        exit_uri:
-          (
-            fastify as unknown as {
-              config?: { appBaseUrl?: string };
-            }
-          ).config?.appBaseUrl + "/payments",
-        links: { billing_request: billingRequest.id ?? "" },
+        redirect_uri: `${baseUrl}/payments?success=true`,
+        exit_uri: `${baseUrl}/payments`,
+        links: { billing_request: billingRequest.id },
       });
 
       return reply.status(201).send({

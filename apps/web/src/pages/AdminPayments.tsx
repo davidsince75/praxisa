@@ -131,7 +131,7 @@ function CreateLinkDialog({ onClose }: CreateLinkDialogProps) {
                   variant="outline"
                   size="sm"
                   onClick={() => {
-                    navigator.clipboard.writeText(resultUrl);
+                    void navigator.clipboard.writeText(resultUrl);
                     setCopied(true);
                     setTimeout(() => {
                       setCopied(false);
@@ -321,7 +321,7 @@ function PaymentTable() {
                     {formatDate(p.createdAt)}
                   </td>
                   <td className="px-4 py-3 text-dark max-w-[200px] truncate">
-                    {p.description || "—"}
+                    {p.description ?? "—"}
                   </td>
                   <td className="px-4 py-3 font-medium text-dark">
                     {formatAmount(p.amount, p.currency)}
@@ -332,7 +332,7 @@ function PaymentTable() {
                     </Badge>
                   </td>
                   <td className="px-4 py-3 text-meta text-xs">
-                    {p.reference || "—"}
+                    {p.reference ?? "—"}
                   </td>
                 </tr>
               ))}

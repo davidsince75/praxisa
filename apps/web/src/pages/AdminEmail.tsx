@@ -132,7 +132,7 @@ function MessageList({ onSelect }: MessageListProps) {
           variant="ghost"
           size="sm"
           onClick={() => {
-            refetch();
+            void refetch();
           }}
         >
           <RefreshCw size={14} />
@@ -201,8 +201,9 @@ function MessageList({ onSelect }: MessageListProps) {
           size="sm"
           disabled={!data?.nextPageToken}
           onClick={() => {
-            if (data?.nextPageToken) {
-              setPageTokens((prev) => [...prev, data.nextPageToken!]);
+            const token = data?.nextPageToken;
+            if (token) {
+              setPageTokens((prev) => [...prev, token]);
             }
           }}
         >
@@ -248,7 +249,7 @@ function MessageDetail({ messageId, onBack }: MessageDetailProps) {
     onSuccess: () => {
       setReplyBody("");
       setShowReply(false);
-      queryClient.invalidateQueries({ queryKey: ["gmail-messages"] });
+      void queryClient.invalidateQueries({ queryKey: ["gmail-messages"] });
     },
   });
 
@@ -376,7 +377,7 @@ export function AdminEmailPage() {
   const disconnectMutation = useMutation({
     mutationFn: () => api.delete("/gmail/disconnect"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["gmail-status"] });
+      void queryClient.invalidateQueries({ queryKey: ["gmail-status"] });
     },
   });
 
