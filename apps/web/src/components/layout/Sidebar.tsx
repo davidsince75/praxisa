@@ -27,14 +27,14 @@ const nav = [
   { to: "/courses", label: "Cours", icon: BookOpen, end: false },
   { to: "/analytics", label: "Analytiques", icon: BarChart2, end: false },
   { to: "/messages", label: "Messages", icon: MessageSquare, end: false },
-  { to: "/ai-assistant", label: "IA", icon: Bot, end: false },
+  { to: "/forums", label: "Forum", icon: MessageCircle, end: false },
   { to: "/campaigns", label: "Campagnes", icon: Mail, end: false },
+  { to: "/ai-assistant", label: "IA", icon: Bot, end: false },
   { to: "/email", label: "Admissions", icon: Inbox, end: false },
   { to: "/payments", label: "Paiements", icon: CreditCard, end: false },
   { to: "/import", label: "Import", icon: Upload, end: false },
   { to: "/gdpr", label: "DSR Queue", icon: ShieldCheck, end: false },
   { to: "/audit", label: "Audit Log", icon: ScrollText, end: false },
-  { to: "/forums", label: "Forum", icon: MessageCircle, end: false },
   { to: "/settings", label: "Paramètres", icon: Settings, end: false },
 ];
 

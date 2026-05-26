@@ -1,10 +1,79 @@
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { BookOpen, Globe, Clock, CheckCircle2, Star, User } from "lucide-react";
 import { api } from "@/lib/api.js";
-import type { CourseListResponse, MyEnrolmentsResponse } from "@/lib/api.js";
+import type {
+  CourseListResponse,
+  MyEnrolmentsResponse,
+  MyRatingResponse,
+} from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
 import { Card, CardContent } from "@/components/ui/card.js";
+
+// ── Inline rating widget for completed courses ──────────────────────────────────
+
+function InlineRating({ courseId }: { courseId: string }) {
+  const queryClient = useQueryClient();
+  const [hovered, setHovered] = useState(0);
+  const [justSubmitted, setJustSubmitted] = useState(false);
+
+  const { data } = useQuery<MyRatingResponse>({
+    queryKey: ["my-rating", courseId],
+    queryFn: () => api.get<MyRatingResponse>(`/courses/${courseId}/my-rating`),
+  });
+
+  const mutation = useMutation({
+    mutationFn: (rating: number) =>
+      api.post(`/courses/${courseId}/ratings`, { rating }),
+    onSuccess: () => {
+      setJustSubmitted(true);
+      void queryClient.invalidateQueries({
+        queryKey: ["my-rating", courseId],
+      });
+      void queryClient.invalidateQueries({ queryKey: ["courses"] });
+    },
+  });
+
+  const existing = data?.rating?.rating ?? 0;
+  const display = hovered > 0 ? hovered : existing;
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-[11px] text-meta">Évaluer :</span>
+      <div className="flex gap-0.5">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button
+            key={n}
+            onMouseEnter={() => {
+              setHovered(n);
+            }}
+            onMouseLeave={() => {
+              setHovered(0);
+            }}
+            onClick={() => {
+              mutation.mutate(n);
+            }}
+            disabled={mutation.isPending}
+            className="p-0.5 transition-colors"
+          >
+            <Star
+              size={14}
+              className={
+                n <= display
+                  ? "text-yellow-400 fill-yellow-400"
+                  : "text-slate-300"
+              }
+            />
+          </button>
+        ))}
+      </div>
+      {justSubmitted && (
+        <span className="text-[11px] text-teal font-medium">Merci !</span>
+      )}
+    </div>
+  );
+}
 
 export function LearnCatalogPage() {
   const queryClient = useQueryClient();
@@ -131,6 +200,9 @@ export function LearnCatalogPage() {
                           }}
                         />
                       </div>
+                      {enrolment.status === "completed" && (
+                        <InlineRating courseId={course.id} />
+                      )}
                       <button
                         onClick={() => {
                           navigate(`/learn/courses/${enrolment.enrolmentId}`);
@@ -138,7 +210,9 @@ export function LearnCatalogPage() {
                         className="w-full flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal border border-teal/40 px-3 py-2 hover:bg-teal/5 transition-colors"
                       >
                         <CheckCircle2 size={13} />
-                        Continuer la formation
+                        {enrolment.status === "completed"
+                          ? "Voir la formation"
+                          : "Continuer la formation"}
                       </button>
                     </div>
                   ) : (
