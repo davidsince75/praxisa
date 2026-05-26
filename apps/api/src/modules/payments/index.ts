@@ -67,8 +67,8 @@ export function paymentsPlugin(fastify: FastifyInstance) {
       );
 
       /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
-      const raw = (res.payments as unknown as Record<string, unknown>[]) ?? [];
-      const payments = raw.map((p) => ({
+      const raw = res.payments as unknown as Record<string, unknown>[];
+      const payments = (raw ?? []).map((p) => ({
         id: p["id"] as string,
         amount: p["amount"] as number,
         currency: p["currency"] as string,
@@ -81,10 +81,9 @@ export function paymentsPlugin(fastify: FastifyInstance) {
       }));
       /* eslint-enable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 
-      const cursors = res.meta?.cursors;
       return reply.send({
         payments,
-        nextCursor: cursors?.after ?? null,
+        nextCursor: res.meta.cursors.after ?? null,
       });
     },
   );
