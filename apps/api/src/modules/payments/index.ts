@@ -68,7 +68,7 @@ export function paymentsPlugin(fastify: FastifyInstance) {
 
       /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
       const raw = res.payments as unknown as Record<string, unknown>[];
-      const payments = (raw ?? []).map((p) => ({
+      const payments = raw.map((p) => ({
         id: p["id"] as string,
         amount: p["amount"] as number,
         currency: p["currency"] as string,
