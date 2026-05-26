@@ -43,12 +43,6 @@ const EXERCISE_TYPES = [
   { value: "quiz", label: "Quiz" },
 ];
 
-const TYPE_LABELS: Record<string, string> = {
-  quiz: "Quiz",
-  assignment: "Devoir",
-  reflection: "Réflexion",
-};
-
 // ── Toolbar button ───────────────────────────────────────────────────────────────
 
 function ToolbarBtn({
@@ -87,51 +81,88 @@ function ExerciseCard({
   lessonId: string;
   onRefresh: () => void;
 }) {
-  const deleteMutation = useMutation({
-    mutationFn: () =>
-      api.delete(
-        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/exercises/${exercise.id}`,
-      ),
+  const basePath = `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/exercises/${exercise.id}`;
+
+  const [localTitle, setLocalTitle] = useState(exercise.title);
+
+  const updateMutation = useMutation({
+    mutationFn: (patch: Record<string, unknown>) => api.patch(basePath, patch),
     onSuccess: () => {
       onRefresh();
     },
   });
 
-  const deadlineMutation = useMutation({
-    mutationFn: (dueAt: string | null) =>
-      api.patch(
-        `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/exercises/${exercise.id}`,
-        { dueAt },
-      ),
+  const deleteMutation = useMutation({
+    mutationFn: () => api.delete(basePath),
     onSuccess: () => {
       onRefresh();
     },
   });
+
+  function saveTitle(): void {
+    const trimmed = localTitle.trim();
+    if (trimmed.length > 0 && trimmed !== exercise.title) {
+      updateMutation.mutate({ title: trimmed });
+    }
+  }
 
   const currentDate =
     exercise.dueAt !== null ? exercise.dueAt.slice(0, 10) : "";
 
   return (
-    <div className="bg-white border border-slate-200 rounded-lg p-3 space-y-2">
-      <div className="flex items-center gap-2">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-white bg-teal-600 px-1.5 py-0.5 rounded">
-          {TYPE_LABELS[exercise.type] ?? exercise.type}
-        </span>
-        <span className="flex-1 text-sm text-slate-700 truncate">
-          {exercise.title}
-        </span>
+    <div className="bg-white border border-slate-200 rounded-lg p-3 space-y-2.5">
+      {/* Header row: type badge + delete */}
+      <div className="flex items-center justify-between gap-2">
+        <select
+          value={exercise.type}
+          onChange={(e) => {
+            updateMutation.mutate({ type: e.target.value });
+          }}
+          className="text-[10px] font-bold uppercase tracking-wider text-white bg-teal-600 pl-1.5 pr-4 py-0.5 rounded border-none appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-teal-400"
+          title="Type d'exercice"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E\")",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "right 2px center",
+          }}
+        >
+          {EXERCISE_TYPES.map((t) => (
+            <option key={t.value} value={t.value}>
+              {t.label}
+            </option>
+          ))}
+        </select>
         <button
           onClick={() => {
             deleteMutation.mutate();
           }}
-          className="text-slate-400 hover:text-red-500 transition-colors p-0.5"
+          className="text-slate-400 hover:text-red-500 transition-colors p-0.5 shrink-0"
           title="Supprimer"
         >
-          <Trash2 size={12} />
+          <Trash2 size={13} />
         </button>
       </div>
+
+      {/* Editable title */}
+      <input
+        value={localTitle}
+        onChange={(e) => {
+          setLocalTitle(e.target.value);
+        }}
+        onBlur={saveTitle}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.currentTarget.blur();
+          }
+        }}
+        className="w-full text-sm text-slate-700 border border-transparent rounded px-1.5 py-1 -ml-1.5 hover:border-slate-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 transition-colors bg-transparent"
+        title="Cliquez pour modifier le titre"
+      />
+
+      {/* Deadline */}
       <div className="flex items-center gap-2">
-        <Calendar size={11} className="text-slate-400" />
+        <Calendar size={11} className="text-slate-400 shrink-0" />
         <input
           type="date"
           value={currentDate}
@@ -139,16 +170,16 @@ function ExerciseCard({
             const val = e.target.value;
             const dueAt =
               val.length > 0 ? new Date(val + "T23:59:59").toISOString() : null;
-            deadlineMutation.mutate(dueAt);
+            updateMutation.mutate({ dueAt });
           }}
           className="text-xs border border-slate-200 rounded px-2 py-1 flex-1 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
         />
         {exercise.dueAt !== null && (
           <button
             onClick={() => {
-              deadlineMutation.mutate(null);
+              updateMutation.mutate({ dueAt: null });
             }}
-            className="text-[10px] text-slate-400 hover:text-red-500 transition-colors"
+            className="text-[10px] text-slate-400 hover:text-red-500 transition-colors shrink-0"
             title="Supprimer l'echeance"
           >
             ✕
@@ -310,7 +341,7 @@ export function TeacherLessonEditorPage() {
   }, [navigate, courseId]);
 
   return (
-    <div className="fixed inset-0 z-40 bg-white flex flex-col">
+    <div className="fixed inset-y-0 left-56 right-0 z-40 bg-white flex flex-col">
       {/* ── Top bar ───────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 bg-white shrink-0">
         <Button variant="ghost" size="sm" onClick={goBack}>
