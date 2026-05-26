@@ -15,6 +15,10 @@ import {
   Trash2,
   Calendar,
   ClipboardList,
+  ImageIcon,
+  Video,
+  Link2,
+  X,
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
@@ -264,6 +268,45 @@ export function TeacherLessonEditorPage() {
     editorRef.current?.focus();
   }, []);
 
+  // Media insertion state
+  const [mediaPopover, setMediaPopover] = useState<
+    "image" | "video" | "link" | null
+  >(null);
+  const [mediaUrl, setMediaUrl] = useState("");
+
+  function insertMedia(): void {
+    const url = mediaUrl.trim();
+    if (url.length === 0) return;
+    editorRef.current?.focus();
+
+    if (mediaPopover === "image") {
+      document.execCommand(
+        "insertHTML",
+        false,
+        `<img src="${url}" alt="" style="max-width:100%;height:auto;border-radius:6px;margin:12px 0;" />`,
+      );
+    } else if (mediaPopover === "video") {
+      // Convert YouTube watch URLs to embed
+      let embedUrl = url;
+      const ytMatch = url.match(
+        /(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/,
+      );
+      if (ytMatch) {
+        embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+      }
+      document.execCommand(
+        "insertHTML",
+        false,
+        `<div style="position:relative;padding-bottom:56.25%;height:0;margin:12px 0;border-radius:6px;overflow:hidden;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`,
+      );
+    } else if (mediaPopover === "link") {
+      document.execCommand("createLink", false, url);
+    }
+
+    setMediaUrl("");
+    setMediaPopover(null);
+  }
+
   // Save handler
   async function handleSave(): Promise<void> {
     setSaving(true);
@@ -435,7 +478,79 @@ export function TeacherLessonEditorPage() {
                 exec("insertHorizontalRule");
               }}
             />
+            <div className="w-px h-5 bg-slate-200 mx-1" />
+            <ToolbarBtn
+              icon={ImageIcon}
+              label="Inserer une image"
+              onClick={() => {
+                setMediaPopover(mediaPopover === "image" ? null : "image");
+                setMediaUrl("");
+              }}
+            />
+            <ToolbarBtn
+              icon={Video}
+              label="Inserer une video"
+              onClick={() => {
+                setMediaPopover(mediaPopover === "video" ? null : "video");
+                setMediaUrl("");
+              }}
+            />
+            <ToolbarBtn
+              icon={Link2}
+              label="Inserer un lien"
+              onClick={() => {
+                setMediaPopover(mediaPopover === "link" ? null : "link");
+                setMediaUrl("");
+              }}
+            />
           </div>
+
+          {/* Media URL input bar */}
+          {mediaPopover !== null && (
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-100 bg-teal-50/60 shrink-0">
+              <span className="text-xs font-medium text-slate-600 shrink-0">
+                {mediaPopover === "image"
+                  ? "URL image :"
+                  : mediaPopover === "video"
+                    ? "URL video :"
+                    : "URL lien :"}
+              </span>
+              <input
+                autoFocus
+                value={mediaUrl}
+                onChange={(e) => {
+                  setMediaUrl(e.target.value);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    insertMedia();
+                  }
+                  if (e.key === "Escape") {
+                    setMediaPopover(null);
+                    setMediaUrl("");
+                  }
+                }}
+                placeholder="https://..."
+                className="flex-1 h-8 px-2 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+              />
+              <Button
+                size="sm"
+                disabled={mediaUrl.trim().length === 0}
+                onClick={insertMedia}
+              >
+                Inserer
+              </Button>
+              <button
+                onClick={() => {
+                  setMediaPopover(null);
+                  setMediaUrl("");
+                }}
+                className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
 
           {/* Content editable area */}
           <div className="flex-1 overflow-auto">
@@ -453,7 +568,9 @@ export function TeacherLessonEditorPage() {
                   [&_li]:mb-1 [&_li]:text-sm
                   [&_hr]:my-6 [&_hr]:border-slate-200
                   [&_b]:font-bold [&_strong]:font-bold
-                  [&_i]:italic [&_em]:italic"
+                  [&_i]:italic [&_em]:italic
+                  [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-3
+                  [&_a]:text-teal-600 [&_a]:underline [&_a]:underline-offset-2"
                 data-placeholder="Commencez a rediger le contenu de la lecon..."
               />
             </div>
