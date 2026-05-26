@@ -145,18 +145,20 @@ function ExerciseCard({
       </div>
 
       {/* Editable title */}
-      <input
+      <textarea
         value={localTitle}
+        rows={2}
         onChange={(e) => {
           setLocalTitle(e.target.value);
         }}
         onBlur={saveTitle}
         onKeyDown={(e) => {
-          if (e.key === "Enter") {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
             e.currentTarget.blur();
           }
         }}
-        className="w-full text-sm text-slate-700 border border-transparent rounded px-1.5 py-1 -ml-1.5 hover:border-slate-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 transition-colors bg-transparent"
+        className="w-full text-sm text-slate-700 border border-transparent rounded px-1.5 py-1 -ml-1.5 hover:border-slate-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 transition-colors bg-transparent resize-none"
         title="Cliquez pour modifier le titre"
       />
 
