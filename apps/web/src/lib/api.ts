@@ -898,3 +898,74 @@ export interface UserPreferencesData {
 export interface PreferencesResponse {
   preferences: UserPreferencesData;
 }
+
+// ── Gmail ───────────────────────────────────────────────────────────────────────
+
+export interface GmailStatus {
+  connected: boolean;
+  email?: string;
+  connectedAt?: string;
+}
+
+export interface GmailAuthUrlResponse {
+  url: string;
+}
+
+export interface GmailMessage {
+  id: string;
+  threadId: string;
+  snippet: string;
+  from: string;
+  subject: string;
+  date: string;
+  labelIds: string[];
+  isUnread: boolean;
+}
+
+export interface GmailMessagesResponse {
+  messages: GmailMessage[];
+  nextPageToken: string | null;
+}
+
+export interface GmailMessageDetail {
+  id: string;
+  threadId: string;
+  from: string;
+  to: string;
+  subject: string;
+  date: string;
+  body: string;
+  labelIds: string[];
+}
+
+export interface GmailAiDraftResponse {
+  draft: string;
+}
+
+// ── Payments (GoCardless) ───────────────────────────────────────────────────────
+
+export interface PaymentStatusResponse {
+  connected: boolean;
+}
+
+export interface PaymentItem {
+  id: string;
+  amount: number;
+  currency: string;
+  status: string;
+  description: string | null;
+  reference: string | null;
+  createdAt: string;
+  chargeDate: string | null;
+  metadata: Record<string, string>;
+}
+
+export interface PaymentsListResponse {
+  payments: PaymentItem[];
+  nextCursor: string | null;
+}
+
+export interface PaymentLinkResponse {
+  id: string;
+  paymentUrl: string;
+}

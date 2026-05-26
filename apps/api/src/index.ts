@@ -30,6 +30,8 @@ import { documentsPlugin } from "./modules/documents/index.js";
 import { forumsPlugin } from "./modules/forums/index.js";
 import { settingsPlugin } from "./modules/settings/index.js";
 import { tagsPlugin } from "./modules/tags/index.js";
+import { gmailPlugin } from "./modules/gmail/index.js";
+import { paymentsPlugin } from "./modules/payments/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -91,6 +93,26 @@ await app.register(aiPlugin, {
   prefix: "/v1",
   ...(config.mistralApiKey !== undefined
     ? { mistralApiKey: config.mistralApiKey }
+    : {}),
+});
+await app.register(gmailPlugin, {
+  prefix: "/v1",
+  ...(config.google !== undefined
+    ? { config: { google: config.google, appBaseUrl: config.appBaseUrl } }
+    : {}),
+  ...(config.mistralApiKey !== undefined
+    ? { mistralApiKey: config.mistralApiKey }
+    : {}),
+});
+await app.register(paymentsPlugin, {
+  prefix: "/v1",
+  ...(config.gocardless !== undefined
+    ? {
+        config: {
+          gocardless: config.gocardless,
+          appBaseUrl: config.appBaseUrl,
+        },
+      }
     : {}),
 });
 

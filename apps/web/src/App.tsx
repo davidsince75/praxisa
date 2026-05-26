@@ -33,6 +33,8 @@ import { LearnCertificatesPage } from "@/pages/learn/LearnCertificates.js";
 import { TeacherAIIngestPage } from "@/pages/teacher/TeacherAIIngest.js";
 import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
 import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
+import { AdminEmailPage } from "@/pages/AdminEmail.js";
+import { AdminPaymentsPage } from "@/pages/AdminPayments.js";
 import { DataImportPage } from "@/pages/import/DataImport.js";
 import { SettingsPage } from "@/pages/settings/SettingsPage.js";
 import { LearnDocumentsPage } from "@/pages/learn/LearnDocuments.js";
@@ -86,6 +88,8 @@ export function App() {
                 <Route path="/audit" element={<AuditLogPage />} />
                 <Route path="/ai-assistant" element={<AdminAIDraftPage />} />
                 <Route path="/campaigns" element={<AdminCampaignsPage />} />
+                <Route path="/email" element={<AdminEmailPage />} />
+                <Route path="/payments" element={<AdminPaymentsPage />} />
                 <Route path="/import" element={<DataImportPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/forums" element={<ForumsPage basePath="" />} />

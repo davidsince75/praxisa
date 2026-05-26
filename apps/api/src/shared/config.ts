@@ -20,6 +20,19 @@ const configSchema = z.object({
   }),
   appBaseUrl: z.string().url().default("http://localhost:5173"),
   mistralApiKey: z.string().min(1).optional(),
+  google: z
+    .object({
+      clientId: z.string().min(1),
+      clientSecret: z.string().min(1),
+      redirectUri: z.string().url(),
+    })
+    .optional(),
+  gocardless: z
+    .object({
+      accessToken: z.string().min(1),
+      environment: z.enum(["sandbox", "live"]).default("sandbox"),
+    })
+    .optional(),
 });
 
 export type AppConfig = z.infer<typeof configSchema>;
@@ -51,6 +64,24 @@ export function loadConfig(): AppConfig {
     },
     appBaseUrl: process.env["APP_BASE_URL"],
     mistralApiKey: process.env["MISTRAL_API_KEY"],
+    google:
+      process.env["GOOGLE_CLIENT_ID"] && process.env["GOOGLE_CLIENT_SECRET"]
+        ? {
+            clientId: process.env["GOOGLE_CLIENT_ID"],
+            clientSecret: process.env["GOOGLE_CLIENT_SECRET"],
+            redirectUri:
+              process.env["GOOGLE_REDIRECT_URI"] ??
+              "http://localhost:3000/v1/gmail/callback",
+          }
+        : undefined,
+    gocardless: process.env["GOCARDLESS_ACCESS_TOKEN"]
+      ? {
+          accessToken: process.env["GOCARDLESS_ACCESS_TOKEN"],
+          environment:
+            (process.env["GOCARDLESS_ENVIRONMENT"] as "sandbox" | "live") ??
+            "sandbox",
+        }
+      : undefined,
   });
 
   if (!result.success) {

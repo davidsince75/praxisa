@@ -14,3 +14,4 @@ export * from "./documents.js";
 export * from "./forums.js";
 export * from "./preferences.js";
 export * from "./tags.js";
+export * from "./gmail.js";
