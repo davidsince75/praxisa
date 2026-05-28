@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog.js";
 import { formatDate } from "@/lib/utils.js";
 
-// \u2500\u2500 Types \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Types ───────────────────────────────────────────────────────────────────────────
 
 type RoleFilter = UserRole | "all";
 
@@ -61,7 +61,7 @@ function roleBadgeVariant(role: UserRole) {
   return "pending" as const;
 }
 
-// \u2500\u2500 Helpers \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Helpers ─────────────────────────────────────────────────────────────────────────
 
 function useDebounce<T>(value: T, ms: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -76,7 +76,7 @@ function useDebounce<T>(value: T, ms: number): T {
   return debounced;
 }
 
-// \u2500\u2500 Sub-components \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Sub-components ────────────────────────────────────────────────────────────────
 
 interface CreateDialogProps {
   open: boolean;
@@ -114,7 +114,7 @@ function CreateUserDialog({
     },
     onError: (err: unknown) => {
       setError(
-        err instanceof Error ? err.message : "Erreur lors de la cr\u00e9ation",
+        err instanceof Error ? err.message : "Erreur lors de la création",
       );
     },
   });
@@ -135,7 +135,7 @@ function CreateUserDialog({
           <div className="px-6 py-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="cu-firstName">Pr\u00e9nom</Label>
+                <Label htmlFor="cu-firstName">Prénom</Label>
                 <Input
                   id="cu-firstName"
                   value={form.firstName}
@@ -170,7 +170,7 @@ function CreateUserDialog({
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="cu-role">R\u00f4le</Label>
+              <Label htmlFor="cu-role">Rôle</Label>
               <select
                 id="cu-role"
                 value={form.role}
@@ -208,7 +208,7 @@ function CreateUserDialog({
               </Button>
             </DialogClose>
             <Button type="submit" size="sm" disabled={mutation.isPending}>
-              {mutation.isPending ? "Cr\u00e9ation\u2026" : "Cr\u00e9er"}
+              {mutation.isPending ? "Création…" : "Créer"}
             </Button>
           </DialogFooter>
         </form>
@@ -253,9 +253,7 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
     },
     onError: (err: unknown) => {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Erreur lors de la mise \u00e0 jour",
+        err instanceof Error ? err.message : "Erreur lors de la mise à jour",
       );
     },
   });
@@ -270,13 +268,13 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
     <Dialog open={user !== null} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Modifier l\u2019utilisateur</DialogTitle>
+          <DialogTitle>Modifier l’utilisateur</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="px-6 py-4 space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label htmlFor="eu-firstName">Pr\u00e9nom</Label>
+                <Label htmlFor="eu-firstName">Prénom</Label>
                 <Input
                   id="eu-firstName"
                   value={form.firstName}
@@ -299,7 +297,7 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="eu-role">R\u00f4le</Label>
+              <Label htmlFor="eu-role">Rôle</Label>
               <select
                 id="eu-role"
                 value={form.role}
@@ -338,7 +336,7 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
               </Button>
             </DialogClose>
             <Button type="submit" size="sm" disabled={mutation.isPending}>
-              {mutation.isPending ? "Sauvegarde\u2026" : "Enregistrer"}
+              {mutation.isPending ? "Sauvegarde…" : "Enregistrer"}
             </Button>
           </DialogFooter>
         </form>
@@ -347,7 +345,7 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
   );
 }
 
-// \u2500\u2500 Compose Message Dialog \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Compose Message Dialog ───────────────────────────────────────────────────────
 
 interface ComposeDialogProps {
   user: User | null;
@@ -377,9 +375,7 @@ function ComposeMessageDialog({ user, onOpenChange }: ComposeDialogProps) {
       setSent(true);
     },
     onError: (err: unknown) => {
-      setError(
-        err instanceof Error ? err.message : "Erreur lors de l\u2019envoi",
-      );
+      setError(err instanceof Error ? err.message : "Erreur lors de l’envoi");
     },
   });
 
@@ -396,14 +392,14 @@ function ComposeMessageDialog({ user, onOpenChange }: ComposeDialogProps) {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <MessageSquare size={16} />
-            Message \u00e0{" "}
+            Message à{" "}
             {user !== null ? `${user.firstName} ${user.lastName}` : ""}
           </DialogTitle>
         </DialogHeader>
         {sent ? (
           <div className="px-6 py-8 text-center">
             <p className="text-sm text-olive font-medium">
-              Message envoy\u00e9 avec succ\u00e8s !
+              Message envoyé avec succès !
             </p>
             <p className="text-xs text-meta mt-1">
               Retrouvez la conversation dans la messagerie.
@@ -442,7 +438,7 @@ function ComposeMessageDialog({ user, onOpenChange }: ComposeDialogProps) {
                   }}
                   rows={5}
                   className="w-full px-3 py-2 text-sm border border-input bg-background text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-ring resize-none"
-                  placeholder="\u00c9crivez votre message\u2026"
+                  placeholder="Écrivez votre message…"
                   required
                 />
               </div>
@@ -459,7 +455,7 @@ function ComposeMessageDialog({ user, onOpenChange }: ComposeDialogProps) {
                 size="sm"
                 disabled={mutation.isPending || body.trim().length === 0}
               >
-                {mutation.isPending ? "Envoi\u2026" : "Envoyer"}
+                {mutation.isPending ? "Envoi…" : "Envoyer"}
               </Button>
             </DialogFooter>
           </form>
@@ -469,7 +465,7 @@ function ComposeMessageDialog({ user, onOpenChange }: ComposeDialogProps) {
   );
 }
 
-// \u2500\u2500 Main page \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500
+// ── Main page ─────────────────────────────────────────────────────────────────────
 
 export function UserManagementPage() {
   const queryClient = useQueryClient();
@@ -511,7 +507,7 @@ export function UserManagementPage() {
           <p className="text-meta text-sm mt-1">
             {meta !== undefined
               ? `${String(meta.total)} utilisateurs au total`
-              : "Chargement\u2026"}
+              : "Chargement…"}
           </p>
         </div>
         <Button
@@ -533,7 +529,7 @@ export function UserManagementPage() {
             className="absolute left-3 top-1/2 -translate-y-1/2 text-meta pointer-events-none"
           />
           <Input
-            placeholder="Rechercher par nom ou email\u2026"
+            placeholder="Rechercher par nom ou email…"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -548,7 +544,7 @@ export function UserManagementPage() {
           }}
           className="h-10 px-3 text-sm border border-input bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
         >
-          <option value="all">Tous les r\u00f4les</option>
+          <option value="all">Tous les rôles</option>
           {ROLES.map((r) => (
             <option key={r} value={r}>
               {ROLE_LABELS[r]}
@@ -561,11 +557,9 @@ export function UserManagementPage() {
       <Card>
         <CardContent className="p-0">
           {isLoading ? (
-            <p className="text-meta text-sm p-6">Chargement\u2026</p>
+            <p className="text-meta text-sm p-6">Chargement…</p>
           ) : users.length === 0 ? (
-            <p className="text-meta text-sm p-6">
-              Aucun utilisateur trouv\u00e9.
-            </p>
+            <p className="text-meta text-sm p-6">Aucun utilisateur trouvé.</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
@@ -578,16 +572,16 @@ export function UserManagementPage() {
                       Email
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      R\u00f4le
+                      Rôle
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
                       Statut
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      Derni\u00e8re connexion
+                      Dernière connexion
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
-                      Cr\u00e9\u00e9 le
+                      Créé le
                     </th>
                     <th className="px-6 py-3" />
                   </tr>
@@ -642,7 +636,7 @@ export function UserManagementPage() {
                       <td className="px-6 py-3 text-meta">
                         {u.lastLoginAt !== null
                           ? formatDate(u.lastLoginAt)
-                          : "\u2014"}
+                          : "—"}
                       </td>
                       <td className="px-6 py-3 text-meta">
                         {formatDate(u.createdAt)}
@@ -671,8 +665,8 @@ export function UserManagementPage() {
       {meta !== undefined && meta.pages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-xs text-meta">
-            Page {String(meta.page)} sur {String(meta.pages)} \u00b7{" "}
-            {String(meta.total)} r\u00e9sultats
+            Page {String(meta.page)} sur {String(meta.pages)} ·{" "}
+            {String(meta.total)} résultats
           </p>
           <div className="flex gap-2">
             <Button
@@ -683,7 +677,7 @@ export function UserManagementPage() {
                 setPage((p) => p - 1);
               }}
             >
-              Pr\u00e9c\u00e9dent
+              Précédent
             </Button>
             <Button
               variant="outline"

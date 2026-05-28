@@ -72,9 +72,9 @@ function CourseRow({
           }
         >
           {status === "published"
-            ? "Publi\u00e9"
+            ? "Publié"
             : status === "archived"
-              ? "Archiv\u00e9"
+              ? "Archivé"
               : "Brouillon"}
         </Badge>
       </div>
@@ -121,38 +121,38 @@ export function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-dark">Dashboard</h1>
         <p className="text-meta text-sm mt-1">
-          Vue d\u2019ensemble de la plateforme
+          Vue d’ensemble de la plateforme
         </p>
       </div>
 
       {/* Key metrics */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
-          label="\u00c9tudiants"
+          label="Étudiants"
           value={studentCount}
           icon={<Users size={24} />}
           sub={`${String(instructorCount)} formateur${instructorCount !== 1 ? "s" : ""}`}
         />
         <StatCard
           label="Inscriptions actives"
-          value={analytics?.totalEnrolled ?? "\u2014"}
+          value={analytics?.totalEnrolled ?? "—"}
           icon={<GraduationCap size={24} />}
-          sub={`${String(analytics?.totalCompleted ?? 0)} termin\u00e9es`}
+          sub={`${String(analytics?.totalCompleted ?? 0)} terminées`}
           accent="text-olive"
         />
         <StatCard
-          label="Taux de compl\u00e9tion"
+          label="Taux de complétion"
           value={
             analytics !== undefined
               ? `${String(analytics.completionRate)}%`
-              : "\u2014"
+              : "—"
           }
           icon={<TrendingUp size={24} />}
           accent="text-teal"
         />
         <StatCard
           label="Cours"
-          value={analytics?.totalCourses ?? "\u2014"}
+          value={analytics?.totalCourses ?? "—"}
           icon={<BookOpen size={24} />}
           sub={pending > 0 ? `${String(pending)} DSR en attente` : undefined}
           accent="text-dark"
@@ -186,14 +186,12 @@ export function DashboardPage() {
       {/* Recent audit events */}
       <div>
         <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
-          Activit\u00e9 r\u00e9cente
+          Activité récente
         </h2>
         <Card>
           <CardContent className="p-0">
             {auditData?.events.length === 0 && (
-              <p className="text-meta text-sm p-6">
-                Aucun \u00e9v\u00e9nement.
-              </p>
+              <p className="text-meta text-sm p-6">Aucun événement.</p>
             )}
             <ul className="divide-y divide-rule">
               {auditData?.events.map((event) => (
