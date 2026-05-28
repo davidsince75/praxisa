@@ -1,0 +1,15 @@
+# Railway service config for the Praxisa Web frontend.
+# In the Railway dashboard: set Root Directory = / (repo root) and
+# point this service at this file via Build > Dockerfile Path.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "apps/web/Dockerfile"
+watchPatterns = ["apps/web/**"]
+
+[deploy]
+region = "eu-west"
+healthcheckPath = "/"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 3
