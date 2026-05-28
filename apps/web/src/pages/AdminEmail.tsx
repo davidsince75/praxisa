@@ -50,8 +50,23 @@ function relativeTime(dateStr: string): string {
 // ── Connect card ────────────────────────────────────────────────────────────────
 
 function ConnectCard() {
-  const authUrlQuery = useMutation({
+  const [error, setError] = useState("");
+
+  const authUrlMutation = useMutation({
     mutationFn: () => api.get<GmailAuthUrlResponse>("/gmail/auth-url"),
+    onSuccess: (data) => {
+      window.location.href = data.url;
+    },
+    onError: (err: unknown) => {
+      const message = err instanceof Error ? err.message : "Erreur inconnue";
+      if (message.includes("manquante") || message.includes("501")) {
+        setError(
+          "Les variables d'environnement Google (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET) ne sont pas configurées.",
+        );
+      } else {
+        setError(message);
+      }
+    },
   });
 
   return (
@@ -67,17 +82,19 @@ function ConnectCard() {
           Connectez le compte Gmail d&apos;admissions pour consulter et
           r&eacute;pondre aux emails directement depuis Praxisa.
         </p>
+        {error.length > 0 && (
+          <p className="text-xs text-rose bg-rose/10 rounded-md px-3 py-2">
+            {error}
+          </p>
+        )}
         <Button
           onClick={() => {
-            authUrlQuery.mutate(undefined, {
-              onSuccess: (data) => {
-                window.location.href = data.url;
-              },
-            });
+            setError("");
+            authUrlMutation.mutate();
           }}
-          disabled={authUrlQuery.isPending}
+          disabled={authUrlMutation.isPending}
         >
-          {authUrlQuery.isPending && (
+          {authUrlMutation.isPending && (
             <Loader2 size={14} className="mr-2 animate-spin" />
           )}
           Autoriser l&apos;acc&egrave;s Gmail
