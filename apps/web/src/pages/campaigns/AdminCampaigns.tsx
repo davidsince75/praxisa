@@ -1,6 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Mail, Plus, Send, Trash2, Users, BookOpen, X } from "lucide-react";
+import {
+  Inbox,
+  Mail,
+  Plus,
+  Send,
+  Trash2,
+  Users,
+  BookOpen,
+  X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button.js";
 import { Badge } from "@/components/ui/badge.js";
 import {
@@ -12,6 +21,7 @@ import {
 import { api } from "@/lib/api.js";
 import type {
   Campaign,
+  CampaignDeliveryType,
   CampaignsResponse,
   CampaignResponse,
   CampaignSendResponse,
@@ -48,6 +58,8 @@ function CreateForm({ onClose }: CreateFormProps) {
   const [name, setName] = useState("");
   const [subject, setSubject] = useState("");
   const [body, setBody] = useState("");
+  const [deliveryType, setDeliveryType] =
+    useState<CampaignDeliveryType>("external");
   const [targetType, setTargetType] = useState<
     "all_students" | "course_enrolled"
   >("all_students");
@@ -71,8 +83,9 @@ function CreateForm({ onClose }: CreateFormProps) {
     e.preventDefault();
     createMutation.mutate({
       name: name.trim(),
-      subject: subject.trim(),
+      ...(deliveryType !== "internal" ? { subject: subject.trim() } : {}),
       body: body.trim(),
+      deliveryType,
       targetType,
       ...(targetType === "course_enrolled" && targetCourseId.length > 0
         ? { targetCourseId }
@@ -97,7 +110,61 @@ function CreateForm({ onClose }: CreateFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          {/* Delivery type selector */}
+          <div>
+            <label className="block text-xs font-bold text-dark mb-1.5">
+              Type d&apos;envoi
+            </label>
+            <div className="flex gap-3">
+              {(
+                [
+                  {
+                    value: "internal" as const,
+                    label: "Interne",
+                    icon: Inbox,
+                    desc: "Messagerie interne",
+                  },
+                  {
+                    value: "external" as const,
+                    label: "Externe",
+                    icon: Mail,
+                    desc: "Email via Brevo",
+                  },
+                  {
+                    value: "targeted" as const,
+                    label: "Ciblé",
+                    icon: Users,
+                    desc: "Email ciblé via Brevo",
+                  },
+                ] as const
+              ).map((opt) => (
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-2 px-3 py-2 border rounded-md text-sm cursor-pointer transition-colors ${deliveryType === opt.value ? "border-teal bg-teal/5 text-dark" : "border-border text-meta hover:border-teal/40"}`}
+                >
+                  <input
+                    type="radio"
+                    name="deliveryType"
+                    value={opt.value}
+                    checked={deliveryType === opt.value}
+                    onChange={() => {
+                      setDeliveryType(opt.value);
+                    }}
+                    className="sr-only"
+                  />
+                  <opt.icon size={13} />
+                  <span>
+                    <span className="font-medium">{opt.label}</span>
+                    <span className="text-xs text-meta ml-1">— {opt.desc}</span>
+                  </span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div
+            className={`grid gap-4 ${deliveryType === "internal" ? "grid-cols-1" : "grid-cols-2"}`}
+          >
             <div>
               <label className="block text-xs font-bold text-dark mb-1.5">
                 Nom interne
@@ -112,20 +179,22 @@ function CreateForm({ onClose }: CreateFormProps) {
                 className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
             </div>
-            <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
-                Objet de l'email
-              </label>
-              <input
-                type="text"
-                value={subject}
-                onChange={(e) => {
-                  setSubject(e.target.value);
-                }}
-                placeholder="Ex : Votre prochaine formation vous attend"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
-              />
-            </div>
+            {deliveryType !== "internal" && (
+              <div>
+                <label className="block text-xs font-bold text-dark mb-1.5">
+                  Objet de l&apos;email
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => {
+                    setSubject(e.target.value);
+                  }}
+                  placeholder="Ex : Votre prochaine formation vous attend"
+                  className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                />
+              </div>
+            )}
           </div>
 
           <div>
@@ -208,7 +277,7 @@ function CreateForm({ onClose }: CreateFormProps) {
               disabled={
                 createMutation.isPending ||
                 name.trim().length === 0 ||
-                subject.trim().length === 0 ||
+                (deliveryType !== "internal" && subject.trim().length === 0) ||
                 body.trim().length === 0 ||
                 (targetType === "course_enrolled" &&
                   targetCourseId.length === 0)
@@ -255,16 +324,30 @@ function CampaignRow({ campaign }: CampaignRowProps) {
       ? "Tous les apprenants"
       : "Inscrits au cours";
 
+  const DeliveryIcon = campaign.deliveryType === "internal" ? Inbox : Mail;
+  const deliveryLabel =
+    campaign.deliveryType === "internal"
+      ? "Interne"
+      : campaign.deliveryType === "targeted"
+        ? "Ciblé"
+        : "Email";
+
   return (
     <div className="flex items-center gap-4 px-4 py-3.5 border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
       <div className="w-8 h-8 rounded-full bg-teal/10 flex items-center justify-center flex-shrink-0">
-        <Mail size={14} className="text-teal" />
+        <DeliveryIcon size={14} className="text-teal" />
       </div>
 
       <div className="flex-1 min-w-0">
         <p className="text-sm font-bold text-dark truncate">{campaign.name}</p>
-        <p className="text-xs text-meta truncate">{campaign.subject}</p>
+        <p className="text-xs text-meta truncate">
+          {campaign.subject ?? "(messagerie interne)"}
+        </p>
       </div>
+
+      <Badge variant="default" className="flex-shrink-0">
+        {deliveryLabel}
+      </Badge>
 
       <div className="flex items-center gap-1.5 text-xs text-meta flex-shrink-0">
         {campaign.targetType === "all_students" ? (
@@ -348,9 +431,9 @@ export function AdminCampaignsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-dark">Campagnes email</h1>
+          <h1 className="text-xl font-bold text-dark">Campagnes</h1>
           <p className="text-xs text-meta mt-0.5">
-            Créez et envoyez des communications ciblées via Brevo.
+            Créez et envoyez des communications internes ou via Brevo.
           </p>
         </div>
         {!showCreate && (

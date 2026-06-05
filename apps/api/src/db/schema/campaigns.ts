@@ -21,11 +21,25 @@ export const campaignStatusEnum = pgEnum("campaign_status", CAMPAIGN_STATUSES);
 export const CAMPAIGN_TARGETS = ["all_students", "course_enrolled"] as const;
 export const campaignTargetEnum = pgEnum("campaign_target", CAMPAIGN_TARGETS);
 
+export const CAMPAIGN_DELIVERY_TYPES = [
+  "internal",
+  "external",
+  "targeted",
+] as const;
+export type CampaignDeliveryType = (typeof CAMPAIGN_DELIVERY_TYPES)[number];
+export const campaignDeliveryTypeEnum = pgEnum(
+  "campaign_delivery_type",
+  CAMPAIGN_DELIVERY_TYPES,
+);
+
 export const campaigns = pgTable("campaigns", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
-  subject: varchar("subject", { length: 500 }).notNull(),
+  subject: varchar("subject", { length: 500 }),
   body: text("body").notNull(),
+  deliveryType: campaignDeliveryTypeEnum("delivery_type")
+    .notNull()
+    .default("external"),
   targetType: campaignTargetEnum("target_type")
     .notNull()
     .default("all_students"),

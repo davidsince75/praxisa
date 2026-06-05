@@ -1,13 +1,23 @@
 import type { FastifyInstance } from "fastify";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull, or } from "drizzle-orm";
 import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
-import { campaigns, users, enrolments } from "../../db/schema/index.js";
+import {
+  campaigns,
+  users,
+  enrolments,
+  messageThreads,
+  messages,
+} from "../../db/schema/index.js";
+import { createNotification } from "../notifications/service.js";
 
 const createCampaignSchema = z.object({
   name: z.string().min(1).max(255),
-  subject: z.string().min(1).max(500),
+  subject: z.string().min(1).max(500).optional(),
   body: z.string().min(1),
+  deliveryType: z
+    .enum(["internal", "external", "targeted"])
+    .default("external"),
   targetType: z
     .enum(["all_students", "course_enrolled"])
     .default("all_students"),
@@ -16,8 +26,9 @@ const createCampaignSchema = z.object({
 
 const updateCampaignSchema = z.object({
   name: z.string().min(1).max(255).optional(),
-  subject: z.string().min(1).max(500).optional(),
+  subject: z.string().min(1).max(500).nullable().optional(),
   body: z.string().min(1).optional(),
+  deliveryType: z.enum(["internal", "external", "targeted"]).optional(),
   targetType: z.enum(["all_students", "course_enrolled"]).optional(),
   targetCourseId: z.string().uuid().nullable().optional(),
 });
@@ -38,6 +49,7 @@ export function campaignsPlugin(fastify: FastifyInstance) {
           id: campaigns.id,
           name: campaigns.name,
           subject: campaigns.subject,
+          deliveryType: campaigns.deliveryType,
           targetType: campaigns.targetType,
           targetCourseId: campaigns.targetCourseId,
           status: campaigns.status,
@@ -68,7 +80,17 @@ export function campaignsPlugin(fastify: FastifyInstance) {
         return reply.status(400).send({ error: parse.error.flatten() });
       }
 
-      const { name, subject, body, targetType, targetCourseId } = parse.data;
+      const { name, subject, body, deliveryType, targetType, targetCourseId } =
+        parse.data;
+
+      if (
+        deliveryType !== "internal" &&
+        (subject === undefined || subject.length === 0)
+      ) {
+        return reply
+          .status(400)
+          .send({ error: "Le sujet est requis pour les campagnes email" });
+      }
 
       if (targetType === "course_enrolled" && targetCourseId === undefined) {
         return reply.status(400).send({
@@ -80,8 +102,9 @@ export function campaignsPlugin(fastify: FastifyInstance) {
         .insert(campaigns)
         .values({
           name,
-          subject,
+          subject: subject ?? null,
           body,
+          deliveryType,
           targetType,
           ...(targetCourseId !== undefined ? { targetCourseId } : {}),
           createdBy: actorId,
@@ -312,22 +335,104 @@ export function campaignsPlugin(fastify: FastifyInstance) {
         return true;
       });
 
-      // Send emails (fire-and-forget per recipient, log errors)
+      // Deliver based on delivery type
       let sent = 0;
-      await Promise.all(
-        unique.map(async (r) => {
+
+      if (campaign.deliveryType === "internal") {
+        // Internal: deliver via messaging inbox
+        for (const r of unique) {
           try {
-            await fastify.comms.sendCampaignEmail(
-              { email: r.email, name: `${r.firstName} ${r.lastName}` },
-              campaign.subject,
-              campaign.body,
+            // Find the recipient's user id
+            const recipientRows = await fastify.db
+              .select({ id: users.id })
+              .from(users)
+              .where(eq(users.email, r.email))
+              .limit(1);
+            const recipient = recipientRows[0];
+            if (recipient === undefined) continue;
+
+            // Find or create thread between admin and recipient
+            const existingThread = await fastify.db
+              .select({ id: messageThreads.id })
+              .from(messageThreads)
+              .where(
+                or(
+                  and(
+                    eq(messageThreads.participantA, actorId),
+                    eq(messageThreads.participantB, recipient.id),
+                  ),
+                  and(
+                    eq(messageThreads.participantA, recipient.id),
+                    eq(messageThreads.participantB, actorId),
+                  ),
+                ),
+              )
+              .limit(1);
+
+            let threadId: string;
+            if (existingThread[0] !== undefined) {
+              threadId = existingThread[0].id;
+              await fastify.db
+                .update(messageThreads)
+                .set({ updatedAt: new Date() })
+                .where(eq(messageThreads.id, threadId));
+            } else {
+              const threadRows = await fastify.db
+                .insert(messageThreads)
+                .values({
+                  participantA: actorId,
+                  participantB: recipient.id,
+                })
+                .returning();
+              const newThread = threadRows[0];
+              if (newThread === undefined) continue;
+              threadId = newThread.id;
+            }
+
+            // Insert message
+            await fastify.db.insert(messages).values({
+              threadId,
+              senderId: actorId,
+              body: campaign.body,
+            });
+
+            // Create notification
+            await createNotification(
+              fastify.db,
+              recipient.id,
+              "new_message",
+              "Nouveau message",
+              campaign.body.slice(0, 80),
             );
+
             sent++;
           } catch (err: unknown) {
-            fastify.log.error({ err, email: r.email }, "Campaign email failed");
+            fastify.log.error(
+              { err, email: r.email },
+              "Campaign internal delivery failed",
+            );
           }
-        }),
-      );
+        }
+      } else {
+        // External / Targeted: deliver via Brevo
+        await Promise.all(
+          unique.map(async (r) => {
+            try {
+              await fastify.comms.sendCampaignEmail(
+                { email: r.email, name: `${r.firstName} ${r.lastName}` },
+                campaign.subject ?? campaign.name,
+                campaign.body,
+              );
+              sent++;
+            } catch (err: unknown) {
+              fastify.log.error(
+                { err, email: r.email },
+                "Campaign email failed",
+              );
+            }
+          }),
+        );
+      }
 
       // Mark as sent
       await fastify.db

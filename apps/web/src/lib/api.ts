@@ -611,12 +611,14 @@ export interface AiAdminDraftResponse {
 
 export type CampaignStatus = "draft" | "sending" | "sent" | "failed";
 export type CampaignTarget = "all_students" | "course_enrolled";
+export type CampaignDeliveryType = "internal" | "external" | "targeted";
 
 export interface Campaign {
   id: string;
   name: string;
-  subject: string;
+  subject: string | null;
   body: string;
+  deliveryType: CampaignDeliveryType;
   targetType: CampaignTarget;
   targetCourseId: string | null;
   status: CampaignStatus;
