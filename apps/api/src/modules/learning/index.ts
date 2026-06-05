@@ -1105,7 +1105,7 @@ export const learningPlugin = (
       }
 
       const upgraded = await maybeUpgradeProvisional(fastify.db, rawEnrolment);
-      const currentStatus = upgraded.status ?? rawEnrolment.status;
+      const currentStatus = upgraded.status;
 
       if (currentStatus !== "active" && currentStatus !== "provisional") {
         return reply.status(409).send({
@@ -1563,8 +1563,8 @@ export const learningPlugin = (
             .where(eq(lessonProgress.enrolmentId, row.enrolmentId));
           return {
             ...row,
-            status: upgraded.status ?? row.status,
-            provisionalUntil: upgraded.provisionalUntil ?? row.provisionalUntil,
+            status: upgraded.status,
+            provisionalUntil: upgraded.provisionalUntil,
             completionPct: computeCompletion(progress),
           };
         }),

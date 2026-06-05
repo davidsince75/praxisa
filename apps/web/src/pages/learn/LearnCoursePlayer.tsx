@@ -1196,7 +1196,7 @@ export function LearnCoursePlayerPage() {
   })();
 
   const provisionalDaysLeft = (() => {
-    if (!isProvisional || enrolmentData?.provisionalUntil == null) return 0;
+    if (!isProvisional || enrolmentData.provisionalUntil == null) return 0;
     const diff =
       new Date(enrolmentData.provisionalUntil).getTime() - Date.now();
     return Math.max(0, Math.ceil(diff / (24 * 60 * 60 * 1000)));
