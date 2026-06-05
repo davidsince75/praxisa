@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  BookOpen,
   ChevronDown,
   ChevronRight,
   CheckCircle2,
@@ -159,6 +160,89 @@ function ModuleNavSection({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+// ── Module card grid ──────────────────────────────────────────────────────────
+
+interface ModuleCardGridProps {
+  modules: ModuleWithLessons[];
+  progressMap: Map<string, ProgressStatus>;
+  onModuleClick: (moduleId: string) => void;
+}
+
+function ModuleCardGrid({
+  modules,
+  progressMap,
+  onModuleClick,
+}: ModuleCardGridProps) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+      {modules.map((mod) => {
+        const total = mod.lessons.length;
+        const done = mod.lessons.filter(
+          (l) => progressMap.get(l.id) === "completed",
+        ).length;
+        const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        return (
+          <Card
+            key={mod.id}
+            className="cursor-pointer hover:shadow-md hover:border-teal/40 transition-all"
+            onClick={() => {
+              onModuleClick(mod.id);
+            }}
+          >
+            <CardContent className="p-5 space-y-3">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-2 rounded-lg bg-teal/10 flex-shrink-0">
+                  <BookOpen size={16} className="text-teal" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-sm text-dark leading-snug">
+                    {mod.title}
+                  </h3>
+                  {mod.description !== null &&
+                    mod.description !== undefined &&
+                    mod.description.length > 0 && (
+                      <p className="text-xs text-meta mt-1 line-clamp-2">
+                        {mod.description}
+                      </p>
+                    )}
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-meta">
+                    {String(done)} / {String(total)} leçon
+                    {total !== 1 ? "s" : ""}
+                  </span>
+                  <span className="font-medium text-dark tabular-nums">
+                    {String(pct)}%
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-rule rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all",
+                      pct === 100 ? "bg-teal" : "bg-olive",
+                    )}
+                    style={{ width: `${String(pct)}%` }}
+                  />
+                </div>
+              </div>
+
+              {pct === 100 && (
+                <p className="text-[10px] font-bold uppercase tracking-wider text-teal">
+                  Terminé
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })}
     </div>
   );
 }
@@ -646,6 +730,7 @@ interface LessonViewerProps {
   status: ProgressStatus;
   onMarkComplete: () => void;
   onNext: (() => void) | null;
+  nextLabel?: string;
 }
 
 function LessonViewer({
@@ -656,6 +741,7 @@ function LessonViewer({
   status,
   onMarkComplete,
   onNext,
+  nextLabel,
 }: LessonViewerProps) {
   const [showNotes, setShowNotes] = useState(false);
   const Icon = CONTENT_TYPE_ICONS[lesson.contentType];
@@ -842,7 +928,7 @@ function LessonViewer({
         )}
         {status === "completed" && onNext !== null && (
           <Button size="sm" onClick={onNext}>
-            Leçon suivante →
+            {nextLabel ?? "Leçon suivante →"}
           </Button>
         )}
         {status === "completed" && (
@@ -972,6 +1058,7 @@ export function LearnCoursePlayerPage() {
   const { enrolmentId } = useParams<{ enrolmentId: string }>();
   const id = enrolmentId ?? "";
   const queryClient = useQueryClient();
+  const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
   const { data: enrolmentData } = useQuery({
@@ -1004,7 +1091,6 @@ export function LearnCoursePlayerPage() {
   });
 
   const modules = courseData?.course.modules ?? [];
-  const allLessons = modules.flatMap((m) => m.lessons);
 
   const progressMap = new Map<string, ProgressStatus>(
     (enrolmentData?.progress ?? []).map((p) => [
@@ -1013,18 +1099,45 @@ export function LearnCoursePlayerPage() {
     ]),
   );
 
-  // Auto-select first incomplete lesson on initial load
+  // Auto-select the only module if there's just one
   useEffect(() => {
-    if (allLessons.length === 0 || activeLessonId !== null) return;
+    if (modules.length === 1 && selectedModuleId === null) {
+      setSelectedModuleId(modules[0].id);
+    }
+  }, [modules.length]); // eslint-disable-line
+
+  // Auto-select first incomplete lesson when entering a module
+  useEffect(() => {
+    if (selectedModuleId === null || activeLessonId !== null) return;
+    const mod = modules.find((m) => m.id === selectedModuleId);
+    if (mod === undefined) return;
     const first =
-      allLessons.find(
+      mod.lessons.find(
         (l) => (progressMap.get(l.id) ?? "not_started") !== "completed",
-      ) ?? allLessons[0];
+      ) ?? mod.lessons[0];
+    if (first === undefined) return;
     setActiveLessonId(first.id);
     if ((progressMap.get(first.id) ?? "not_started") === "not_started") {
       progressMutation.mutate({ lessonId: first.id, status: "in_progress" });
     }
-  }, [allLessons.length]); // eslint-disable-line
+  }, [selectedModuleId, modules.length]); // eslint-disable-line
+
+  const selectedModule =
+    selectedModuleId !== null
+      ? (modules.find((m) => m.id === selectedModuleId) ?? null)
+      : null;
+
+  const moduleLessons = selectedModule?.lessons ?? [];
+
+  function handleModuleSelect(moduleId: string) {
+    setSelectedModuleId(moduleId);
+    setActiveLessonId(null);
+  }
+
+  function handleBackToModules() {
+    setSelectedModuleId(null);
+    setActiveLessonId(null);
+  }
 
   function handleLessonSelect(lesson: LessonItem) {
     setActiveLessonId(lesson.id);
@@ -1040,19 +1153,14 @@ export function LearnCoursePlayerPage() {
 
   const activeLesson =
     activeLessonId !== null
-      ? (allLessons.find((l) => l.id === activeLessonId) ?? null)
+      ? (moduleLessons.find((l) => l.id === activeLessonId) ?? null)
       : null;
 
-  const activeModuleId =
-    activeLessonId !== null
-      ? (modules.find((m) => m.lessons.some((l) => l.id === activeLessonId))
-          ?.id ?? "")
-      : "";
-
+  // Next lesson scoped to current module only
   const nextLesson = (() => {
     if (activeLessonId === null) return null;
-    const idx = allLessons.findIndex((l) => l.id === activeLessonId);
-    return allLessons[idx + 1] ?? null;
+    const idx = moduleLessons.findIndex((l) => l.id === activeLessonId);
+    return moduleLessons[idx + 1] ?? null;
   })();
 
   const completionPct = enrolmentData?.completionPct ?? 0;
@@ -1083,56 +1191,94 @@ export function LearnCoursePlayerPage() {
         </div>
       </div>
 
-      {/* Body */}
-      <div className="flex" style={{ minHeight: "calc(100vh - 112px)" }}>
-        {/* Lesson tree sidebar */}
-        <aside className="w-64 flex-shrink-0 border-r border-rule bg-white overflow-y-auto">
+      {selectedModuleId === null ? (
+        /* ── Level 1: Module card grid ─────────────────────────────────── */
+        <div className="px-8 py-8">
           {modules.length === 0 ? (
-            <p className="text-meta text-xs p-4">Chargement…</p>
+            <p className="text-meta text-sm">Chargement…</p>
           ) : (
-            modules.map((mod) => (
+            <>
+              <p className="text-sm text-meta mb-4">
+                Choisissez un module pour commencer.
+              </p>
+              <ModuleCardGrid
+                modules={modules}
+                progressMap={progressMap}
+                onModuleClick={handleModuleSelect}
+              />
+              {enrolmentData?.enrolment.status === "completed" && (
+                <div className="mt-8 max-w-xs">
+                  <CourseRatingCard
+                    courseId={enrolmentData.enrolment.courseId}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      ) : (
+        /* ── Level 2: Module lesson view (sidebar + content) ───────────── */
+        <div className="flex" style={{ minHeight: "calc(100vh - 112px)" }}>
+          <aside className="w-64 flex-shrink-0 border-r border-rule bg-white overflow-y-auto">
+            {modules.length > 1 && (
+              <button
+                onClick={handleBackToModules}
+                className="w-full flex items-center gap-2 px-3 py-2.5 text-left border-b border-rule hover:bg-cream/40 transition-colors text-teal"
+              >
+                <ArrowLeft size={12} />
+                <span className="text-[11px] font-bold uppercase tracking-wider">
+                  Modules
+                </span>
+              </button>
+            )}
+            {selectedModule !== null && (
               <ModuleNavSection
-                key={mod.id}
-                mod={mod}
+                mod={selectedModule}
                 progressMap={progressMap}
                 activeLessonId={activeLessonId}
                 onLessonClick={handleLessonSelect}
               />
-            ))
-          )}
-          {enrolmentData?.enrolment.status === "completed" && (
-            <CourseRatingCard courseId={enrolmentData.enrolment.courseId} />
-          )}
-        </aside>
+            )}
+            {enrolmentData?.enrolment.status === "completed" && (
+              <CourseRatingCard courseId={enrolmentData.enrolment.courseId} />
+            )}
+          </aside>
 
-        {/* Lesson content */}
-        <main className="flex-1 overflow-y-auto px-8 py-8">
-          {activeLesson !== null ? (
-            <LessonViewer
-              lesson={activeLesson}
-              enrolmentId={id}
-              courseId={enrolmentData?.enrolment.courseId ?? ""}
-              moduleId={activeModuleId}
-              status={progressMap.get(activeLesson.id) ?? "not_started"}
-              onMarkComplete={handleMarkComplete}
-              onNext={
-                nextLesson !== null
-                  ? () => {
-                      handleLessonSelect(nextLesson);
-                    }
-                  : null
-              }
-            />
-          ) : (
-            <div className="flex flex-col items-center justify-center h-64 gap-3">
-              <CheckCircle2 size={40} className="text-meta/30" />
-              <p className="text-meta text-sm">
-                Sélectionnez une leçon pour commencer.
-              </p>
-            </div>
-          )}
-        </main>
-      </div>
+          <main className="flex-1 overflow-y-auto px-8 py-8">
+            {activeLesson !== null ? (
+              <LessonViewer
+                lesson={activeLesson}
+                enrolmentId={id}
+                courseId={enrolmentData?.enrolment.courseId ?? ""}
+                moduleId={selectedModuleId}
+                status={progressMap.get(activeLesson.id) ?? "not_started"}
+                onMarkComplete={handleMarkComplete}
+                onNext={
+                  nextLesson !== null
+                    ? () => {
+                        handleLessonSelect(nextLesson);
+                      }
+                    : modules.length > 1
+                      ? handleBackToModules
+                      : null
+                }
+                nextLabel={
+                  nextLesson === null && modules.length > 1
+                    ? "← Retour aux modules"
+                    : undefined
+                }
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-64 gap-3">
+                <CheckCircle2 size={40} className="text-meta/30" />
+                <p className="text-meta text-sm">
+                  Sélectionnez une leçon pour commencer.
+                </p>
+              </div>
+            )}
+          </main>
+        </div>
+      )}
     </div>
   );
 }
