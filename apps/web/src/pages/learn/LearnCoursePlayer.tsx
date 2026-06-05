@@ -203,13 +203,11 @@ function ModuleCardGrid({
                   <h3 className="font-semibold text-sm text-dark leading-snug">
                     {mod.title}
                   </h3>
-                  {mod.description !== null &&
-                    mod.description !== undefined &&
-                    mod.description.length > 0 && (
-                      <p className="text-xs text-meta mt-1 line-clamp-2">
-                        {mod.description}
-                      </p>
-                    )}
+                  {mod.description !== null && mod.description.length > 0 && (
+                    <p className="text-xs text-meta mt-1 line-clamp-2">
+                      {mod.description}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1111,11 +1109,11 @@ export function LearnCoursePlayerPage() {
     if (selectedModuleId === null || activeLessonId !== null) return;
     const mod = modules.find((m) => m.id === selectedModuleId);
     if (mod === undefined) return;
+    if (mod.lessons.length === 0) return;
     const first =
       mod.lessons.find(
         (l) => (progressMap.get(l.id) ?? "not_started") !== "completed",
       ) ?? mod.lessons[0];
-    if (first === undefined) return;
     setActiveLessonId(first.id);
     if ((progressMap.get(first.id) ?? "not_started") === "not_started") {
       progressMutation.mutate({ lessonId: first.id, status: "in_progress" });
