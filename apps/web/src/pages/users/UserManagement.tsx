@@ -4,6 +4,7 @@ import {
   UserPlus,
   Search,
   Pencil,
+  Trash2,
   UserX,
   UserCheck,
   Mail,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type { User, UserListResponse, UserRole } from "@/lib/api.js";
+import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
@@ -469,12 +471,27 @@ function ComposeMessageDialog({ user, onOpenChange }: ComposeDialogProps) {
 
 export function UserManagementPage() {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<RoleFilter>("all");
   const [page, setPage] = useState(1);
   const [createOpen, setCreateOpen] = useState(false);
   const [editUser, setEditUser] = useState<User | null>(null);
   const [messageUser, setMessageUser] = useState<User | null>(null);
+  const [deleteUser, setDeleteUser] = useState<User | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/users/${id}`),
+    onSuccess: () => {
+      invalidate();
+      setDeleteUser(null);
+      setDeleteError("");
+    },
+    onError: (err: unknown) => {
+      setDeleteError(err instanceof Error ? err.message : "Erreur");
+    },
+  });
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -642,15 +659,27 @@ export function UserManagementPage() {
                         {formatDate(u.createdAt)}
                       </td>
                       <td className="px-6 py-3 text-right">
-                        <button
-                          onClick={() => {
-                            setEditUser(u);
-                          }}
-                          className="text-meta hover:text-dark transition-colors"
-                          aria-label="Modifier"
-                        >
-                          <Pencil size={14} />
-                        </button>
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => {
+                              setEditUser(u);
+                            }}
+                            className="text-meta hover:text-dark transition-colors"
+                            aria-label="Modifier"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDeleteUser(u);
+                            }}
+                            className="text-meta hover:text-rose transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                            aria-label="Supprimer"
+                            disabled={u.id === currentUser?.id}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -711,6 +740,53 @@ export function UserManagementPage() {
           if (!v) setMessageUser(null);
         }}
       />
+
+      {deleteUser !== null && (
+        <Dialog
+          open
+          onOpenChange={(v) => {
+            if (!v) {
+              setDeleteUser(null);
+              setDeleteError("");
+            }
+          }}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Supprimer l&apos;utilisateur</DialogTitle>
+            </DialogHeader>
+            <div className="px-6 py-4 space-y-3">
+              <p className="text-sm text-dark">
+                Supprimer{" "}
+                <span className="font-semibold">
+                  {deleteUser.firstName} {deleteUser.lastName}
+                </span>{" "}
+                ({deleteUser.email}) ? Cette action est irréversible.
+              </p>
+              {deleteError.length > 0 && (
+                <p className="text-xs text-rose">{deleteError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline" size="sm">
+                  Annuler
+                </Button>
+              </DialogClose>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deleteMutation.isPending}
+                onClick={() => {
+                  deleteMutation.mutate(deleteUser.id);
+                }}
+              >
+                {deleteMutation.isPending ? "Suppression…" : "Supprimer"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

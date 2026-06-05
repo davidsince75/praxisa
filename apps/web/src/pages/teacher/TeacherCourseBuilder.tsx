@@ -173,6 +173,7 @@ interface DeleteModalProps {
   onOpenChange: (v: boolean) => void;
   onConfirm: () => void;
   isPending: boolean;
+  error?: string;
 }
 
 function DeleteModal({
@@ -181,6 +182,7 @@ function DeleteModal({
   onOpenChange,
   onConfirm,
   isPending,
+  error,
 }: DeleteModalProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,11 +190,14 @@ function DeleteModal({
         <DialogHeader>
           <DialogTitle>Supprimer «{label}»?</DialogTitle>
         </DialogHeader>
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 space-y-2">
           <p className="text-sm text-meta">
             Cette action est irréversible. Toute la progression des apprenants
             associée sera perdue.
           </p>
+          {error !== undefined && error.length > 0 && (
+            <p className="text-xs text-rose">{error}</p>
+          )}
         </div>
         <DialogFooter>
           <DialogClose asChild>
@@ -300,12 +305,19 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteLesson, setDeleteLesson] = useState<LessonItem | null>(null);
+  const [deleteError, setDeleteError] = useState("");
 
   const deleteMod = useMutation({
     mutationFn: () => api.delete(`/courses/${courseId}/modules/${mod.id}`),
     onSuccess: () => {
       onRefresh();
       setDeleteOpen(false);
+      setDeleteError("");
+    },
+    onError: (err: unknown) => {
+      setDeleteError(
+        err instanceof Error ? err.message : "Erreur de suppression",
+      );
     },
   });
 
@@ -315,6 +327,12 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
     onSuccess: () => {
       onRefresh();
       setDeleteLesson(null);
+      setDeleteError("");
+    },
+    onError: (err: unknown) => {
+      setDeleteError(
+        err instanceof Error ? err.message : "Erreur de suppression",
+      );
     },
   });
 
@@ -441,11 +459,15 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
       <DeleteModal
         label={mod.title}
         open={deleteOpen}
-        onOpenChange={setDeleteOpen}
+        onOpenChange={(v) => {
+          setDeleteOpen(v);
+          if (!v) setDeleteError("");
+        }}
         onConfirm={() => {
           deleteMod.mutate();
         }}
         isPending={deleteMod.isPending}
+        error={deleteError}
       />
 
       {/* Delete lesson modal */}
@@ -454,12 +476,16 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
           label={deleteLesson.title}
           open
           onOpenChange={(v) => {
-            if (!v) setDeleteLesson(null);
+            if (!v) {
+              setDeleteLesson(null);
+              setDeleteError("");
+            }
           }}
           onConfirm={() => {
             deleteLes.mutate(deleteLesson.id);
           }}
           isPending={deleteLes.isPending}
+          error={deleteError}
         />
       )}
     </div>

@@ -101,6 +101,11 @@ function ExerciseCard({
     onSuccess: () => {
       onRefresh();
     },
+    onError: (err: unknown) => {
+      window.alert(
+        err instanceof Error ? err.message : "Erreur de suppression",
+      );
+    },
   });
 
   function saveTitle(): void {

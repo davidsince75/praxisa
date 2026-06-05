@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, BookOpen, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, BookOpen, Globe } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   Course,
@@ -254,6 +254,20 @@ export function CourseManagementPage() {
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
   const [editCourse, setEditCourse] = useState<Course | null>(null);
+  const [deleteCourse, setDeleteCourse] = useState<Course | null>(null);
+  const [deleteError, setDeleteError] = useState("");
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => api.delete(`/courses/${id}`),
+    onSuccess: () => {
+      invalidate();
+      setDeleteCourse(null);
+      setDeleteError("");
+    },
+    onError: (err: unknown) => {
+      setDeleteError(err instanceof Error ? err.message : "Erreur");
+    },
+  });
 
   const { data: courseData, isLoading } = useQuery({
     queryKey: ["courses"],
@@ -374,15 +388,26 @@ export function CourseManagementPage() {
                           {formatDate(c.createdAt)}
                         </td>
                         <td className="px-6 py-3 text-right">
-                          <button
-                            onClick={() => {
-                              setEditCourse(c);
-                            }}
-                            className="text-meta hover:text-dark transition-colors"
-                            aria-label="Modifier"
-                          >
-                            <Pencil size={14} />
-                          </button>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => {
+                                setEditCourse(c);
+                              }}
+                              className="text-meta hover:text-dark transition-colors"
+                              aria-label="Modifier"
+                            >
+                              <Pencil size={14} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeleteCourse(c);
+                              }}
+                              className="text-meta hover:text-rose transition-colors"
+                              aria-label="Supprimer"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -412,6 +437,51 @@ export function CourseManagementPage() {
           onSuccess={invalidate}
           instructors={instructors}
         />
+      )}
+
+      {deleteCourse !== null && (
+        <Dialog
+          open
+          onOpenChange={(v) => {
+            if (!v) {
+              setDeleteCourse(null);
+              setDeleteError("");
+            }
+          }}
+        >
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>Supprimer le cours</DialogTitle>
+            </DialogHeader>
+            <div className="px-6 py-4 space-y-3">
+              <p className="text-sm text-dark">
+                Supprimer{" "}
+                <span className="font-semibold">{deleteCourse.title}</span> ?
+                Cette action est irréversible.
+              </p>
+              {deleteError.length > 0 && (
+                <p className="text-xs text-rose">{deleteError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline" size="sm">
+                  Annuler
+                </Button>
+              </DialogClose>
+              <Button
+                variant="destructive"
+                size="sm"
+                disabled={deleteMutation.isPending}
+                onClick={() => {
+                  deleteMutation.mutate(deleteCourse.id);
+                }}
+              >
+                {deleteMutation.isPending ? "Suppression…" : "Supprimer"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
