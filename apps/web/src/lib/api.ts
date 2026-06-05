@@ -294,10 +294,11 @@ export interface CourseProgressStats {
 
 export interface MyEnrolment {
   enrolmentId: string;
-  status: "active" | "completed" | "cancelled";
+  status: "active" | "completed" | "cancelled" | "provisional";
   enrolledAt: string;
   completedAt: string | null;
   expiresAt: string | null;
+  provisionalUntil: string | null;
   courseId: string;
   courseTitle: string;
   courseSlug: string;
@@ -316,9 +317,10 @@ export interface EnrolmentDetail {
     id: string;
     courseId: string;
     studentId: string;
-    status: "active" | "completed" | "cancelled";
+    status: "active" | "completed" | "cancelled" | "provisional";
     createdAt: string;
     completedAt: string | null;
+    provisionalUntil: string | null;
   };
   progress: {
     id: string;
@@ -328,6 +330,8 @@ export interface EnrolmentDetail {
     completedAt: string | null;
   }[];
   completionPct: number;
+  isProvisional: boolean;
+  provisionalUntil: string | null;
 }
 
 // ── Learner: quiz ──────────────────────────────────────────────────────────────

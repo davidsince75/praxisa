@@ -11,6 +11,7 @@ import { formatDate } from "@/lib/utils.js";
 function statusVariant(status: string) {
   if (status === "completed") return "completed" as const;
   if (status === "cancelled") return "rejected" as const;
+  if (status === "provisional") return "pending" as const;
   return "in_progress" as const;
 }
 
@@ -18,6 +19,7 @@ const STATUS_LABELS: Record<string, string> = {
   active: "En cours",
   completed: "Termine",
   cancelled: "Annule",
+  provisional: "Essai",
 };
 
 function ProgressBar({ pct }: { pct: number }) {
@@ -44,10 +46,15 @@ export function LearnMyCoursesPage() {
   });
 
   const enrolments = data?.enrolments ?? [];
-  const active = enrolments.filter((e) => e.status === "active");
+  const active = enrolments.filter(
+    (e) => e.status === "active" || e.status === "provisional",
+  );
   const completed = enrolments.filter((e) => e.status === "completed");
   const others = enrolments.filter(
-    (e) => e.status !== "active" && e.status !== "completed",
+    (e) =>
+      e.status !== "active" &&
+      e.status !== "completed" &&
+      e.status !== "provisional",
   );
 
   return (

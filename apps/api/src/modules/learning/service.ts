@@ -91,6 +91,27 @@ export async function findExistingEnrolment(
   return rows[0];
 }
 
+// ── Provisional helpers ───────────────────────────────────────────────────────
+
+export async function maybeUpgradeProvisional(
+  db: Db,
+  enrolment: { id: string; status: string; provisionalUntil: Date | null },
+) {
+  if (
+    enrolment.status === "provisional" &&
+    enrolment.provisionalUntil !== null &&
+    enrolment.provisionalUntil < new Date()
+  ) {
+    const rows = await db
+      .update(enrolments)
+      .set({ status: "active", updatedAt: new Date() })
+      .where(eq(enrolments.id, enrolment.id))
+      .returning();
+    return rows[0] ?? enrolment;
+  }
+  return enrolment;
+}
+
 // ── Progress helpers ───────────────────────────────────────────────────────────
 
 /**

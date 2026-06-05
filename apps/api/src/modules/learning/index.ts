@@ -45,6 +45,7 @@ import {
   findLesson,
   findModule,
   isInstructor,
+  maybeUpgradeProvisional,
   upsertLessonProgress,
 } from "./service.js";
 
@@ -856,14 +857,20 @@ export const learningPlugin = (
           .send({ error: "Student is already enrolled in this course" });
       }
 
+      const isSelfEnrol = role !== "admin" || body.studentId === undefined;
+      const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
+
       const returned = await fastify.db
         .insert(enrolments)
         .values({
           studentId: targetStudentId,
           courseId: body.courseId,
-          enrolledBy:
-            role === "admin" && body.studentId !== undefined ? sub : null,
+          enrolledBy: isSelfEnrol ? null : sub,
           expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+          status: isSelfEnrol ? "provisional" : "active",
+          provisionalUntil: isSelfEnrol
+            ? new Date(Date.now() + FOURTEEN_DAYS_MS)
+            : null,
         })
         .returning();
       const enrolment = returned[0];
@@ -940,13 +947,15 @@ export const learningPlugin = (
       const { enrolmentId } = request.params as { enrolmentId: string };
       const { role, sub } = request.jwtPayload;
 
-      const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
-      if (enrolment === undefined) {
+      const raw = await findActiveEnrolment(fastify.db, enrolmentId);
+      if (raw === undefined) {
         return reply.status(404).send({ error: "Inscription introuvable" });
       }
-      if (role !== "admin" && enrolment.studentId !== sub) {
+      if (role !== "admin" && raw.studentId !== sub) {
         return reply.status(403).send({ error: "Accès interdit" });
       }
+
+      const enrolment = await maybeUpgradeProvisional(fastify.db, raw);
 
       const progress = await fastify.db
         .select()
@@ -957,7 +966,54 @@ export const learningPlugin = (
         enrolment,
         progress,
         completionPct: computeCompletion(progress),
+        isProvisional: enrolment.status === "provisional",
+        provisionalUntil: enrolment.provisionalUntil,
       });
+    },
+  );
+
+  // POST /enrolments/:enrolmentId/confirm
+  fastify.post(
+    "/enrolments/:enrolmentId/confirm",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { enrolmentId } = request.params as { enrolmentId: string };
+      const { sub } = request.jwtPayload;
+
+      const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
+      if (enrolment === undefined) {
+        return reply.status(404).send({ error: "Inscription introuvable" });
+      }
+      if (enrolment.studentId !== sub) {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+      if (enrolment.status !== "provisional") {
+        return reply
+          .status(409)
+          .send({ error: "L'inscription n'est pas en période d'essai" });
+      }
+
+      const rows = await fastify.db
+        .update(enrolments)
+        .set({
+          status: "active",
+          provisionalUntil: null,
+          updatedAt: new Date(),
+        })
+        .where(eq(enrolments.id, enrolmentId))
+        .returning();
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "learning.enrolment.confirmed",
+        entityType: "enrolment",
+        entityId: enrolmentId,
+        dataClassification: "pii:pseudonymous",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.send({ enrolment: rows[0] });
     },
   );
 
@@ -1040,17 +1096,49 @@ export const learningPlugin = (
       };
       const { role, sub } = request.jwtPayload;
 
-      const enrolment = await findActiveEnrolment(fastify.db, enrolmentId);
-      if (enrolment === undefined) {
+      const rawEnrolment = await findActiveEnrolment(fastify.db, enrolmentId);
+      if (rawEnrolment === undefined) {
         return reply.status(404).send({ error: "Inscription introuvable" });
       }
-      if (role !== "admin" && enrolment.studentId !== sub) {
+      if (role !== "admin" && rawEnrolment.studentId !== sub) {
         return reply.status(403).send({ error: "Accès interdit" });
       }
-      if (enrolment.status !== "active") {
+
+      const upgraded = await maybeUpgradeProvisional(fastify.db, rawEnrolment);
+      const currentStatus = upgraded.status ?? rawEnrolment.status;
+
+      if (currentStatus !== "active" && currentStatus !== "provisional") {
         return reply.status(409).send({
           error: "Cannot update progress on a non-active enrolment",
         });
+      }
+
+      // Provisional: restrict to first module only
+      if (currentStatus === "provisional") {
+        const lessonRow = await fastify.db
+          .select({ moduleId: lessons.moduleId })
+          .from(lessons)
+          .where(eq(lessons.id, lessonId))
+          .limit(1);
+
+        if (lessonRow[0] !== undefined) {
+          const firstModule = await fastify.db
+            .select({ id: courseModules.id })
+            .from(courseModules)
+            .where(eq(courseModules.courseId, rawEnrolment.courseId))
+            .orderBy(asc(courseModules.position))
+            .limit(1);
+
+          if (
+            firstModule[0] !== undefined &&
+            lessonRow[0].moduleId !== firstModule[0].id
+          ) {
+            return reply.status(403).send({
+              error:
+                "Accès limité au premier module pendant la période d'essai",
+            });
+          }
+        }
       }
 
       const parse = upsertProgressSchema.safeParse(request.body);
@@ -1100,7 +1188,7 @@ export const learningPlugin = (
               firstName: users.firstName,
             })
             .from(users)
-            .where(eq(users.id, enrolment.studentId))
+            .where(eq(users.id, rawEnrolment.studentId))
             .limit(1)
             .then((rows) => {
               const student = rows[0];
@@ -1109,7 +1197,7 @@ export const learningPlugin = (
                 return fastify.db
                   .select({ title: courses.title })
                   .from(courses)
-                  .where(eq(courses.id, enrolment.courseId))
+                  .where(eq(courses.id, rawEnrolment.courseId))
                   .limit(1)
                   .then((courseRows) => {
                     const course = courseRows[0];
@@ -1449,6 +1537,7 @@ export const learningPlugin = (
           enrolledAt: enrolments.createdAt,
           completedAt: enrolments.completedAt,
           expiresAt: enrolments.expiresAt,
+          provisionalUntil: enrolments.provisionalUntil,
           courseId: courses.id,
           courseTitle: courses.title,
           courseSlug: courses.slug,
@@ -1463,11 +1552,21 @@ export const learningPlugin = (
 
       const withProgress = await Promise.all(
         rows.map(async (row) => {
+          const upgraded = await maybeUpgradeProvisional(fastify.db, {
+            id: row.enrolmentId,
+            status: row.status,
+            provisionalUntil: row.provisionalUntil,
+          });
           const progress = await fastify.db
             .select()
             .from(lessonProgress)
             .where(eq(lessonProgress.enrolmentId, row.enrolmentId));
-          return { ...row, completionPct: computeCompletion(progress) };
+          return {
+            ...row,
+            status: upgraded.status ?? row.status,
+            provisionalUntil: upgraded.provisionalUntil ?? row.provisionalUntil,
+            completionPct: computeCompletion(progress),
+          };
         }),
       );
 

@@ -30,6 +30,7 @@ export const ENROLMENT_STATUSES = [
   "cancelled",
   "paused",
   "expired",
+  "provisional",
 ] as const;
 export type EnrolmentStatus = (typeof ENROLMENT_STATUSES)[number];
 export const enrolmentStatusEnum = pgEnum(
@@ -165,6 +166,7 @@ export const enrolments = pgTable(
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
+    provisionalUntil: timestamp("provisional_until", { withTimezone: true }),
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

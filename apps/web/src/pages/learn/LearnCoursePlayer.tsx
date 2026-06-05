@@ -8,6 +8,7 @@ import {
   ChevronRight,
   CheckCircle2,
   Circle,
+  Lock,
   PlayCircle,
   FileText,
   Video,
@@ -169,12 +170,14 @@ function ModuleNavSection({
 interface ModuleCardGridProps {
   modules: ModuleWithLessons[];
   progressMap: Map<string, ProgressStatus>;
+  lockedModuleIds?: Set<string>;
   onModuleClick: (moduleId: string) => void;
 }
 
 function ModuleCardGrid({
   modules,
   progressMap,
+  lockedModuleIds,
   onModuleClick,
 }: ModuleCardGridProps) {
   return (
@@ -185,19 +188,34 @@ function ModuleCardGrid({
           (l) => progressMap.get(l.id) === "completed",
         ).length;
         const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+        const isLocked = lockedModuleIds?.has(mod.id) === true;
 
         return (
           <Card
             key={mod.id}
-            className="cursor-pointer hover:shadow-md hover:border-teal/40 transition-all"
+            className={cn(
+              "transition-all",
+              isLocked
+                ? "opacity-60 cursor-not-allowed"
+                : "cursor-pointer hover:shadow-md hover:border-teal/40",
+            )}
             onClick={() => {
-              onModuleClick(mod.id);
+              if (!isLocked) onModuleClick(mod.id);
             }}
           >
             <CardContent className="p-5 space-y-3">
               <div className="flex items-start gap-3">
-                <div className="mt-0.5 p-2 rounded-lg bg-teal/10 flex-shrink-0">
-                  <BookOpen size={16} className="text-teal" />
+                <div
+                  className={cn(
+                    "mt-0.5 p-2 rounded-lg flex-shrink-0",
+                    isLocked ? "bg-meta/10" : "bg-teal/10",
+                  )}
+                >
+                  {isLocked ? (
+                    <Lock size={16} className="text-meta" />
+                  ) : (
+                    <BookOpen size={16} className="text-teal" />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="font-semibold text-sm text-dark leading-snug">
@@ -1163,6 +1181,40 @@ export function LearnCoursePlayerPage() {
 
   const completionPct = enrolmentData?.completionPct ?? 0;
   const courseName = courseData?.course.title ?? "Chargement…";
+  const isProvisional = enrolmentData?.isProvisional === true;
+
+  // Compute locked modules for provisional access
+  const lockedModuleIds = (() => {
+    if (!isProvisional || modules.length === 0) return undefined;
+    const sorted = [...modules].sort((a, b) => a.position - b.position);
+    const firstId = sorted[0].id;
+    const locked = new Set<string>();
+    for (const m of modules) {
+      if (m.id !== firstId) locked.add(m.id);
+    }
+    return locked;
+  })();
+
+  const provisionalDaysLeft = (() => {
+    if (!isProvisional || enrolmentData?.provisionalUntil == null) return 0;
+    const diff =
+      new Date(enrolmentData.provisionalUntil).getTime() - Date.now();
+    return Math.max(0, Math.ceil(diff / (24 * 60 * 60 * 1000)));
+  })();
+
+  const confirmMutation = useMutation({
+    mutationFn: () => api.post(`/enrolments/${id}/confirm`, {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["enrolment", id] });
+    },
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: () => api.patch(`/enrolments/${id}/cancel`, {}),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["enrolment", id] });
+    },
+  });
 
   return (
     <div className="-mx-8 -my-8">
@@ -1196,12 +1248,49 @@ export function LearnCoursePlayerPage() {
             <p className="text-meta text-sm">Chargement…</p>
           ) : (
             <>
+              {isProvisional && (
+                <div className="mb-6 rounded-lg border border-olive/30 bg-olive/5 px-5 py-4">
+                  <p className="text-sm font-medium text-dark">
+                    Période d&apos;essai — Accès au premier module.
+                    {provisionalDaysLeft > 0 && (
+                      <span className="text-meta ml-1">
+                        Accès complet dans {String(provisionalDaysLeft)} jour
+                        {provisionalDaysLeft !== 1 ? "s" : ""}.
+                      </span>
+                    )}
+                  </p>
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      size="sm"
+                      disabled={confirmMutation.isPending}
+                      onClick={() => {
+                        confirmMutation.mutate();
+                      }}
+                    >
+                      {confirmMutation.isPending
+                        ? "Confirmation…"
+                        : "Confirmer mon inscription"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={cancelMutation.isPending}
+                      onClick={() => {
+                        cancelMutation.mutate();
+                      }}
+                    >
+                      Annuler mon inscription
+                    </Button>
+                  </div>
+                </div>
+              )}
               <p className="text-sm text-meta mb-4">
                 Choisissez un module pour commencer.
               </p>
               <ModuleCardGrid
                 modules={modules}
                 progressMap={progressMap}
+                lockedModuleIds={lockedModuleIds}
                 onModuleClick={handleModuleSelect}
               />
               {enrolmentData?.enrolment.status === "completed" && (
