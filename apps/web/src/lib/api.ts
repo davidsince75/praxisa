@@ -1,5 +1,5 @@
 const API_BASE = "/v1";
-const TOKEN_KEY = "praxisa_token";
+const TOKEN_KEY = "psychostudy_token";
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
@@ -15,7 +15,7 @@ export function clearToken(): void {
 
 export function clearAuth(): void {
   localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem("praxisa_user");
+  localStorage.removeItem("psychostudy_user");
 }
 
 export function isTokenExpired(): boolean {

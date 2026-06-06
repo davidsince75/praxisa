@@ -66,7 +66,7 @@ export function LoginPage() {
                 setEmail(e.target.value);
               }}
               className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-teal"
-              placeholder="admin@praxisa.fr"
+              placeholder="admin@psychostudy.fr"
             />
           </div>
 

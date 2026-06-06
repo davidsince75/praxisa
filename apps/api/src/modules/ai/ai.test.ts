@@ -155,7 +155,7 @@ describe("generateAdminDraft JSON parsing (unit)", () => {
     const { chatComplete } = await import("./mistral-client.js");
     (chatComplete as ReturnType<typeof vi.fn>).mockResolvedValue(
       JSON.stringify({
-        subject: "Bienvenue chez Praxisa",
+        subject: "Bienvenue chez Psychostudy",
         body: "Bonjour, voici votre accès.",
         intentClassification: "onboarding_welcome",
       }),
@@ -164,7 +164,7 @@ describe("generateAdminDraft JSON parsing (unit)", () => {
     const { generateAdminDraft: generate } = await import("./rag.service.js");
     const draft = await generate("welcome new student", {}, "fake-key");
 
-    expect(draft.subject).toBe("Bienvenue chez Praxisa");
+    expect(draft.subject).toBe("Bienvenue chez Psychostudy");
     expect(draft.body).toBe("Bonjour, voici votre accès.");
     expect(draft.intentClassification).toBe("onboarding_welcome");
   });

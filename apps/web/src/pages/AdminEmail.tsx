@@ -80,7 +80,7 @@ function ConnectCard() {
       <CardContent className="space-y-4">
         <p className="text-sm text-meta">
           Connectez le compte Gmail d&apos;admissions pour consulter et
-          r&eacute;pondre aux emails directement depuis Praxisa.
+          r&eacute;pondre aux emails directement depuis Psychostudy.
         </p>
         {error.length > 0 && (
           <p className="text-xs text-rose bg-rose/10 rounded-md px-3 py-2">

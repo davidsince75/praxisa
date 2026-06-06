@@ -30,7 +30,7 @@ export async function sendVerificationEmail(
   await sendBrevoEmail(config.brevoApiKey, {
     sender: { email: config.senderEmail, name: config.senderName },
     to: [{ email: to.email, name: to.firstName }],
-    subject: "Vérifiez votre adresse email — Praxisa",
+    subject: "Vérifiez votre adresse email — Psychostudy",
     htmlContent: verificationEmailHtml(verifyUrl),
     textContent: verificationEmailText(verifyUrl),
     tags: ["email-verification"],
@@ -48,7 +48,7 @@ export async function sendPasswordResetEmail(
   await sendBrevoEmail(config.brevoApiKey, {
     sender: { email: config.senderEmail, name: config.senderName },
     to: [{ email: to.email, name: to.firstName }],
-    subject: "Réinitialisation de votre mot de passe — Praxisa",
+    subject: "Réinitialisation de votre mot de passe — Psychostudy",
     htmlContent: passwordResetEmailHtml(resetUrl),
     textContent: passwordResetEmailText(resetUrl),
     tags: ["password-reset"],
@@ -66,7 +66,7 @@ export async function sendEnrolmentConfirmation(
   await sendBrevoEmail(config.brevoApiKey, {
     sender: { email: config.senderEmail, name: config.senderName },
     to: [{ email: to.email, name: to.firstName }],
-    subject: `Inscription confirmée : ${course.title} — Praxisa`,
+    subject: `Inscription confirmée : ${course.title} — Psychostudy`,
     htmlContent: enrolmentConfirmationHtml(
       to.firstName,
       course.title,
@@ -91,7 +91,7 @@ export async function sendCourseCompletionEmail(
   await sendBrevoEmail(config.brevoApiKey, {
     sender: { email: config.senderEmail, name: config.senderName },
     to: [{ email: to.email, name: to.firstName }],
-    subject: `Formation terminée : ${courseTitle} — Praxisa`,
+    subject: `Formation terminée : ${courseTitle} — Psychostudy`,
     htmlContent: courseCompletionHtml(to.firstName, courseTitle),
     textContent: courseCompletionText(to.firstName, courseTitle),
     tags: ["course-completion"],

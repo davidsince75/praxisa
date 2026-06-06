@@ -92,7 +92,7 @@ function GradeForm({
             type="number"
             min={0}
             max={maxScore ?? undefined}
-            className="w-24 rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-24 rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             value={score}
             onChange={(e) => {
               setScore(e.target.value);
@@ -104,7 +104,7 @@ function GradeForm({
             Commentaire
           </label>
           <textarea
-            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-teal-500"
+            className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm resize-y focus:outline-none focus:ring-2 focus:ring-blue-500"
             rows={4}
             value={feedback}
             onChange={(e) => {
@@ -204,7 +204,7 @@ function SubmissionCard({ row }: { row: CourseSubmissionRow }) {
                   {detail.submission.body}
                 </p>
                 {row.status === "graded" && (
-                  <div className="mt-3 bg-teal-50 rounded-lg px-4 py-3">
+                  <div className="mt-3 bg-blue-50 rounded-lg px-4 py-3">
                     <p className="text-xs font-bold text-teal uppercase tracking-wider mb-1">
                       Note attribuée
                     </p>
@@ -298,7 +298,7 @@ export function TeacherGradingPage() {
             }}
             className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
               statusFilter === s
-                ? "bg-teal-500 text-white"
+                ? "bg-blue-500 text-white"
                 : "bg-slate-100 text-slate-500 hover:bg-slate-200"
             }`}
           >

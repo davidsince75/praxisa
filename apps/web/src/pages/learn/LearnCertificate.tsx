@@ -111,7 +111,7 @@ export function LearnCertificatePage() {
           <div className="mt-14 flex items-end justify-between border-t border-rule pt-6">
             <div>
               <div className="h-px w-40 bg-dark/20 mb-1" />
-              <p className="text-xs text-meta">Praxisa Learning Platform</p>
+              <p className="text-xs text-meta">Psychostudy Learning Platform</p>
             </div>
             <div className="text-right">
               <p className="text-xs text-meta/60 font-mono">

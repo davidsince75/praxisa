@@ -513,7 +513,7 @@ function SubmissionForm({
       </div>
 
       {saved !== null && saved.status === "graded" && (
-        <div className="bg-teal-50 border border-teal-200 rounded-lg px-4 py-3 space-y-1">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 space-y-1">
           <p className="text-xs font-bold text-teal uppercase tracking-wider">
             Note reçue
           </p>
@@ -535,7 +535,7 @@ function SubmissionForm({
       )}
 
       <textarea
-        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+        className="w-full rounded-lg border border-slate-200 px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
         rows={6}
         placeholder="Rédigez votre réponse ici…"
         value={body}

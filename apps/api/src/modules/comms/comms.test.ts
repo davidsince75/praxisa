@@ -25,9 +25,9 @@ beforeEach(() => {
 
 const cfg: CommsConfig = {
   brevoApiKey: "test-api-key",
-  senderEmail: "noreply@praxisa.test",
-  senderName: "Praxisa",
-  appBaseUrl: "https://app.praxisa.test",
+  senderEmail: "noreply@psychostudy.test",
+  senderName: "Psychostudy",
+  appBaseUrl: "https://app.psychostudy.test",
 };
 
 interface BrevoPayload {
@@ -57,11 +57,11 @@ describe("sendVerificationEmail", () => {
 
     expect(mockFetch).toHaveBeenCalledOnce();
     const body = capturedPayload();
-    expect(body.sender.email).toBe("noreply@praxisa.test");
+    expect(body.sender.email).toBe("noreply@psychostudy.test");
     expect(body.to[0]?.email).toBe("student@example.com");
     expect(body.tags).toContain("email-verification");
     expect(body.htmlContent).toContain(
-      "https://app.praxisa.test/auth/verify-email?token=tok123",
+      "https://app.psychostudy.test/auth/verify-email?token=tok123",
     );
   });
 
@@ -89,7 +89,7 @@ describe("sendPasswordResetEmail", () => {
     const body = capturedPayload();
     expect(body.tags).toContain("password-reset");
     expect(body.htmlContent).toContain(
-      "https://app.praxisa.test/auth/reset-password?token=resetTok",
+      "https://app.psychostudy.test/auth/reset-password?token=resetTok",
     );
   });
 });
@@ -106,7 +106,7 @@ describe("sendEnrolmentConfirmation", () => {
     expect(body.tags).toContain("enrolment-confirmation");
     expect(body.htmlContent).toContain("Introduction au droit");
     expect(body.htmlContent).toContain(
-      "https://app.praxisa.test/courses/course-uuid",
+      "https://app.psychostudy.test/courses/course-uuid",
     );
   });
 });

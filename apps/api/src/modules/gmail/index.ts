@@ -380,7 +380,7 @@ export function gmailPlugin(fastify: FastifyInstance) {
         .select()
         .from(gmailConnections)
         .where(eq(gmailConnections.userId, sub));
-      const senderEmail = connRows[0]?.emailAddress ?? "noreply@praxisa.fr";
+      const senderEmail = connRows[0]?.emailAddress ?? "noreply@psychostudy.fr";
 
       const subject = origSubject.startsWith("Re:")
         ? origSubject
@@ -443,7 +443,7 @@ export function gmailPlugin(fastify: FastifyInstance) {
           {
             role: "system" as const,
             content:
-              "Tu es un assistant administratif pour Praxisa, un organisme de formation. Tu rédiges des réponses professionnelles aux emails d’admission en français. Sois chaleureux mais professionnel. Réponds uniquement avec le corps de l’email, sans objet ni signature.",
+              "Tu es un assistant administratif pour Psychostudy, un organisme de formation. Tu rédiges des réponses professionnelles aux emails d’admission en français. Sois chaleureux mais professionnel. Réponds uniquement avec le corps de l’email, sans objet ni signature.",
           },
           {
             role: "user" as const,

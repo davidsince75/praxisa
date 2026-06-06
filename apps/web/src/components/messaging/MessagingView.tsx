@@ -79,7 +79,7 @@ function NewThreadForm({ onSend, sending }: NewThreadFormProps) {
           Destinataire
         </label>
         {selectedUser !== null ? (
-          <div className="flex items-center justify-between rounded-md border border-teal-200 bg-teal-50 px-3 py-2">
+          <div className="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
             <span className="text-sm font-medium text-slate-800">
               {selectedUser.firstName} {selectedUser.lastName}{" "}
               <span className="text-xs text-slate-500">
@@ -100,7 +100,7 @@ function NewThreadForm({ onSend, sending }: NewThreadFormProps) {
         ) : (
           <div className="relative">
             <input
-              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500"
+              className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Rechercher par nom ou email…"
               value={search}
               onChange={(e) => {
@@ -143,7 +143,7 @@ function NewThreadForm({ onSend, sending }: NewThreadFormProps) {
           Message
         </label>
         <textarea
-          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none"
+          className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
           rows={4}
           placeholder="Votre message…"
           value={body}
@@ -281,7 +281,7 @@ export function MessagingView({ currentUserId }: { currentUserId: string }) {
                 handleSelectThread(t.id);
               }}
               className={`w-full text-left px-4 py-3 border-b border-slate-100 hover:bg-slate-50 transition-colors ${
-                selectedThreadId === t.id ? "bg-teal-50" : ""
+                selectedThreadId === t.id ? "bg-blue-50" : ""
               }`}
             >
               <div className="flex items-center justify-between mb-0.5">
@@ -291,7 +291,7 @@ export function MessagingView({ currentUserId }: { currentUserId: string }) {
                     : "Utilisateur inconnu"}
                 </span>
                 {t.unreadCount > 0 && (
-                  <span className="ml-2 bg-teal-500 text-white text-xs rounded-full px-1.5 py-0.5 flex-shrink-0">
+                  <span className="ml-2 bg-blue-500 text-white text-xs rounded-full px-1.5 py-0.5 flex-shrink-0">
                     {t.unreadCount.toString()}
                   </span>
                 )}
@@ -359,14 +359,14 @@ export function MessagingView({ currentUserId }: { currentUserId: string }) {
                         <div
                           className={`max-w-[70%] rounded-2xl px-4 py-2.5 text-sm ${
                             isOwn
-                              ? "bg-teal-500 text-white"
+                              ? "bg-blue-500 text-white"
                               : "bg-slate-100 text-slate-800"
                           }`}
                         >
                           <p className="whitespace-pre-wrap">{msg.body}</p>
                           <p
                             className={`text-xs mt-1 ${
-                              isOwn ? "text-teal-100" : "text-slate-400"
+                              isOwn ? "text-blue-100" : "text-slate-400"
                             }`}
                           >
                             {formatDate(msg.createdAt)}
@@ -383,7 +383,7 @@ export function MessagingView({ currentUserId }: { currentUserId: string }) {
                   className="border-t border-slate-200 p-3 flex gap-2 items-end"
                 >
                   <textarea
-                    className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    className="flex-1 rounded-lg border border-slate-200 px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     rows={2}
                     placeholder="Répondre…"
                     value={replyBody}

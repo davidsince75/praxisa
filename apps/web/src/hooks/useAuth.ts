@@ -18,7 +18,7 @@ export interface AuthUser {
 }
 
 function parseStoredUser(): AuthUser | null {
-  const raw = localStorage.getItem("praxisa_user");
+  const raw = localStorage.getItem("psychostudy_user");
   if (raw === null) return null;
   try {
     return JSON.parse(raw) as AuthUser;
@@ -45,7 +45,7 @@ export function useAuth() {
         password,
       });
       setToken(res.token);
-      localStorage.setItem("praxisa_user", JSON.stringify(res.user));
+      localStorage.setItem("psychostudy_user", JSON.stringify(res.user));
       setUser(res.user);
     },
     [],

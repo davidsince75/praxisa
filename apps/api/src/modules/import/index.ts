@@ -16,7 +16,7 @@ const importUserRowSchema = z.object({
 
 const importUsersSchema = z.object({
   rows: z.array(importUserRowSchema).min(1).max(500),
-  defaultPassword: z.string().min(8).max(100).default("Praxisa2024!"),
+  defaultPassword: z.string().min(8).max(100).default("Psychostudy2024!"),
 });
 
 const importEnrolmentRowSchema = z.object({

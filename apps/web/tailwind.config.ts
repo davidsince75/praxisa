@@ -6,10 +6,10 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Praxisa design tokens from mockup
+        // Psychostudy design tokens
         teal: {
-          DEFAULT: "#7A9E87",
-          dark: "#5C8270",
+          DEFAULT: "#5E85B2",
+          dark: "#4A6F96",
         },
         rose: "#C07060",
         sand: "#C8A97C",

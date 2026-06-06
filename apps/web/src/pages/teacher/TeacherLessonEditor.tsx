@@ -127,7 +127,7 @@ function ExerciseCard({
           onChange={(e) => {
             updateMutation.mutate({ type: e.target.value });
           }}
-          className="text-[10px] font-bold uppercase tracking-wider text-white bg-teal-600 pl-1.5 pr-4 py-0.5 rounded border-none appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-teal-400"
+          className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 pl-1.5 pr-4 py-0.5 rounded border-none appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400"
           title="Type d'exercice"
           style={{
             backgroundImage:
@@ -167,7 +167,7 @@ function ExerciseCard({
             e.currentTarget.blur();
           }
         }}
-        className="w-full text-sm text-slate-700 border border-transparent rounded px-1.5 py-1 -ml-1.5 hover:border-slate-200 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 transition-colors bg-transparent resize-none"
+        className="w-full text-sm text-slate-700 border border-transparent rounded px-1.5 py-1 -ml-1.5 hover:border-slate-200 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 transition-colors bg-transparent resize-none"
         title="Cliquez pour modifier le titre"
       />
 
@@ -183,7 +183,7 @@ function ExerciseCard({
               val.length > 0 ? new Date(val + "T23:59:59").toISOString() : null;
             updateMutation.mutate({ dueAt });
           }}
-          className="text-xs border border-slate-200 rounded px-2 py-1 flex-1 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+          className="text-xs border border-slate-200 rounded px-2 py-1 flex-1 bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
         />
         {exercise.dueAt !== null && (
           <button
@@ -512,7 +512,7 @@ export function TeacherLessonEditorPage() {
 
           {/* Media URL input bar */}
           {mediaPopover !== null && (
-            <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-100 bg-teal-50/60 shrink-0">
+            <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-100 bg-blue-50/60 shrink-0">
               <span className="text-xs font-medium text-slate-600 shrink-0">
                 {mediaPopover === "image"
                   ? "URL image :"
@@ -536,7 +536,7 @@ export function TeacherLessonEditorPage() {
                   }
                 }}
                 placeholder="https://..."
-                className="flex-1 h-8 px-2 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="flex-1 h-8 px-2 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
               <Button
                 size="sm"
@@ -575,7 +575,7 @@ export function TeacherLessonEditorPage() {
                   [&_b]:font-bold [&_strong]:font-bold
                   [&_i]:italic [&_em]:italic
                   [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-3
-                  [&_a]:text-teal-600 [&_a]:underline [&_a]:underline-offset-2"
+                  [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2"
                 data-placeholder="Commencez a rediger le contenu de la lecon..."
               />
             </div>
@@ -600,7 +600,7 @@ export function TeacherLessonEditorPage() {
                   onChange={(e) => {
                     setContentType(e.target.value as LessonContentType);
                   }}
-                  className="w-full h-9 px-2 mt-1 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full h-9 px-2 mt-1 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   {CONTENT_TYPES.map((ct) => (
                     <option key={ct.value} value={ct.value}>
@@ -658,7 +658,7 @@ export function TeacherLessonEditorPage() {
                   onChange={(e) => {
                     setIsFreePreview(e.target.checked);
                   }}
-                  className="h-4 w-4 accent-teal-500"
+                  className="h-4 w-4 accent-blue-500"
                 />
                 <Label htmlFor="ed-free" className="text-xs cursor-pointer">
                   Apercu gratuit
@@ -680,7 +680,7 @@ export function TeacherLessonEditorPage() {
                     onClick={() => {
                       setAddingExercise(true);
                     }}
-                    className="flex items-center gap-1 text-xs text-teal-600 hover:text-teal-700 font-medium"
+                    className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-700 font-medium"
                   >
                     <Plus size={12} />
                     Ajouter

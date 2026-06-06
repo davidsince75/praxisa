@@ -10,10 +10,10 @@ const base = (title: string, body: string): string => `<!DOCTYPE html>
       <table width="600" cellpadding="0" cellspacing="0"
         style="background:#fff;border-radius:8px;padding:40px">
         <tr><td>
-          <h1 style="color:#1a1a2e;font-size:24px;margin:0 0 24px">Praxisa</h1>
+          <h1 style="color:#1a1a2e;font-size:24px;margin:0 0 24px">Psychostudy</h1>
           ${body}
           <p style="color:#9ca3af;font-size:12px;margin:40px 0 0">
-            Praxisa &mdash; plateforme de formation professionnelle
+            Psychostudy &mdash; plateforme de formation professionnelle
           </p>
         </td></tr>
       </table>
@@ -31,7 +31,7 @@ export function verificationEmailHtml(verifyUrl: string): string {
     "Vérifiez votre adresse email",
     `<p style="color:#374151;font-size:16px">Bonjour,</p>
      <p style="color:#374151;font-size:16px">
-       Merci de vous être inscrit sur Praxisa. Cliquez sur le bouton
+       Merci de vous être inscrit sur Psychostudy. Cliquez sur le bouton
        ci-dessous pour confirmer votre adresse email.
      </p>
      <a href="${verifyUrl}"
@@ -50,7 +50,7 @@ export function verificationEmailHtml(verifyUrl: string): string {
 export function verificationEmailText(verifyUrl: string): string {
   return text([
     "Bonjour,",
-    "Merci de vous être inscrit sur Praxisa. Confirmez votre email en ouvrant ce lien :",
+    "Merci de vous être inscrit sur Psychostudy. Confirmez votre email en ouvrant ce lien :",
     verifyUrl,
     "Ce lien expire dans 24 heures.",
   ]);
@@ -63,7 +63,7 @@ export function passwordResetEmailHtml(resetUrl: string): string {
     "Réinitialiser votre mot de passe",
     `<p style="color:#374151;font-size:16px">Bonjour,</p>
      <p style="color:#374151;font-size:16px">
-       Vous avez demandé à réinitialiser votre mot de passe Praxisa.
+       Vous avez demandé à réinitialiser votre mot de passe Psychostudy.
        Cliquez sur le bouton ci-dessous pour choisir un nouveau mot de passe.
      </p>
      <a href="${resetUrl}"
@@ -82,7 +82,7 @@ export function passwordResetEmailHtml(resetUrl: string): string {
 export function passwordResetEmailText(resetUrl: string): string {
   return text([
     "Bonjour,",
-    "Réinitialisez votre mot de passe Praxisa en ouvrant ce lien :",
+    "Réinitialisez votre mot de passe Psychostudy en ouvrant ce lien :",
     resetUrl,
     "Ce lien expire dans 30 minutes.",
   ]);
