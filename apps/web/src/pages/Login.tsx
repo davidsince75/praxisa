@@ -43,9 +43,6 @@ export function LoginPage() {
           <h1 className="text-white text-2xl font-bold tracking-tight">
             Psycho<span className="text-teal">study</span>
           </h1>
-          <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">
-            Administration
-          </p>
         </div>
 
         <form
