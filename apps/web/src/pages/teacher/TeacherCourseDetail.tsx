@@ -41,13 +41,15 @@ function statusVariant(status: string) {
 function enrolStatusVariant(status: string) {
   if (status === "completed") return "completed" as const;
   if (status === "cancelled") return "rejected" as const;
+  if (status === "provisional") return "pending" as const;
   return "in_progress" as const;
 }
 
 const ENROL_LABELS: Record<string, string> = {
   active: "Actif",
-  completed: "Termine",
-  cancelled: "Annule",
+  completed: "Terminé",
+  cancelled: "Annulé",
+  provisional: "Essai (restreint)",
 };
 
 interface StatCardProps {

@@ -955,7 +955,12 @@ export const learningPlugin = (
         return reply.status(403).send({ error: "Accès interdit" });
       }
 
-      const enrolment = await maybeUpgradeProvisional(fastify.db, raw);
+      const upgraded = await maybeUpgradeProvisional(fastify.db, raw);
+      const enrolment = {
+        ...raw,
+        status: upgraded.status,
+        provisionalUntil: upgraded.provisionalUntil,
+      };
 
       const progress = await fastify.db
         .select()
@@ -1253,6 +1258,7 @@ export const learningPlugin = (
         .select({
           enrolmentId: enrolments.id,
           status: enrolments.status,
+          provisionalUntil: enrolments.provisionalUntil,
           enrolledAt: enrolments.createdAt,
           completedAt: enrolments.completedAt,
           studentId: users.id,

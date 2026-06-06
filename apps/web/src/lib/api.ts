@@ -263,7 +263,8 @@ export interface CourseDetailResponse {
 // GET /v1/courses/:courseId/students
 export interface CourseStudent {
   enrolmentId: string;
-  status: "active" | "completed" | "cancelled";
+  status: "active" | "completed" | "cancelled" | "provisional";
+  provisionalUntil: string | null;
   enrolledAt: string;
   completedAt: string | null;
   studentId: string;
