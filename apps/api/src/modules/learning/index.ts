@@ -1113,8 +1113,10 @@ export const learningPlugin = (
         });
       }
 
-      // Provisional: restrict to first module only
+      // Provisional: restrict to first 3 modules only
       if (currentStatus === "provisional") {
+        const PROVISIONAL_MODULE_LIMIT = 3;
+
         const lessonRow = await fastify.db
           .select({ moduleId: lessons.moduleId })
           .from(lessons)
@@ -1122,20 +1124,19 @@ export const learningPlugin = (
           .limit(1);
 
         if (lessonRow[0] !== undefined) {
-          const firstModule = await fastify.db
+          const allowedModules = await fastify.db
             .select({ id: courseModules.id })
             .from(courseModules)
             .where(eq(courseModules.courseId, rawEnrolment.courseId))
             .orderBy(asc(courseModules.position))
-            .limit(1);
+            .limit(PROVISIONAL_MODULE_LIMIT);
 
-          if (
-            firstModule[0] !== undefined &&
-            lessonRow[0].moduleId !== firstModule[0].id
-          ) {
+          const allowedIds = new Set(allowedModules.map((m) => m.id));
+
+          if (!allowedIds.has(lessonRow[0].moduleId)) {
             return reply.status(403).send({
               error:
-                "Accès limité au premier module pendant la période d'essai",
+                "Accès limité aux 3 premiers modules pendant la période d'essai",
             });
           }
         }

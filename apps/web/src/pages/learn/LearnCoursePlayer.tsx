@@ -1183,14 +1183,17 @@ export function LearnCoursePlayerPage() {
   const courseName = courseData?.course.title ?? "Chargement…";
   const isProvisional = enrolmentData?.isProvisional === true;
 
-  // Compute locked modules for provisional access
+  // Compute locked modules for provisional access (first 3 unlocked)
+  const PROVISIONAL_MODULE_LIMIT = 3;
   const lockedModuleIds = (() => {
     if (!isProvisional || modules.length === 0) return undefined;
     const sorted = [...modules].sort((a, b) => a.position - b.position);
-    const firstId = sorted[0].id;
+    const allowedIds = new Set(
+      sorted.slice(0, PROVISIONAL_MODULE_LIMIT).map((m) => m.id),
+    );
     const locked = new Set<string>();
     for (const m of modules) {
-      if (m.id !== firstId) locked.add(m.id);
+      if (!allowedIds.has(m.id)) locked.add(m.id);
     }
     return locked;
   })();
@@ -1251,7 +1254,7 @@ export function LearnCoursePlayerPage() {
               {isProvisional && (
                 <div className="mb-6 rounded-lg border border-olive/30 bg-olive/5 px-5 py-4">
                   <p className="text-sm font-medium text-dark">
-                    Période d&apos;essai — Accès au premier module.
+                    Période d&apos;essai — Accès aux 3 premiers modules.
                     {provisionalDaysLeft > 0 && (
                       <span className="text-meta ml-1">
                         Accès complet dans {String(provisionalDaysLeft)} jour
