@@ -67,7 +67,7 @@ export function TeacherSidebar() {
       {/* Logo */}
       <div className="h-14 flex items-center px-6 border-b border-white/10">
         <span className="text-white font-bold tracking-tight">
-          Praxi<span className="text-teal">sa</span>
+          Psycho<span className="text-teal">study</span>
         </span>
         <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
           Formateur

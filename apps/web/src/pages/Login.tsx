@@ -41,7 +41,7 @@ export function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-10">
           <h1 className="text-white text-2xl font-bold tracking-tight">
-            Praxi<span className="text-teal">sa</span>
+            Psycho<span className="text-teal">study</span>
           </h1>
           <p className="text-white/40 text-xs font-bold uppercase tracking-widest mt-1">
             Administration

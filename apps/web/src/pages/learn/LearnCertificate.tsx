@@ -74,7 +74,7 @@ export function LearnCertificatePage() {
             <div className="flex items-center gap-3">
               <Award size={40} className="text-teal" />
               <span className="text-3xl font-bold tracking-tight text-dark">
-                Praxi<span className="text-teal">sa</span>
+                Psycho<span className="text-teal">study</span>
               </span>
             </div>
           </div>
