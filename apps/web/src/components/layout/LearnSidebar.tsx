@@ -1,5 +1,4 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { PsychostudyLogo } from "@/components/PsychostudyLogo.js";
 import {
   BookOpen,
   GraduationCap,
@@ -81,12 +80,11 @@ export function LearnSidebar() {
 
   return (
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
-      <div className="h-14 flex items-center gap-2 px-4 border-b border-white/10">
-        <PsychostudyLogo size={26} className="text-teal flex-shrink-0" />
-        <span className="text-white font-bold tracking-tight text-sm">
+      <div className="h-14 flex items-center px-6 border-b border-white/10">
+        <span className="text-white font-bold tracking-tight">
           <span className="text-teal">Psycho</span>study
         </span>
-        <span className="ml-auto text-[10px] font-bold uppercase tracking-widest text-white/30">
+        <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
           Apprenant
         </span>
       </div>
