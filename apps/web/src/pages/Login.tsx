@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
+import { PsychostudyLogo } from "@/components/PsychostudyLogo.js";
 
 function roleBasedHome(role: string): string {
   if (role === "admin") return "/";
@@ -39,9 +40,10 @@ export function LoginPage() {
     <div className="min-h-screen bg-dark flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         {/* Logo */}
-        <div className="text-center mb-10">
+        <div className="flex flex-col items-center mb-10">
+          <PsychostudyLogo size={72} className="text-teal mb-3" />
           <h1 className="text-white text-2xl font-bold tracking-tight">
-            Psycho<span className="text-teal">study</span>
+            <span className="text-teal">Psycho</span>study
           </h1>
         </div>
 

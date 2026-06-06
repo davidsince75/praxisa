@@ -1,4 +1,5 @@
 import { NavLink, useNavigate } from "react-router-dom";
+import { PsychostudyLogo } from "@/components/PsychostudyLogo.js";
 import {
   BookOpen,
   LayoutDashboard,
@@ -65,11 +66,12 @@ export function TeacherSidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
       {/* Logo */}
-      <div className="h-14 flex items-center px-6 border-b border-white/10">
-        <span className="text-white font-bold tracking-tight">
-          Psycho<span className="text-teal">study</span>
+      <div className="h-14 flex items-center gap-2 px-4 border-b border-white/10">
+        <PsychostudyLogo size={26} className="text-teal flex-shrink-0" />
+        <span className="text-white font-bold tracking-tight text-sm">
+          <span className="text-teal">Psycho</span>study
         </span>
-        <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
+        <span className="ml-auto text-[10px] font-bold uppercase tracking-widest text-white/30">
           Formateur
         </span>
       </div>
