@@ -1,20 +1,9 @@
 import type { FastifyInstance } from "fastify";
-import {
-  and,
-  asc,
-  count,
-  eq,
-  gt,
-  ilike,
-  inArray,
-  isNull,
-  or,
-  sql,
-} from "drizzle-orm";
+import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { hash } from "@node-rs/argon2";
 import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
-import { enrolments, users } from "../../db/schema/index.js";
+import { users } from "../../db/schema/index.js";
 
 // ── Validation schemas ─────────────────────────────────────────────────────────
 

@@ -5,7 +5,6 @@ import {
   count,
   desc,
   eq,
-  gt,
   inArray,
   isNull,
   ne,
@@ -908,7 +907,7 @@ export const learningPlugin = (
       if (enrolment === undefined) throw new Error("Insert returned no rows");
 
       // Set provisional_until via raw SQL (column may not exist yet — handled gracefully)
-      if (isSelfEnrol && enrolment !== undefined) {
+      if (isSelfEnrol) {
         const provisionalUntilDate = new Date(Date.now() + FOURTEEN_DAYS_MS);
         await setProvisionalUntil(
           fastify.db,
