@@ -862,40 +862,74 @@ export const learningPlugin = (
       const isSelfEnrol = role !== "admin" || body.studentId === undefined;
       const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
-      // During trial: student can only be enrolled in 1 course at a time
+      // During trial: student can only be enrolled in 1 course at a time.
+      // Wrapped in try-catch so enrollment still works even if column is missing.
       if (isSelfEnrol) {
-        const activeEnrolments = await fastify.db
-          .select({ id: enrolments.id })
-          .from(enrolments)
-          .where(
-            and(
-              eq(enrolments.studentId, targetStudentId),
-              isNull(enrolments.deletedAt),
-              eq(enrolments.status, "active"),
-              gt(enrolments.provisionalUntil, new Date()),
-            ),
-          )
-          .limit(1);
-        if (activeEnrolments.length > 0) {
-          return reply.status(403).send({
-            error:
-              "Vous êtes déjà inscrit à un cours en période d'essai. Confirmez votre inscription actuelle pour accéder à d'autres cours.",
-          });
+        try {
+          const activeEnrolments = await fastify.db
+            .select({ id: enrolments.id })
+            .from(enrolments)
+            .where(
+              and(
+                eq(enrolments.studentId, targetStudentId),
+                isNull(enrolments.deletedAt),
+                eq(enrolments.status, "active"),
+                gt(enrolments.provisionalUntil, new Date()),
+              ),
+            )
+            .limit(1);
+          if (activeEnrolments.length > 0) {
+            return reply.status(403).send({
+              error:
+                "Vous êtes déjà inscrit à un cours en période d'essai. Confirmez votre inscription actuelle pour accéder à d'autres cours.",
+            });
+          }
+        } catch (err: unknown) {
+          fastify.log.warn(
+            { err },
+            "Provisional enrolment check failed — column may not exist yet, skipping check",
+          );
         }
       }
 
-      const returned = await fastify.db
-        .insert(enrolments)
-        .values({
-          studentId: targetStudentId,
-          courseId: body.courseId,
-          enrolledBy: isSelfEnrol ? null : sub,
-          expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-          provisionalUntil: isSelfEnrol
-            ? new Date(Date.now() + FOURTEEN_DAYS_MS)
-            : null,
-        })
-        .returning();
+      const provisionalUntil = isSelfEnrol
+        ? new Date(Date.now() + FOURTEEN_DAYS_MS)
+        : null;
+
+      // Try INSERT with provisionalUntil; fall back without it if column is missing.
+      let returned: (typeof enrolments.$inferSelect)[];
+      try {
+        returned = await fastify.db
+          .insert(enrolments)
+          .values({
+            studentId: targetStudentId,
+            courseId: body.courseId,
+            enrolledBy: isSelfEnrol ? null : sub,
+            expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+            provisionalUntil,
+          })
+          .returning();
+      } catch (insertErr: unknown) {
+        const msg =
+          insertErr instanceof Error ? insertErr.message : String(insertErr);
+        if (msg.includes("provisional_until")) {
+          fastify.log.warn(
+            { insertErr },
+            "provisionalUntil column missing — inserting without it",
+          );
+          returned = await fastify.db
+            .insert(enrolments)
+            .values({
+              studentId: targetStudentId,
+              courseId: body.courseId,
+              enrolledBy: isSelfEnrol ? null : sub,
+              expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+            })
+            .returning();
+        } else {
+          throw insertErr;
+        }
+      }
       const enrolment = returned[0];
       if (enrolment === undefined) throw new Error("Insert returned no rows");
 

@@ -399,9 +399,16 @@ export const usersPlugin = (
         return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
+      // Anonymize email so the address can be reused for a new account
+      const anonymizedEmail = `deleted_${userId}@deleted.invalid`;
       await fastify.db
         .update(users)
-        .set({ isActive: false, deletedAt: new Date(), updatedAt: new Date() })
+        .set({
+          email: anonymizedEmail,
+          isActive: false,
+          deletedAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(eq(users.id, userId));
 
       await emitEvent({
