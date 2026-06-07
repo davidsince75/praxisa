@@ -1,5 +1,16 @@
 import type { FastifyInstance } from "fastify";
-import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  count,
+  eq,
+  gt,
+  ilike,
+  inArray,
+  isNull,
+  or,
+  sql,
+} from "drizzle-orm";
 import { hash } from "@node-rs/argon2";
 import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
@@ -102,38 +113,41 @@ export const usersPlugin = (
       const total = totalRows[0]?.n ?? 0;
 
       // Enrich with provisional enrolment info for admin visibility
-      const userIds = rows.map((r) => r.id);
-      const provisionalMap = new Map<
-        string,
-        { provisionalUntil: Date | null }
-      >();
-      if (userIds.length > 0) {
-        const enrolRows = await fastify.db
-          .select({
-            studentId: enrolments.studentId,
-            provisionalUntil: enrolments.provisionalUntil,
-          })
-          .from(enrolments)
-          .where(
-            and(
-              sql`${enrolments.studentId} = ANY(${userIds})`,
-              isNull(enrolments.deletedAt),
-              sql`${enrolments.provisionalUntil} IS NOT NULL`,
-              sql`${enrolments.provisionalUntil} > now()`,
-            ),
-          );
-        for (const row of enrolRows) {
-          provisionalMap.set(row.studentId, {
-            provisionalUntil: row.provisionalUntil,
-          });
+      const provisionalMap = new Map<string, Date>();
+      try {
+        const userIds = rows.map((r) => r.id);
+        if (userIds.length > 0) {
+          const enrolRows = await fastify.db
+            .select({
+              studentId: enrolments.studentId,
+              provisionalUntil: enrolments.provisionalUntil,
+            })
+            .from(enrolments)
+            .where(
+              and(
+                inArray(enrolments.studentId, userIds),
+                isNull(enrolments.deletedAt),
+                gt(enrolments.provisionalUntil, new Date()),
+              ),
+            );
+          for (const row of enrolRows) {
+            if (row.provisionalUntil !== null) {
+              provisionalMap.set(row.studentId, row.provisionalUntil);
+            }
+          }
         }
+      } catch (err: unknown) {
+        fastify.log.error(
+          { err },
+          "Failed to enrich users with provisional info",
+        );
       }
 
       const enriched = rows.map((u) => {
         const prov = provisionalMap.get(u.id);
         return {
           ...u,
-          provisionalUntil: prov?.provisionalUntil ?? null,
+          provisionalUntil: prov ?? null,
           isRestricted: prov !== undefined,
         };
       });
