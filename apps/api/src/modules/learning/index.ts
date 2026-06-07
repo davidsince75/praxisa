@@ -45,7 +45,8 @@ import {
   findLesson,
   findModule,
   isInstructor,
-  maybeUpgradeProvisional,
+  isProvisionalEnrolment,
+  maybeClearExpiredProvisional,
   upsertLessonProgress,
 } from "./service.js";
 
@@ -867,7 +868,6 @@ export const learningPlugin = (
           courseId: body.courseId,
           enrolledBy: isSelfEnrol ? null : sub,
           expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-          status: isSelfEnrol ? "provisional" : "active",
           provisionalUntil: isSelfEnrol
             ? new Date(Date.now() + FOURTEEN_DAYS_MS)
             : null,
@@ -955,23 +955,20 @@ export const learningPlugin = (
         return reply.status(403).send({ error: "Accès interdit" });
       }
 
-      const upgraded = await maybeUpgradeProvisional(fastify.db, raw);
-      const enrolment = {
-        ...raw,
-        status: upgraded.status,
-        provisionalUntil: upgraded.provisionalUntil,
-      };
+      const enrolment = await maybeClearExpiredProvisional(fastify.db, raw);
 
       const progress = await fastify.db
         .select()
         .from(lessonProgress)
         .where(eq(lessonProgress.enrolmentId, enrolmentId));
 
+      const provisional = isProvisionalEnrolment(enrolment);
+
       return reply.send({
         enrolment,
         progress,
         completionPct: computeCompletion(progress),
-        isProvisional: enrolment.status === "provisional",
+        isProvisional: provisional,
         provisionalUntil: enrolment.provisionalUntil,
       });
     },
@@ -992,7 +989,7 @@ export const learningPlugin = (
       if (enrolment.studentId !== sub) {
         return reply.status(403).send({ error: "Accès interdit" });
       }
-      if (enrolment.status !== "provisional") {
+      if (!isProvisionalEnrolment(enrolment)) {
         return reply
           .status(409)
           .send({ error: "L'inscription n'est pas en période d'essai" });
@@ -1001,7 +998,6 @@ export const learningPlugin = (
       const rows = await fastify.db
         .update(enrolments)
         .set({
-          status: "active",
           provisionalUntil: null,
           updatedAt: new Date(),
         })
@@ -1109,17 +1105,23 @@ export const learningPlugin = (
         return reply.status(403).send({ error: "Accès interdit" });
       }
 
-      const upgraded = await maybeUpgradeProvisional(fastify.db, rawEnrolment);
-      const currentStatus = upgraded.status;
+      const cleared = await maybeClearExpiredProvisional(
+        fastify.db,
+        rawEnrolment,
+      );
+      const enrolment = {
+        ...rawEnrolment,
+        provisionalUntil: cleared.provisionalUntil,
+      };
 
-      if (currentStatus !== "active" && currentStatus !== "provisional") {
+      if (enrolment.status !== "active") {
         return reply.status(409).send({
           error: "Cannot update progress on a non-active enrolment",
         });
       }
 
       // Provisional: restrict to first 3 modules only
-      if (currentStatus === "provisional") {
+      if (isProvisionalEnrolment(enrolment)) {
         const PROVISIONAL_MODULE_LIMIT = 3;
 
         const lessonRow = await fastify.db
@@ -1132,7 +1134,7 @@ export const learningPlugin = (
           const allowedModules = await fastify.db
             .select({ id: courseModules.id })
             .from(courseModules)
-            .where(eq(courseModules.courseId, rawEnrolment.courseId))
+            .where(eq(courseModules.courseId, enrolment.courseId))
             .orderBy(asc(courseModules.position))
             .limit(PROVISIONAL_MODULE_LIMIT);
 
@@ -1194,7 +1196,7 @@ export const learningPlugin = (
               firstName: users.firstName,
             })
             .from(users)
-            .where(eq(users.id, rawEnrolment.studentId))
+            .where(eq(users.id, enrolment.studentId))
             .limit(1)
             .then((rows) => {
               const student = rows[0];
@@ -1203,7 +1205,7 @@ export const learningPlugin = (
                 return fastify.db
                   .select({ title: courses.title })
                   .from(courses)
-                  .where(eq(courses.id, rawEnrolment.courseId))
+                  .where(eq(courses.id, enrolment.courseId))
                   .limit(1)
                   .then((courseRows) => {
                     const course = courseRows[0];
@@ -1559,9 +1561,8 @@ export const learningPlugin = (
 
       const withProgress = await Promise.all(
         rows.map(async (row) => {
-          const upgraded = await maybeUpgradeProvisional(fastify.db, {
+          const cleared = await maybeClearExpiredProvisional(fastify.db, {
             id: row.enrolmentId,
-            status: row.status,
             provisionalUntil: row.provisionalUntil,
           });
           const progress = await fastify.db
@@ -1570,8 +1571,8 @@ export const learningPlugin = (
             .where(eq(lessonProgress.enrolmentId, row.enrolmentId));
           return {
             ...row,
-            status: upgraded.status,
-            provisionalUntil: upgraded.provisionalUntil,
+            provisionalUntil: cleared.provisionalUntil,
+            isProvisional: isProvisionalEnrolment(cleared),
             completionPct: computeCompletion(progress),
           };
         }),

@@ -93,21 +93,36 @@ export async function findExistingEnrolment(
 
 // ── Provisional helpers ───────────────────────────────────────────────────────
 
-export async function maybeUpgradeProvisional(
+/**
+ * Check whether an enrolment is in the 14-day trial period.
+ * Provisional = provisionalUntil is non-null and in the future.
+ */
+export function isProvisionalEnrolment(enrolment: {
+  provisionalUntil: Date | null;
+}): boolean {
+  return (
+    enrolment.provisionalUntil !== null &&
+    enrolment.provisionalUntil > new Date()
+  );
+}
+
+/**
+ * If the trial period has elapsed, clear provisionalUntil so the student
+ * gets full access going forward. Returns the (possibly updated) enrolment.
+ */
+export async function maybeClearExpiredProvisional(
   db: Db,
-  enrolment: { id: string; status: string; provisionalUntil: Date | null },
+  enrolment: { id: string; provisionalUntil: Date | null },
 ) {
   if (
-    enrolment.status === "provisional" &&
     enrolment.provisionalUntil !== null &&
-    enrolment.provisionalUntil < new Date()
+    enrolment.provisionalUntil <= new Date()
   ) {
-    const rows = await db
+    await db
       .update(enrolments)
-      .set({ status: "active", updatedAt: new Date() })
-      .where(eq(enrolments.id, enrolment.id))
-      .returning();
-    return rows[0] ?? enrolment;
+      .set({ provisionalUntil: null, updatedAt: new Date() })
+      .where(eq(enrolments.id, enrolment.id));
+    return { ...enrolment, provisionalUntil: null };
   }
   return enrolment;
 }

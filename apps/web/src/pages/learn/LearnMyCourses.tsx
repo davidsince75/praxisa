@@ -8,18 +8,24 @@ import { Card, CardContent } from "@/components/ui/card.js";
 import { Button } from "@/components/ui/button.js";
 import { formatDate } from "@/lib/utils.js";
 
-function statusVariant(status: string) {
+function statusVariant(status: string, isProvisional?: boolean) {
+  if (isProvisional === true) return "pending" as const;
   if (status === "completed") return "completed" as const;
   if (status === "cancelled") return "rejected" as const;
-  if (status === "provisional") return "pending" as const;
   return "in_progress" as const;
+}
+
+function statusLabel(status: string, isProvisional?: boolean): string {
+  if (isProvisional === true) return "Essai (14 jours)";
+  if (status === "completed") return "Terminé";
+  if (status === "cancelled") return "Annulé";
+  return "En cours";
 }
 
 const STATUS_LABELS: Record<string, string> = {
   active: "En cours",
-  completed: "Termine",
-  cancelled: "Annule",
-  provisional: "Essai",
+  completed: "Terminé",
+  cancelled: "Annulé",
 };
 
 function ProgressBar({ pct }: { pct: number }) {
@@ -46,15 +52,10 @@ export function LearnMyCoursesPage() {
   });
 
   const enrolments = data?.enrolments ?? [];
-  const active = enrolments.filter(
-    (e) => e.status === "active" || e.status === "provisional",
-  );
+  const active = enrolments.filter((e) => e.status === "active");
   const completed = enrolments.filter((e) => e.status === "completed");
   const others = enrolments.filter(
-    (e) =>
-      e.status !== "active" &&
-      e.status !== "completed" &&
-      e.status !== "provisional",
+    (e) => e.status !== "active" && e.status !== "completed",
   );
 
   return (
@@ -100,8 +101,10 @@ export function LearnMyCoursesPage() {
                             <h3 className="font-semibold text-dark truncate">
                               {e.courseTitle}
                             </h3>
-                            <Badge variant={statusVariant(e.status)}>
-                              {STATUS_LABELS[e.status] ?? e.status}
+                            <Badge
+                              variant={statusVariant(e.status, e.isProvisional)}
+                            >
+                              {statusLabel(e.status, e.isProvisional)}
                             </Badge>
                           </div>
                           {e.courseDescription !== null && (
@@ -194,8 +197,8 @@ export function LearnMyCoursesPage() {
                       <span className="flex-1 text-sm font-medium text-dark truncate">
                         {e.courseTitle}
                       </span>
-                      <Badge variant={statusVariant(e.status)}>
-                        {STATUS_LABELS[e.status] ?? e.status}
+                      <Badge variant={statusVariant(e.status, e.isProvisional)}>
+                        {statusLabel(e.status, e.isProvisional)}
                       </Badge>
                     </CardContent>
                   </Card>

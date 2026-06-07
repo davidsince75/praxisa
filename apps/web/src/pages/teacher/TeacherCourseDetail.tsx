@@ -38,19 +38,30 @@ function statusVariant(status: string) {
   return "pending" as const;
 }
 
-function enrolStatusVariant(status: string) {
+function enrolStatusVariant(status: string, provisionalUntil: string | null) {
+  if (provisionalUntil !== null && new Date(provisionalUntil) > new Date()) {
+    return "pending" as const;
+  }
   if (status === "completed") return "completed" as const;
   if (status === "cancelled") return "rejected" as const;
-  if (status === "provisional") return "pending" as const;
   return "in_progress" as const;
 }
 
-const ENROL_LABELS: Record<string, string> = {
-  active: "Actif",
-  completed: "Terminé",
-  cancelled: "Annulé",
-  provisional: "Essai (restreint)",
-};
+function enrolStatusLabel(
+  status: string,
+  provisionalUntil: string | null,
+): string {
+  if (provisionalUntil !== null && new Date(provisionalUntil) > new Date()) {
+    const days = Math.ceil(
+      (new Date(provisionalUntil).getTime() - Date.now()) /
+        (24 * 60 * 60 * 1000),
+    );
+    return `Essai (${String(days)}j restants)`;
+  }
+  if (status === "completed") return "Terminé";
+  if (status === "cancelled") return "Annulé";
+  return "Actif";
+}
 
 interface StatCardProps {
   label: string;
@@ -385,8 +396,13 @@ export function TeacherCourseDetailPage() {
                           </td>
                           <td className="px-6 py-3 text-meta">{s.email}</td>
                           <td className="px-6 py-3">
-                            <Badge variant={enrolStatusVariant(s.status)}>
-                              {ENROL_LABELS[s.status] ?? s.status}
+                            <Badge
+                              variant={enrolStatusVariant(
+                                s.status,
+                                s.provisionalUntil,
+                              )}
+                            >
+                              {enrolStatusLabel(s.status, s.provisionalUntil)}
                             </Badge>
                           </td>
                           <td className="px-6 py-3 text-meta">

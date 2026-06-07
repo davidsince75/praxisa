@@ -152,6 +152,8 @@ export interface User {
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt?: string;
+  provisionalUntil: string | null;
+  isRestricted: boolean;
 }
 
 export interface UserListResponse {
@@ -263,7 +265,7 @@ export interface CourseDetailResponse {
 // GET /v1/courses/:courseId/students
 export interface CourseStudent {
   enrolmentId: string;
-  status: "active" | "completed" | "cancelled" | "provisional";
+  status: "active" | "completed" | "cancelled";
   provisionalUntil: string | null;
   enrolledAt: string;
   completedAt: string | null;
@@ -295,11 +297,12 @@ export interface CourseProgressStats {
 
 export interface MyEnrolment {
   enrolmentId: string;
-  status: "active" | "completed" | "cancelled" | "provisional";
+  status: "active" | "completed" | "cancelled";
   enrolledAt: string;
   completedAt: string | null;
   expiresAt: string | null;
   provisionalUntil: string | null;
+  isProvisional: boolean;
   courseId: string;
   courseTitle: string;
   courseSlug: string;
@@ -318,7 +321,7 @@ export interface EnrolmentDetail {
     id: string;
     courseId: string;
     studentId: string;
-    status: "active" | "completed" | "cancelled" | "provisional";
+    status: "active" | "completed" | "cancelled";
     createdAt: string;
     completedAt: string | null;
     provisionalUntil: string | null;

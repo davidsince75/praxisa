@@ -3,7 +3,7 @@ import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { hash } from "@node-rs/argon2";
 import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
-import { users } from "../../db/schema/index.js";
+import { enrolments, users } from "../../db/schema/index.js";
 
 // ── Validation schemas ─────────────────────────────────────────────────────────
 
@@ -101,8 +101,45 @@ export const usersPlugin = (
 
       const total = totalRows[0]?.n ?? 0;
 
+      // Enrich with provisional enrolment info for admin visibility
+      const userIds = rows.map((r) => r.id);
+      const provisionalMap = new Map<
+        string,
+        { provisionalUntil: Date | null }
+      >();
+      if (userIds.length > 0) {
+        const enrolRows = await fastify.db
+          .select({
+            studentId: enrolments.studentId,
+            provisionalUntil: enrolments.provisionalUntil,
+          })
+          .from(enrolments)
+          .where(
+            and(
+              sql`${enrolments.studentId} = ANY(${userIds})`,
+              isNull(enrolments.deletedAt),
+              sql`${enrolments.provisionalUntil} IS NOT NULL`,
+              sql`${enrolments.provisionalUntil} > now()`,
+            ),
+          );
+        for (const row of enrolRows) {
+          provisionalMap.set(row.studentId, {
+            provisionalUntil: row.provisionalUntil,
+          });
+        }
+      }
+
+      const enriched = rows.map((u) => {
+        const prov = provisionalMap.get(u.id);
+        return {
+          ...u,
+          provisionalUntil: prov?.provisionalUntil ?? null,
+          isRestricted: prov !== undefined,
+        };
+      });
+
       return reply.send({
-        users: rows,
+        users: enriched,
         meta: { total, page, limit, pages: Math.ceil(total / limit) },
       });
     },

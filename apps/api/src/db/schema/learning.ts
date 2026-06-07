@@ -30,7 +30,6 @@ export const ENROLMENT_STATUSES = [
   "cancelled",
   "paused",
   "expired",
-  "provisional",
 ] as const;
 export type EnrolmentStatus = (typeof ENROLMENT_STATUSES)[number];
 export const enrolmentStatusEnum = pgEnum(

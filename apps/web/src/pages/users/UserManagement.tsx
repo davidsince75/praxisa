@@ -595,6 +595,9 @@ export function UserManagementPage() {
                       Statut
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                      Restriction
+                    </th>
+                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
                       Dernière connexion
                     </th>
                     <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
@@ -648,6 +651,26 @@ export function UserManagementPage() {
                             <UserX size={12} />
                             Inactif
                           </span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3">
+                        {u.isRestricted && u.provisionalUntil !== null ? (
+                          <Badge variant="pending">
+                            Essai (
+                            {String(
+                              Math.max(
+                                0,
+                                Math.ceil(
+                                  (new Date(u.provisionalUntil).getTime() -
+                                    Date.now()) /
+                                    (24 * 60 * 60 * 1000),
+                                ),
+                              ),
+                            )}
+                            j)
+                          </Badge>
+                        ) : (
+                          <span className="text-meta">—</span>
                         )}
                       </td>
                       <td className="px-6 py-3 text-meta">
