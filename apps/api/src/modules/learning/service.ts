@@ -1,4 +1,4 @@
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import {
   courseModules,
@@ -92,10 +92,11 @@ export async function findExistingEnrolment(
 }
 
 // ── Provisional helpers ───────────────────────────────────────────────────────
+// provisional_until is NOT in the Drizzle schema (to avoid INSERT failures
+// before migration 0020 runs). All reads/writes use raw SQL with try-catch.
 
 /**
  * Check whether an enrolment is in the 14-day trial period.
- * Provisional = provisionalUntil is non-null and in the future.
  */
 export function isProvisionalEnrolment(enrolment: {
   provisionalUntil: Date | null;
@@ -107,8 +108,45 @@ export function isProvisionalEnrolment(enrolment: {
 }
 
 /**
- * If the trial period has elapsed, clear provisionalUntil so the student
- * gets full access going forward. Returns the (possibly updated) enrolment.
+ * Read provisional_until from DB via raw SQL.
+ * Returns null if column does not exist yet.
+ */
+export async function readProvisionalUntil(
+  db: Db,
+  enrolmentId: string,
+): Promise<Date | null> {
+  try {
+    const rows = await db.execute(
+      sql`SELECT provisional_until FROM enrolments WHERE id = ${enrolmentId} LIMIT 1`,
+    );
+    const row = rows.rows[0] as { provisional_until: Date | null } | undefined;
+    return row?.provisional_until ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Set provisional_until via raw SQL.
+ * No-ops gracefully if column does not exist yet.
+ */
+export async function setProvisionalUntil(
+  db: Db,
+  enrolmentId: string,
+  value: Date | null,
+): Promise<void> {
+  try {
+    await db.execute(
+      sql`UPDATE enrolments SET provisional_until = ${value}, updated_at = now() WHERE id = ${enrolmentId}`,
+    );
+  } catch {
+    // Column does not exist yet — migration pending, skip silently.
+  }
+}
+
+/**
+ * If the trial period has elapsed, clear provisional_until.
+ * Returns the enrolment with updated provisionalUntil.
  */
 export async function maybeClearExpiredProvisional(
   db: Db,
@@ -118,10 +156,7 @@ export async function maybeClearExpiredProvisional(
     enrolment.provisionalUntil !== null &&
     enrolment.provisionalUntil <= new Date()
   ) {
-    await db
-      .update(enrolments)
-      .set({ provisionalUntil: null, updatedAt: new Date() })
-      .where(eq(enrolments.id, enrolment.id));
+    await setProvisionalUntil(db, enrolment.id, null);
     return { ...enrolment, provisionalUntil: null };
   }
   return enrolment;

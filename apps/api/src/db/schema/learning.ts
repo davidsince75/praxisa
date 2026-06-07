@@ -165,7 +165,10 @@ export const enrolments = pgTable(
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
-    provisionalUntil: timestamp("provisional_until", { withTimezone: true }),
+    // provisionalUntil is intentionally NOT in the Drizzle schema so it is never
+    // auto-included in INSERT statements. It is read/written via raw SQL only.
+    // Column is created by migration 0020. Once deployed everywhere, it can be
+    // added back to the schema safely.
 
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

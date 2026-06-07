@@ -117,23 +117,18 @@ export const usersPlugin = (
       try {
         const userIds = rows.map((r) => r.id);
         if (userIds.length > 0) {
-          const enrolRows = await fastify.db
-            .select({
-              studentId: enrolments.studentId,
-              provisionalUntil: enrolments.provisionalUntil,
-            })
-            .from(enrolments)
-            .where(
-              and(
-                inArray(enrolments.studentId, userIds),
-                isNull(enrolments.deletedAt),
-                gt(enrolments.provisionalUntil, new Date()),
-              ),
-            );
-          for (const row of enrolRows) {
-            if (row.provisionalUntil !== null) {
-              provisionalMap.set(row.studentId, row.provisionalUntil);
-            }
+          const enrolRows = await fastify.db.execute(
+            sql`SELECT DISTINCT student_id, provisional_until 
+                FROM enrolments 
+                WHERE student_id = ANY(${userIds}::uuid[])
+                  AND deleted_at IS NULL
+                  AND provisional_until > now()`,
+          );
+          for (const row of enrolRows.rows as {
+            student_id: string;
+            provisional_until: Date;
+          }[]) {
+            provisionalMap.set(row.student_id, row.provisional_until);
           }
         }
       } catch (err: unknown) {

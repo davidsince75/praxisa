@@ -48,6 +48,8 @@ import {
   isInstructor,
   isProvisionalEnrolment,
   maybeClearExpiredProvisional,
+  readProvisionalUntil,
+  setProvisionalUntil,
   upsertLessonProgress,
 } from "./service.js";
 
@@ -874,7 +876,7 @@ export const learningPlugin = (
                 eq(enrolments.studentId, targetStudentId),
                 isNull(enrolments.deletedAt),
                 eq(enrolments.status, "active"),
-                gt(enrolments.provisionalUntil, new Date()),
+                sql`"enrolments"."provisional_until" > now()`,
               ),
             )
             .limit(1);
@@ -892,46 +894,28 @@ export const learningPlugin = (
         }
       }
 
-      const provisionalUntil = isSelfEnrol
-        ? new Date(Date.now() + FOURTEEN_DAYS_MS)
-        : null;
-
-      // Try INSERT with provisionalUntil; fall back without it if column is missing.
-      let returned: (typeof enrolments.$inferSelect)[];
-      try {
-        returned = await fastify.db
-          .insert(enrolments)
-          .values({
-            studentId: targetStudentId,
-            courseId: body.courseId,
-            enrolledBy: isSelfEnrol ? null : sub,
-            expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-            provisionalUntil,
-          })
-          .returning();
-      } catch (insertErr: unknown) {
-        const msg =
-          insertErr instanceof Error ? insertErr.message : String(insertErr);
-        if (msg.includes("provisional_until")) {
-          fastify.log.warn(
-            { insertErr },
-            "provisionalUntil column missing — inserting without it",
-          );
-          returned = await fastify.db
-            .insert(enrolments)
-            .values({
-              studentId: targetStudentId,
-              courseId: body.courseId,
-              enrolledBy: isSelfEnrol ? null : sub,
-              expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
-            })
-            .returning();
-        } else {
-          throw insertErr;
-        }
-      }
+      // Insert without provisionalUntil (not in Drizzle schema — set via raw SQL below)
+      const returned = await fastify.db
+        .insert(enrolments)
+        .values({
+          studentId: targetStudentId,
+          courseId: body.courseId,
+          enrolledBy: isSelfEnrol ? null : sub,
+          expiresAt: body.expiresAt ? new Date(body.expiresAt) : null,
+        })
+        .returning();
       const enrolment = returned[0];
       if (enrolment === undefined) throw new Error("Insert returned no rows");
+
+      // Set provisional_until via raw SQL (column may not exist yet — handled gracefully)
+      if (isSelfEnrol && enrolment !== undefined) {
+        const provisionalUntilDate = new Date(Date.now() + FOURTEEN_DAYS_MS);
+        await setProvisionalUntil(
+          fastify.db,
+          enrolment.id,
+          provisionalUntilDate,
+        );
+      }
 
       await emitEvent({
         actorUserId: sub,
@@ -1012,7 +996,18 @@ export const learningPlugin = (
         return reply.status(403).send({ error: "Accès interdit" });
       }
 
-      const enrolment = await maybeClearExpiredProvisional(fastify.db, raw);
+      const provisionalUntilRaw = await readProvisionalUntil(
+        fastify.db,
+        enrolmentId,
+      );
+      const enrolmentWithProvisional = {
+        ...raw,
+        provisionalUntil: provisionalUntilRaw,
+      };
+      const enrolment = await maybeClearExpiredProvisional(
+        fastify.db,
+        enrolmentWithProvisional,
+      );
 
       const progress = await fastify.db
         .select()
@@ -1022,7 +1017,7 @@ export const learningPlugin = (
       const provisional = isProvisionalEnrolment(enrolment);
 
       return reply.send({
-        enrolment,
+        enrolment: { ...raw, ...enrolment },
         progress,
         completionPct: computeCompletion(progress),
         isProvisional: provisional,
@@ -1046,7 +1041,11 @@ export const learningPlugin = (
       if (enrolment.studentId !== sub) {
         return reply.status(403).send({ error: "Accès interdit" });
       }
-      if (!isProvisionalEnrolment(enrolment)) {
+      const confirmProvUntil = await readProvisionalUntil(
+        fastify.db,
+        enrolmentId,
+      );
+      if (!isProvisionalEnrolment({ provisionalUntil: confirmProvUntil })) {
         return reply
           .status(409)
           .send({ error: "L'inscription n'est pas en période d'essai" });
@@ -1055,11 +1054,12 @@ export const learningPlugin = (
       const rows = await fastify.db
         .update(enrolments)
         .set({
-          provisionalUntil: null,
           updatedAt: new Date(),
         })
         .where(eq(enrolments.id, enrolmentId))
         .returning();
+
+      await setProvisionalUntil(fastify.db, enrolmentId, null);
 
       await emitEvent({
         actorUserId: sub,
@@ -1162,9 +1162,17 @@ export const learningPlugin = (
         return reply.status(403).send({ error: "Accès interdit" });
       }
 
+      const provisionalUntilForProgress = await readProvisionalUntil(
+        fastify.db,
+        rawEnrolment.id,
+      );
+      const rawWithProvisional = {
+        ...rawEnrolment,
+        provisionalUntil: provisionalUntilForProgress,
+      };
       const cleared = await maybeClearExpiredProvisional(
         fastify.db,
-        rawEnrolment,
+        rawWithProvisional,
       );
       const enrolment = {
         ...rawEnrolment,
@@ -1317,7 +1325,7 @@ export const learningPlugin = (
         .select({
           enrolmentId: enrolments.id,
           status: enrolments.status,
-          provisionalUntil: enrolments.provisionalUntil,
+
           enrolledAt: enrolments.createdAt,
           completedAt: enrolments.completedAt,
           studentId: users.id,
@@ -1603,7 +1611,6 @@ export const learningPlugin = (
           enrolledAt: enrolments.createdAt,
           completedAt: enrolments.completedAt,
           expiresAt: enrolments.expiresAt,
-          provisionalUntil: enrolments.provisionalUntil,
           courseId: courses.id,
           courseTitle: courses.title,
           courseSlug: courses.slug,
@@ -1618,9 +1625,13 @@ export const learningPlugin = (
 
       const withProgress = await Promise.all(
         rows.map(async (row) => {
+          const provUntil = await readProvisionalUntil(
+            fastify.db,
+            row.enrolmentId,
+          );
           const cleared = await maybeClearExpiredProvisional(fastify.db, {
             id: row.enrolmentId,
-            provisionalUntil: row.provisionalUntil,
+            provisionalUntil: provUntil,
           });
           const progress = await fastify.db
             .select()
