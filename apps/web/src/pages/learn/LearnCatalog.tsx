@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
-import { BookOpen, Globe, Clock, CheckCircle2, Star, User } from "lucide-react";
+import {
+  BookOpen,
+  Globe,
+  Clock,
+  CheckCircle2,
+  Lock,
+  Star,
+  User,
+} from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   CourseListResponse,
@@ -89,12 +97,20 @@ export function LearnCatalogPage() {
     queryFn: () => api.get<MyEnrolmentsResponse>("/enrolments/my"),
   });
 
+  const [enrollError, setEnrollError] = useState<string | null>(null);
+
   const enrollMutation = useMutation({
     mutationFn: (courseId: string) =>
       api.post<{ enrolment: { id: string } }>("/enrolments", { courseId }),
     onSuccess: (res) => {
+      setEnrollError(null);
       void queryClient.invalidateQueries({ queryKey: ["my-enrolments"] });
       navigate(`/learn/courses/${res.enrolment.id}`);
+    },
+    onError: (err: unknown) => {
+      setEnrollError(
+        err instanceof Error ? err.message : "Erreur lors de l'inscription",
+      );
     },
   });
 
@@ -102,11 +118,16 @@ export function LearnCatalogPage() {
     (c) => c.status === "published",
   );
 
-  const enrolledCourseIds = new Set(
-    (enrolmentsData?.enrolments ?? [])
-      .filter((e) => e.status !== "cancelled")
-      .map((e) => e.courseId),
+  const myEnrolments = (enrolmentsData?.enrolments ?? []).filter(
+    (e) => e.status !== "cancelled",
   );
+
+  // Check if student has an active provisional enrolment
+  const hasProvisionalEnrolment = myEnrolments.some(
+    (e) => e.isProvisional === true,
+  );
+
+  const enrolledCourseIds = new Set(myEnrolments.map((e) => e.courseId));
 
   const enrolledById = new Map(
     (enrolmentsData?.enrolments ?? [])
@@ -215,17 +236,30 @@ export function LearnCatalogPage() {
                           : "Continuer la formation"}
                       </button>
                     </div>
+                  ) : hasProvisionalEnrolment ? (
+                    <div className="flex items-center justify-center gap-2 text-xs text-meta py-2 border border-rule rounded opacity-60">
+                      <Lock size={13} />
+                      Confirmez votre inscription actuelle
+                    </div>
                   ) : (
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      disabled={enrollMutation.isPending}
-                      onClick={() => {
-                        enrollMutation.mutate(course.id);
-                      }}
-                    >
-                      {enrollMutation.isPending ? "Inscription…" : "S'inscrire"}
-                    </Button>
+                    <>
+                      <Button
+                        size="sm"
+                        className="w-full"
+                        disabled={enrollMutation.isPending}
+                        onClick={() => {
+                          setEnrollError(null);
+                          enrollMutation.mutate(course.id);
+                        }}
+                      >
+                        {enrollMutation.isPending
+                          ? "Inscription…"
+                          : "S'inscrire"}
+                      </Button>
+                      {enrollError !== null && (
+                        <p className="text-xs text-rose mt-1">{enrollError}</p>
+                      )}
+                    </>
                   )}
                 </CardContent>
               </Card>

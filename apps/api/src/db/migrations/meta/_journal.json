@@ -134,6 +134,13 @@
       "when": 1748995200000,
       "tag": "0018_campaign_delivery_types",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1749081600000,
+      "tag": "0019_backfill_provisional_until",
+      "breakpoints": true
     }
   ]
 }

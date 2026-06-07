@@ -5,6 +5,7 @@ import {
   count,
   desc,
   eq,
+  gt,
   inArray,
   isNull,
   ne,
@@ -860,6 +861,28 @@ export const learningPlugin = (
 
       const isSelfEnrol = role !== "admin" || body.studentId === undefined;
       const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
+
+      // During trial: student can only be enrolled in 1 course at a time
+      if (isSelfEnrol) {
+        const activeEnrolments = await fastify.db
+          .select({ id: enrolments.id })
+          .from(enrolments)
+          .where(
+            and(
+              eq(enrolments.studentId, targetStudentId),
+              isNull(enrolments.deletedAt),
+              eq(enrolments.status, "active"),
+              gt(enrolments.provisionalUntil, new Date()),
+            ),
+          )
+          .limit(1);
+        if (activeEnrolments.length > 0) {
+          return reply.status(403).send({
+            error:
+              "Vous êtes déjà inscrit à un cours en période d'essai. Confirmez votre inscription actuelle pour accéder à d'autres cours.",
+          });
+        }
+      }
 
       const returned = await fastify.db
         .insert(enrolments)
