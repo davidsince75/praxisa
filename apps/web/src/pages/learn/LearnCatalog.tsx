@@ -123,9 +123,7 @@ export function LearnCatalogPage() {
   );
 
   // Check if student has an active provisional enrolment
-  const hasProvisionalEnrolment = myEnrolments.some(
-    (e) => e.isProvisional === true,
-  );
+  const hasProvisionalEnrolment = myEnrolments.some((e) => e.isProvisional);
 
   const enrolledCourseIds = new Set(myEnrolments.map((e) => e.courseId));
 

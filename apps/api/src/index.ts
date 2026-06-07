@@ -47,6 +47,24 @@ const app = Fastify({
 // Redis (fp-scoped — must precede rate-limit so app.redis is decorated first)
 await app.register(redisPlugin, { redisUrl: config.redisUrl });
 
+// Allow empty JSON bodies (DELETE requests may send Content-Type: application/json
+// with no body — without this, Fastify's default parser throws a 400).
+app.addContentTypeParser(
+  "application/json",
+  { parseAs: "string" },
+  function (_req, body, done) {
+    if (typeof body === "string" && body.trim() === "") {
+      done(null, undefined);
+      return;
+    }
+    try {
+      done(null, JSON.parse(body as string));
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  },
+);
+
 // Security middleware
 await app.register(helmet, { contentSecurityPolicy: false });
 await app.register(cors, { origin: config.corsOrigins, credentials: true });
