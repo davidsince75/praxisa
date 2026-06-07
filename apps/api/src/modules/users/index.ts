@@ -26,6 +26,7 @@ const updateUserSchema = z.object({
   role: z.enum(["admin", "instructor", "student", "migration_lead"]).optional(),
   isActive: z.boolean().optional(),
   emailVerified: z.boolean().optional(),
+  isRestricted: z.boolean().optional(),
 });
 
 const listUsersQuerySchema = z.object({
@@ -88,6 +89,7 @@ export const usersPlugin = (
             role: users.role,
             isActive: users.isActive,
             emailVerified: users.emailVerified,
+            isRestricted: users.isRestricted,
             lastLoginAt: users.lastLoginAt,
             createdAt: users.createdAt,
           })
@@ -101,43 +103,8 @@ export const usersPlugin = (
 
       const total = totalRows[0]?.n ?? 0;
 
-      // Enrich with provisional enrolment info for admin visibility
-      const provisionalMap = new Map<string, Date>();
-      try {
-        const userIds = rows.map((r) => r.id);
-        if (userIds.length > 0) {
-          const enrolRows = await fastify.db.execute(
-            sql`SELECT DISTINCT student_id, provisional_until 
-                FROM enrolments 
-                WHERE student_id = ANY(${userIds}::uuid[])
-                  AND deleted_at IS NULL
-                  AND provisional_until > now()`,
-          );
-          for (const row of enrolRows.rows as {
-            student_id: string;
-            provisional_until: Date;
-          }[]) {
-            provisionalMap.set(row.student_id, row.provisional_until);
-          }
-        }
-      } catch (err: unknown) {
-        fastify.log.error(
-          { err },
-          "Failed to enrich users with provisional info",
-        );
-      }
-
-      const enriched = rows.map((u) => {
-        const prov = provisionalMap.get(u.id);
-        return {
-          ...u,
-          provisionalUntil: prov ?? null,
-          isRestricted: prov !== undefined,
-        };
-      });
-
       return reply.send({
-        users: enriched,
+        users: rows,
         meta: { total, page, limit, pages: Math.ceil(total / limit) },
       });
     },
@@ -270,6 +237,8 @@ export const usersPlugin = (
           passwordHash,
           isActive: body.isActive,
           emailVerified: false,
+          // Students created by admin start with access restriction enabled by default
+          isRestricted: body.role === "student",
         })
         .returning({
           id: users.id,

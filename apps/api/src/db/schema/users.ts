@@ -37,6 +37,7 @@ export const users = pgTable("users", {
   // Status
   isActive: boolean("is_active").notNull().default(true),
   emailVerified: boolean("email_verified").notNull().default(false),
+  isRestricted: boolean("is_restricted").notNull().default(false),
 
   // GDPR: soft delete — rows are never hard-deleted; DSR erasure zeroes PII fields
   deletedAt: timestamp("deleted_at", { withTimezone: true }),

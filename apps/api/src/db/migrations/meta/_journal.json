@@ -148,6 +148,13 @@
       "when": 1749168000000,
       "tag": "0020_ensure_provisional_until",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1749254400000,
+      "tag": "0021_user_restriction",
+      "breakpoints": true
     }
   ]
 }

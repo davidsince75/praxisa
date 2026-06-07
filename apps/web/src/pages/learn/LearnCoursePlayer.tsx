@@ -38,6 +38,7 @@ import type {
   DocumentsResponse,
   StudentDocumentRow,
 } from "@/lib/api.js";
+import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { Card, CardContent } from "@/components/ui/card.js";
 import { cn } from "@/lib/utils.js";
@@ -1074,6 +1075,8 @@ export function LearnCoursePlayerPage() {
   const { enrolmentId } = useParams<{ enrolmentId: string }>();
   const id = enrolmentId ?? "";
   const queryClient = useQueryClient();
+  const { user: authUser } = useAuth();
+  const userRestricted = authUser?.isRestricted === true;
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 
@@ -1182,11 +1185,12 @@ export function LearnCoursePlayerPage() {
   const completionPct = enrolmentData?.completionPct ?? 0;
   const courseName = courseData?.course.title ?? "Chargement…";
   const isProvisional = enrolmentData?.isProvisional === true;
+  const shouldLockModules = isProvisional || userRestricted;
 
-  // Compute locked modules for provisional access (first 3 unlocked)
+  // Compute locked modules for provisional/restricted access (first 3 unlocked)
   const PROVISIONAL_MODULE_LIMIT = 3;
   const lockedModuleIds = (() => {
-    if (!isProvisional || modules.length === 0) return undefined;
+    if (!shouldLockModules || modules.length === 0) return undefined;
     const sorted = [...modules].sort((a, b) => a.position - b.position);
     const allowedIds = new Set(
       sorted.slice(0, PROVISIONAL_MODULE_LIMIT).map((m) => m.id),
@@ -1251,6 +1255,17 @@ export function LearnCoursePlayerPage() {
             <p className="text-meta text-sm">Chargement…</p>
           ) : (
             <>
+              {userRestricted && !isProvisional && (
+                <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-5 py-4">
+                  <p className="text-sm font-medium text-amber-800">
+                    Compte en accès restreint — Accès aux 3 premiers modules
+                    uniquement.
+                  </p>
+                  <p className="text-xs text-amber-700 mt-1">
+                    Contactez l'administrateur pour obtenir l'accès complet.
+                  </p>
+                </div>
+              )}
               {isProvisional && (
                 <div className="mb-6 rounded-lg border border-olive/30 bg-olive/5 px-5 py-4">
                   <p className="text-sm font-medium text-dark">

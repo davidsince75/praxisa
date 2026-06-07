@@ -45,6 +45,7 @@ interface EditUserForm {
   lastName: string;
   role: UserRole;
   isActive: boolean;
+  isRestricted: boolean;
 }
 
 const ROLES: UserRole[] = ["admin", "instructor", "student", "migration_lead"];
@@ -231,6 +232,7 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
     lastName: "",
     role: "student",
     isActive: true,
+    isRestricted: false,
   });
   const [error, setError] = useState("");
 
@@ -241,6 +243,7 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
         lastName: user.lastName,
         role: user.role,
         isActive: user.isActive,
+        isRestricted: user.isRestricted,
       });
       setError("");
     }
@@ -327,6 +330,23 @@ function EditUserDialog({ user, onOpenChange, onSuccess }: EditDialogProps) {
               />
               <Label htmlFor="eu-active" className="cursor-pointer">
                 Compte actif
+              </Label>
+            </div>
+            <div className="flex items-center gap-3">
+              <input
+                id="eu-restricted"
+                type="checkbox"
+                checked={form.isRestricted}
+                onChange={(e) => {
+                  setForm((f) => ({ ...f, isRestricted: e.target.checked }));
+                }}
+                className="h-4 w-4 accent-amber-500"
+              />
+              <Label htmlFor="eu-restricted" className="cursor-pointer">
+                Accès restreint
+                <span className="block text-[11px] text-meta font-normal">
+                  Limite l'apprenant à 1 formation et 3 premiers modules
+                </span>
               </Label>
             </div>
             {error.length > 0 && <p className="text-xs text-rose">{error}</p>}
@@ -654,21 +674,8 @@ export function UserManagementPage() {
                         )}
                       </td>
                       <td className="px-6 py-3">
-                        {u.isRestricted && u.provisionalUntil !== null ? (
-                          <Badge variant="pending">
-                            Essai (
-                            {String(
-                              Math.max(
-                                0,
-                                Math.ceil(
-                                  (new Date(u.provisionalUntil).getTime() -
-                                    Date.now()) /
-                                    (24 * 60 * 60 * 1000),
-                                ),
-                              ),
-                            )}
-                            j)
-                          </Badge>
+                        {u.isRestricted ? (
+                          <Badge variant="pending">Restreint</Badge>
                         ) : (
                           <span className="text-meta">—</span>
                         )}

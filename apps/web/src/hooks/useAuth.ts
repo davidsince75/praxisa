@@ -15,6 +15,7 @@ export interface AuthUser {
   role: string;
   firstName: string;
   lastName: string;
+  isRestricted: boolean;
 }
 
 function parseStoredUser(): AuthUser | null {

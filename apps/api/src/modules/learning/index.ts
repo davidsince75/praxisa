@@ -863,6 +863,32 @@ export const learningPlugin = (
       const isSelfEnrol = role !== "admin" || body.studentId === undefined;
       const FOURTEEN_DAYS_MS = 14 * 24 * 60 * 60 * 1000;
 
+      // Restricted users can only be enrolled in 1 course total
+      if (role === "student") {
+        const userRows = await fastify.db
+          .select({ isRestricted: users.isRestricted })
+          .from(users)
+          .where(eq(users.id, targetStudentId))
+          .limit(1);
+        if (userRows[0]?.isRestricted === true) {
+          const activeCount = await fastify.db
+            .select({ n: count() })
+            .from(enrolments)
+            .where(
+              and(
+                eq(enrolments.studentId, targetStudentId),
+                isNull(enrolments.deletedAt),
+              ),
+            );
+          if ((activeCount[0]?.n ?? 0) > 0) {
+            return reply.status(403).send({
+              error:
+                "Votre compte est en mode restreint. Vous ne pouvez vous inscrire qu'à une seule formation.",
+            });
+          }
+        }
+      }
+
       // During trial: student can only be enrolled in 1 course at a time.
       // Wrapped in try-catch so enrollment still works even if column is missing.
       if (isSelfEnrol) {

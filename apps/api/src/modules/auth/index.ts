@@ -170,6 +170,7 @@ export const authPlugin = (
           role: user.role,
           firstName: user.firstName,
           lastName: user.lastName,
+          isRestricted: user.isRestricted,
         },
       });
     },
@@ -191,6 +192,7 @@ export const authPlugin = (
           firstName: users.firstName,
           lastName: users.lastName,
           emailVerified: users.emailVerified,
+          isRestricted: users.isRestricted,
         })
         .from(users)
         .where(eq(users.id, sub))

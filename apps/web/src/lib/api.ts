@@ -100,6 +100,7 @@ export interface LoginResponse {
     role: string;
     firstName: string;
     lastName: string;
+    isRestricted: boolean;
   };
 }
 
@@ -149,11 +150,10 @@ export interface User {
   role: UserRole;
   isActive: boolean;
   emailVerified: boolean;
+  isRestricted: boolean;
   lastLoginAt: string | null;
   createdAt: string;
   updatedAt?: string;
-  provisionalUntil: string | null;
-  isRestricted: boolean;
 }
 
 export interface UserListResponse {

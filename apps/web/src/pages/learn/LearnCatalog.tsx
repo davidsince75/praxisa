@@ -9,8 +9,10 @@ import {
   Lock,
   Star,
   User,
+  ShieldAlert,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
+import { useAuth } from "@/hooks/useAuth.js";
 import type {
   CourseListResponse,
   MyEnrolmentsResponse,
@@ -86,6 +88,8 @@ function InlineRating({ courseId }: { courseId: string }) {
 export function LearnCatalogPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const { user: authUser } = useAuth();
+  const isRestricted = authUser?.isRestricted === true;
 
   const { data: coursesData, isLoading } = useQuery({
     queryKey: ["courses"],
@@ -145,6 +149,22 @@ export function LearnCatalogPage() {
             : `${String(published.length)} formation${published.length !== 1 ? "s" : ""} disponible${published.length !== 1 ? "s" : ""}`}
         </p>
       </div>
+
+      {isRestricted && (
+        <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
+          <ShieldAlert size={18} className="text-amber-600 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-amber-800">
+              Compte en accès restreint
+            </p>
+            <p className="text-xs text-amber-700 mt-0.5">
+              Vous pouvez vous inscrire à une seule formation et accéder aux 3
+              premiers modules. Contactez l'administrateur pour obtenir l'accès
+              complet.
+            </p>
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <p className="text-meta text-sm">Chargement…</p>
@@ -233,6 +253,11 @@ export function LearnCatalogPage() {
                           ? "Voir la formation"
                           : "Continuer la formation"}
                       </button>
+                    </div>
+                  ) : isRestricted && myEnrolments.length > 0 ? (
+                    <div className="flex items-center justify-center gap-2 text-xs text-amber-600 py-2 border border-amber-200 rounded bg-amber-50/50">
+                      <Lock size={13} />
+                      Accès restreint — 1 formation max
                     </div>
                   ) : hasProvisionalEnrolment ? (
                     <div className="flex items-center justify-center gap-2 text-xs text-meta py-2 border border-rule rounded opacity-60">
