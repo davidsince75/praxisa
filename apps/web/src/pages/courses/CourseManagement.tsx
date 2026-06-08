@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Pencil, Trash2, BookOpen, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, BookOpen, Globe, Wrench } from "lucide-react";
 import { api } from "@/lib/api.js";
 import type {
   Course,
@@ -389,6 +390,14 @@ export function CourseManagementPage() {
                         </td>
                         <td className="px-6 py-3 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <Link to={`/courses/${c.id}/builder`}>
+                              <button
+                                className="text-meta hover:text-teal transition-colors"
+                                aria-label="Editeur de modules"
+                              >
+                                <Wrench size={14} />
+                              </button>
+                            </Link>
                             <button
                               onClick={() => {
                                 setEditCourse(c);

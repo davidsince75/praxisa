@@ -296,10 +296,11 @@ function ExerciseDeadlineRow({
 interface ModuleRowProps {
   courseId: string;
   mod: ModuleWithLessons;
+  basePath?: string;
   onRefresh: () => void;
 }
 
-function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
+function ModuleRow({ courseId, mod, basePath = "/teacher", onRefresh }: ModuleRowProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -403,7 +404,7 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
                 <button
                   onClick={() => {
                     navigate(
-                      `/teacher/courses/${courseId}/modules/${mod.id}/lessons/${les.id}`,
+                      `${basePath}/courses/${courseId}/modules/${mod.id}/lessons/${les.id}`,
                     );
                   }}
                   className="text-meta hover:text-dark transition-colors p-1"
@@ -436,7 +437,7 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
             <button
               onClick={() => {
                 navigate(
-                  `/teacher/courses/${courseId}/modules/${mod.id}/lessons/new`,
+                  `${basePath}/courses/${courseId}/modules/${mod.id}/lessons/new`,
                 );
               }}
               className="flex items-center gap-1.5 text-xs text-meta hover:text-teal transition-colors"
@@ -494,7 +495,12 @@ function ModuleRow({ courseId, mod, onRefresh }: ModuleRowProps) {
 
 // ── Main page ──────────────────────────────────────────────────────────────────
 
-export function TeacherCourseBuilderPage() {
+interface BuilderProps {
+  basePath?: string;
+  backTo?: string;
+}
+
+export function TeacherCourseBuilderPage({ basePath = "/teacher", backTo }: BuilderProps) {
   const { courseId } = useParams<{ courseId: string }>();
   const id = courseId ?? "";
   const queryClient = useQueryClient();
@@ -518,7 +524,7 @@ export function TeacherCourseBuilderPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div className="flex items-start gap-3">
-          <Link to={`/teacher/courses/${id}`}>
+          <Link to={backTo ?? `${basePath}/courses/${id}`}>
             <button className="mt-1 text-meta hover:text-dark transition-colors">
               <ArrowLeft size={18} />
             </button>
@@ -580,6 +586,7 @@ export function TeacherCourseBuilderPage() {
               key={mod.id}
               courseId={id}
               mod={mod}
+              basePath={basePath}
               onRefresh={refresh}
             />
           ))}

@@ -203,7 +203,7 @@ function ExerciseCard({
 
 // ── Main page ────────────────────────────────────────────────────────────────────
 
-export function TeacherLessonEditorPage() {
+export function TeacherLessonEditorPage({ basePath = "/teacher" }: { basePath?: string } = {}) {
   const {
     courseId = "",
     moduleId = "",
@@ -342,7 +342,7 @@ export function TeacherLessonEditorPage() {
       }
 
       void queryClient.invalidateQueries({ queryKey: ["course", courseId] });
-      navigate(`/teacher/courses/${courseId}/builder`);
+      navigate(`${basePath}/courses/${courseId}/builder`);
     } catch (err: unknown) {
       setError(
         err instanceof Error ? err.message : "Erreur lors de la sauvegarde",
@@ -387,7 +387,7 @@ export function TeacherLessonEditorPage() {
   const exercises: LessonExercise[] = lesson?.exercises ?? [];
 
   const goBack = useCallback(() => {
-    navigate(`/teacher/courses/${courseId}/builder`);
+    navigate(`${basePath}/courses/${courseId}/builder`);
   }, [navigate, courseId]);
 
   return (

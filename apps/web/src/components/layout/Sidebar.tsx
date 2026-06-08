@@ -24,7 +24,7 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 const nav = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/users", label: "Utilisateurs", icon: Users, end: false },
-  { to: "/courses", label: "Cours", icon: BookOpen, end: false },
+  { to: "/courses", label: "Cours/Modules", icon: BookOpen, end: false },
   { to: "/analytics", label: "Analytiques", icon: BarChart2, end: false },
   { to: "/messages", label: "Messages", icon: MessageSquare, end: false },
   { to: "/forums", label: "Forum", icon: MessageCircle, end: false },
