@@ -30,6 +30,8 @@ import type {
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
+import { PdfUpload } from "@/components/PdfUpload.js";
+import { QuizQuestionManager } from "@/components/QuizQuestionManager.js";
 
 // ── Constants ────────────────────────────────────────────────────────────────────
 
@@ -612,16 +614,27 @@ export function TeacherLessonEditorPage({
                 </select>
               </div>
 
-              {(contentType === "video" ||
-                contentType === "pdf" ||
-                contentType === "audio") && (
+              {contentType === "pdf" ? (
+                <div>
+                  <Label className="text-xs">Fichier PDF</Label>
+                  <div className="mt-1">
+                    <PdfUpload
+                      currentFileId={
+                        contentUrl.startsWith("/v1/files/")
+                          ? contentUrl.slice("/v1/files/".length)
+                          : null
+                      }
+                      onUpload={(fileId) => {
+                        setContentUrl("/v1/files/" + fileId);
+                      }}
+                      label="Televerser un PDF"
+                    />
+                  </div>
+                </div>
+              ) : contentType === "video" || contentType === "audio" ? (
                 <div>
                   <Label htmlFor="ed-url" className="text-xs">
-                    {contentType === "video"
-                      ? "URL video"
-                      : contentType === "pdf"
-                        ? "URL PDF"
-                        : "URL audio"}
+                    {contentType === "video" ? "URL video" : "URL audio"}
                   </Label>
                   <Input
                     id="ed-url"
@@ -633,7 +646,7 @@ export function TeacherLessonEditorPage({
                     placeholder="https://..."
                   />
                 </div>
-              )}
+              ) : null}
 
               <div>
                 <Label htmlFor="ed-dur" className="text-xs">
@@ -769,14 +782,18 @@ export function TeacherLessonEditorPage({
               )}
               <div className="space-y-2">
                 {exercises.map((ex) => (
-                  <ExerciseCard
-                    key={ex.id}
-                    exercise={ex}
-                    courseId={courseId}
-                    moduleId={moduleId}
-                    lessonId={lessonId}
-                    onRefresh={refresh}
-                  />
+                  <div key={ex.id} className="space-y-2">
+                    <ExerciseCard
+                      exercise={ex}
+                      courseId={courseId}
+                      moduleId={moduleId}
+                      lessonId={lessonId}
+                      onRefresh={refresh}
+                    />
+                    {ex.type === "quiz" && (
+                      <QuizQuestionManager exerciseId={ex.id} />
+                    )}
+                  </div>
                 ))}
               </div>
             </div>

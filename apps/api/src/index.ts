@@ -32,6 +32,7 @@ import { settingsPlugin } from "./modules/settings/index.js";
 import { tagsPlugin } from "./modules/tags/index.js";
 import { gmailPlugin } from "./modules/gmail/index.js";
 import { paymentsPlugin } from "./modules/payments/index.js";
+import { filesPlugin } from "./modules/files/index.js";
 
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
@@ -133,6 +134,7 @@ await app.register(paymentsPlugin, {
       }
     : {}),
 });
+await app.register(filesPlugin, { prefix: "/v1" });
 
 // Audit SDK — wired after DB plugin so app.db is available
 initAuditSdk(new DrizzleAuditSink(app.db));

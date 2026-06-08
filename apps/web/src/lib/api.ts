@@ -187,6 +187,7 @@ export interface Course {
   totalRatings: number;
   language: string;
   thumbnailUrl: string | null;
+  coursePdfId: string | null;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
@@ -351,6 +352,7 @@ export interface QuizQuestion {
   questionText: string;
   options: QuizOption[];
   explanation: string | null;
+  correctOptionId?: string;
 }
 
 export interface ExerciseWithQuestions {
@@ -978,4 +980,52 @@ export interface PaymentsListResponse {
 export interface PaymentLinkResponse {
   id: string;
   paymentUrl: string;
+}
+
+// ── Uploaded Files ────────────────────────────────────────────────────────────
+
+export interface UploadedFile {
+  id: string;
+  filename: string;
+  mimeType: string;
+  size: number;
+}
+
+export interface UploadFileResponse {
+  file: UploadedFile;
+}
+
+// ── AI: Course Structure ──────────────────────────────────────────────────────
+
+export interface AIModuleSuggestion {
+  title: string;
+  description: string;
+}
+
+export interface AICourseStructureResponse {
+  modules: AIModuleSuggestion[];
+}
+
+// ── AI: MCQ Generation ────────────────────────────────────────────────────────
+
+export interface AIMCQOption {
+  id: string;
+  text: string;
+}
+
+export interface AIMCQQuestion {
+  questionText: string;
+  options: AIMCQOption[];
+  correctOptionId: string;
+  explanation: string;
+}
+
+export interface AIMCQResponse {
+  questions: AIMCQQuestion[];
+}
+
+// ── Quiz Question Management ──────────────────────────────────────────────────
+
+export interface CreateQuestionsResponse {
+  questions: QuizQuestion[];
 }

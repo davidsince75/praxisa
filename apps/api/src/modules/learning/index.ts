@@ -1838,11 +1838,118 @@ export const learningPlugin = (
         questionText: q.questionText,
         options: JSON.parse(q.options) as { id: string; text: string }[],
         explanation: q.explanation,
-        // Only admins see the answer key
-        ...(role === "admin" ? { correctOptionId: q.correctOptionId } : {}),
+        // Admins and instructors see the answer key
+        ...(role === "admin" || role === "instructor" ? { correctOptionId: q.correctOptionId } : {}),
       }));
 
       return reply.send({ exercise, questions: sanitised });
+    },
+  );
+
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // QUIZ QUESTIONS
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // POST /exercises/:exerciseId/questions — bulk create questions
+  fastify.post(
+    "/exercises/:exerciseId/questions",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { exerciseId } = request.params as { exerciseId: string };
+      const { role } = request.jwtPayload;
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      const bodySchema = z.object({
+        questions: z
+          .array(
+            z.object({
+              questionText: z.string().min(1).max(1000),
+              options: z
+                .array(z.object({ id: z.string(), text: z.string().min(1) }))
+                .min(2)
+                .max(6),
+              correctOptionId: z.string().min(1),
+              explanation: z.string().max(2000).optional(),
+            }),
+          )
+          .min(1)
+          .max(20),
+      });
+
+      const parse = bodySchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+
+      // Get current max position
+      const existing = await fastify.db
+        .select({ position: quizQuestions.position })
+        .from(quizQuestions)
+        .where(eq(quizQuestions.exerciseId, exerciseId))
+        .orderBy(desc(quizQuestions.position))
+        .limit(1);
+
+      let nextPosition = (existing[0]?.position ?? -1) + 1;
+
+      const rows = parse.data.questions.map((q) => ({
+        exerciseId,
+        position: nextPosition++,
+        questionText: q.questionText,
+        options: JSON.stringify(q.options),
+        correctOptionId: q.correctOptionId,
+        explanation: q.explanation ?? null,
+      }));
+
+      const created = await fastify.db
+        .insert(quizQuestions)
+        .values(rows)
+        .returning();
+
+      return reply.status(201).send({
+        questions: created.map((q) => ({
+          id: q.id,
+          position: q.position,
+          questionText: q.questionText,
+          options: JSON.parse(q.options) as { id: string; text: string }[],
+          correctOptionId: q.correctOptionId,
+          explanation: q.explanation,
+        })),
+      });
+    },
+  );
+
+  // DELETE /exercises/:exerciseId/questions/:questionId
+  fastify.delete(
+    "/exercises/:exerciseId/questions/:questionId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { exerciseId, questionId } = request.params as {
+        exerciseId: string;
+        questionId: string;
+      };
+      const { role } = request.jwtPayload;
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      const deleted = await fastify.db
+        .delete(quizQuestions)
+        .where(
+          and(
+            eq(quizQuestions.id, questionId),
+            eq(quizQuestions.exerciseId, exerciseId),
+          ),
+        )
+        .returning({ id: quizQuestions.id });
+
+      if (deleted.length === 0) {
+        return reply.status(404).send({ error: "Question introuvable" });
+      }
+
+      return reply.status(204).send();
     },
   );
 

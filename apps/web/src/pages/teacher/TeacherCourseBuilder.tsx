@@ -15,6 +15,7 @@ import {
   File,
   Music,
   HelpCircle,
+  Sparkles,
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
@@ -29,6 +30,8 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { Card, CardContent } from "@/components/ui/card.js";
+import { PdfUpload } from "@/components/PdfUpload.js";
+import { AICourseStructureDialog } from "@/components/AICourseStructureDialog.js";
 import {
   Dialog,
   DialogContent,
@@ -513,6 +516,15 @@ export function TeacherCourseBuilderPage({
   const id = courseId ?? "";
   const queryClient = useQueryClient();
   const [addModOpen, setAddModOpen] = useState(false);
+  const [aiStructureOpen, setAiStructureOpen] = useState(false);
+
+  const updateCoursePdf = useMutation({
+    mutationFn: (coursePdfId: string) =>
+      api.patch(`/courses/${id}`, { coursePdfId }),
+    onSuccess: () => {
+      refresh();
+    },
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["course", id],
@@ -544,15 +556,27 @@ export function TeacherCourseBuilderPage({
             <p className="text-meta text-sm mt-1">Éditeur de contenu</p>
           </div>
         </div>
-        <Button
-          size="sm"
-          onClick={() => {
-            setAddModOpen(true);
-          }}
-        >
-          <Plus size={13} className="mr-1.5" />
-          Nouveau module
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setAiStructureOpen(true);
+            }}
+          >
+            <Sparkles size={13} className="mr-1.5 text-teal-600" />
+            Structure IA
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => {
+              setAddModOpen(true);
+            }}
+          >
+            <Plus size={13} className="mr-1.5" />
+            Nouveau module
+          </Button>
+        </div>
       </div>
 
       {/* Summary */}
@@ -571,6 +595,22 @@ export function TeacherCourseBuilderPage({
             </span>{" "}
             leçons au total
           </span>
+        </div>
+      )}
+
+      {/* Course PDF */}
+      {course !== undefined && (
+        <div className="border border-rule rounded bg-white/60 p-4">
+          <p className="text-xs font-bold uppercase tracking-wider text-meta mb-2">
+            PDF de cours complet
+          </p>
+          <PdfUpload
+            currentFileId={course.coursePdfId ?? null}
+            onUpload={(fileId) => {
+              updateCoursePdf.mutate(fileId);
+            }}
+            label="Televerser le PDF complet du cours"
+          />
         </div>
       )}
 
@@ -605,6 +645,12 @@ export function TeacherCourseBuilderPage({
         courseId={id}
         open={addModOpen}
         onOpenChange={setAddModOpen}
+        onSuccess={refresh}
+      />
+      <AICourseStructureDialog
+        courseId={id}
+        open={aiStructureOpen}
+        onOpenChange={setAiStructureOpen}
         onSuccess={refresh}
       />
     </div>

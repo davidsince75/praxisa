@@ -1,3 +1,4 @@
+import { z } from "zod";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
 import { emitEvent } from "@praxisa/audit-sdk";
 import { hasClinicalIntent, hasPii } from "./safety.js";
@@ -273,6 +274,152 @@ export const aiPlugin = (
       });
 
       return reply.send(suggestion);
+    },
+  );
+
+  // ── POST /v1/ai/course-structure ─────────────────────────────────────────
+  // Suggests a module-by-module course structure from a description.
+
+  fastify.post(
+    "/ai/course-structure",
+    { preHandler: [fastify.authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { role } = request.jwtPayload;
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      if (!mistralApiKey) {
+        return reply
+          .status(503)
+          .send({ error: "Le service IA n'est pas configuré" });
+      }
+
+      const bodySchema = z.object({
+        description: z.string().min(10).max(5000),
+        moduleCount: z.number().int().min(2).max(12).default(5),
+      });
+      const parse = bodySchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+
+      const { description, moduleCount } = parse.data;
+
+      const { chatComplete, MISTRAL_SMALL } =
+        await import("./mistral-client.js");
+      const systemPrompt = `Tu es un expert en conception pédagogique. On te donne une description de formation et tu dois proposer une structure de modules.
+
+RÈGLES STRICTES :
+- Réponds UNIQUEMENT en JSON valide, rien d'autre.
+- Format exact : {"modules":[{"title":"string","description":"string"},...]}
+- Nombre de modules : exactement ${String(moduleCount)}
+- Chaque module a un titre court (max 60 chars) et une description (1-2 phrases)
+- Titre et description en français`;
+
+      const raw = await chatComplete(
+        [
+          {
+            role: "user",
+            content: `Description de la formation :\n${description}`,
+          },
+        ],
+        MISTRAL_SMALL,
+        mistralApiKey,
+      );
+
+      let parsed: { modules: { title: string; description: string }[] };
+      try {
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch === null) throw new Error("No JSON found");
+        parsed = JSON.parse(jsonMatch[0]) as {
+          modules: { title: string; description: string }[];
+        };
+        if (!Array.isArray(parsed.modules)) throw new Error("Invalid shape");
+      } catch {
+        return reply
+          .status(502)
+          .send({ error: "Réponse IA invalide — réessayez." });
+      }
+
+      return reply.send({ modules: parsed.modules });
+    },
+  );
+
+  // ── POST /v1/ai/generate-mcq ──────────────────────────────────────────────
+  // Generates multiple-choice questions for a quiz exercise.
+
+  fastify.post(
+    "/ai/generate-mcq",
+    { preHandler: [fastify.authenticate] },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const { role } = request.jwtPayload;
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      if (!mistralApiKey) {
+        return reply
+          .status(503)
+          .send({ error: "Le service IA n'est pas configuré" });
+      }
+
+      const bodySchema = z.object({
+        topic: z.string().min(3).max(500),
+        context: z.string().max(3000).optional(),
+        count: z.number().int().min(1).max(10).default(5),
+      });
+      const parse = bodySchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+
+      const { topic, context, count } = parse.data;
+
+      const { chatComplete, MISTRAL_SMALL } =
+        await import("./mistral-client.js");
+      const systemPrompt = `Tu es un expert en évaluation pédagogique. Génère des questions QCM en JSON.
+
+RÈGLES STRICTES :
+- Réponds UNIQUEMENT en JSON valide, rien d'autre.
+- Format exact : {"questions":[{"questionText":"string","options":[{"id":"a","text":"string"},{"id":"b","text":"string"},{"id":"c","text":"string"},{"id":"d","text":"string"}],"correctOptionId":"a","explanation":"string"},...]};
+- Exactement ${String(count)} questions
+- Exactement 4 options par question (id: a, b, c, d)
+- correctOptionId est l'id de la bonne réponse
+- explanation explique pourquoi c'est la bonne réponse (1-2 phrases)
+- Tout en français`;
+
+      const userMsg =
+        context !== undefined
+          ? `Sujet : ${topic}\n\nContexte :\n${context}`
+          : `Sujet : ${topic}`;
+
+      const raw = await chatComplete(
+        [{ role: "user", content: userMsg }],
+        MISTRAL_SMALL,
+        mistralApiKey,
+      );
+
+      type MCQQuestion = {
+        questionText: string;
+        options: { id: string; text: string }[];
+        correctOptionId: string;
+        explanation: string;
+      };
+
+      let parsed: { questions: MCQQuestion[] };
+      try {
+        const jsonMatch = raw.match(/\{[\s\S]*\}/);
+        if (jsonMatch === null) throw new Error("No JSON found");
+        parsed = JSON.parse(jsonMatch[0]) as { questions: MCQQuestion[] };
+        if (!Array.isArray(parsed.questions)) throw new Error("Invalid shape");
+      } catch {
+        return reply
+          .status(502)
+          .send({ error: "Réponse IA invalide — réessayez." });
+      }
+
+      return reply.send({ questions: parsed.questions });
     },
   );
 

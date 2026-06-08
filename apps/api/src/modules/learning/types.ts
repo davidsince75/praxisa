@@ -15,7 +15,10 @@ export const createCourseSchema = z.object({
   thumbnailUrl: z.string().url().optional(),
 });
 
-export const updateCourseSchema = createCourseSchema.partial();
+export const updateCourseSchema = createCourseSchema.partial().extend({
+  coursePdfId: z.string().uuid().nullable().optional(),
+  status: z.enum(["draft", "published", "archived"]).optional(),
+});
 
 export type CreateCourseBody = z.infer<typeof createCourseSchema>;
 export type UpdateCourseBody = z.infer<typeof updateCourseSchema>;

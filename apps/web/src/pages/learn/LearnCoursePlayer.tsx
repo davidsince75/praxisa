@@ -20,6 +20,7 @@ import {
   Calendar,
   Bot,
   Star,
+  Download,
   type LucideIcon,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
@@ -1302,6 +1303,19 @@ export function LearnCoursePlayerPage() {
                   </div>
                 </div>
               )}
+              {courseData?.course.coursePdfId !== undefined &&
+                courseData.course.coursePdfId !== null && (
+                  <div className="mb-4">
+                    <a
+                      href={"/v1/files/" + courseData.course.coursePdfId}
+                      download
+                      className="inline-flex items-center gap-2 text-sm font-medium text-teal hover:text-teal/80 transition-colors border border-teal/30 px-4 py-2 rounded-md"
+                    >
+                      <Download size={14} />
+                      Telecharger le cours complet (PDF)
+                    </a>
+                  </div>
+                )}
               <p className="text-sm text-meta mb-4">
                 Choisissez un module pour commencer.
               </p>
