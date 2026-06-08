@@ -490,7 +490,10 @@ export const usersPlugin = (
         return reply.send({ user: updated[0] });
       } catch {
         // Profile columns not yet migrated — update core fields only
-        const { phone, address, city, postalCode, country, ...coreBody } = body;
+        const coreBody = {
+          ...(body.firstName !== undefined && { firstName: body.firstName }),
+          ...(body.lastName !== undefined && { lastName: body.lastName }),
+        };
         const coreUpdated = await fastify.db
           .update(users)
           .set({ ...coreBody, updatedAt: new Date() })
