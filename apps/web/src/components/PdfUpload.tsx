@@ -35,8 +35,8 @@ export function PdfUpload({
       const arrayBuffer = await file.arrayBuffer();
       const bytes = new Uint8Array(arrayBuffer);
       let binary = "";
-      for (let i = 0; i < bytes.length; i++) {
-        binary += String.fromCharCode(bytes[i]);
+      for (const byte of bytes) {
+        binary += String.fromCharCode(byte);
       }
       const base64 = btoa(binary);
 

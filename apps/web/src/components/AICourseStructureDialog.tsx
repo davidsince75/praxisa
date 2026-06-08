@@ -165,7 +165,7 @@ export function AICourseStructureDialog({
               <Button
                 size="sm"
                 onClick={() => {
-                  handleGenerate().catch(() => {});
+                  void handleGenerate();
                 }}
                 disabled={loading || description.trim().length < 10}
                 className="bg-teal-600 hover:bg-teal-700 text-white"
@@ -188,7 +188,7 @@ export function AICourseStructureDialog({
               <Button
                 size="sm"
                 onClick={() => {
-                  handleCreate().catch(() => {});
+                  void handleCreate();
                 }}
                 disabled={creating}
                 className="bg-teal-600 hover:bg-teal-700 text-white"

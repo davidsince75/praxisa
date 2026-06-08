@@ -319,6 +319,7 @@ RÈGLES STRICTES :
 
       const raw = await chatComplete(
         [
+          { role: "system", content: systemPrompt },
           {
             role: "user",
             content: `Description de la formation :\n${description}`,
@@ -395,17 +396,20 @@ RÈGLES STRICTES :
           : `Sujet : ${topic}`;
 
       const raw = await chatComplete(
-        [{ role: "user", content: userMsg }],
+        [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userMsg },
+        ],
         MISTRAL_SMALL,
         mistralApiKey,
       );
 
-      type MCQQuestion = {
+      interface MCQQuestion {
         questionText: string;
         options: { id: string; text: string }[];
         correctOptionId: string;
         explanation: string;
-      };
+      }
 
       let parsed: { questions: MCQQuestion[] };
       try {
