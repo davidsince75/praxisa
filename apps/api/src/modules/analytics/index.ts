@@ -55,6 +55,7 @@ export function analyticsPlugin(fastify: FastifyInstance) {
                count(e.id) FILTER (WHERE e.status = 'completed')::int        AS completed
         FROM courses c
         LEFT JOIN enrolments e ON e.course_id = c.id
+        WHERE c.deleted_at IS NULL
         GROUP BY c.id, c.title, c.status
         ORDER BY enrolled DESC
       `);
