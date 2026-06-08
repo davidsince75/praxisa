@@ -40,13 +40,17 @@ import { SettingsPage } from "@/pages/settings/SettingsPage.js";
 import { LearnDocumentsPage } from "@/pages/learn/LearnDocuments.js";
 import { ForumsPage } from "@/pages/learn/LearnForums.js";
 import { ForumThreadPage } from "@/pages/learn/LearnForumThread.js";
+import { LearnDashboardPage } from "@/pages/learn/LearnDashboard.js";
+import { LearnNotesPage } from "@/pages/learn/LearnNotes.js";
+import { LearnLibraryPage } from "@/pages/learn/LearnLibrary.js";
+import { LearnSettingsPage } from "@/pages/learn/LearnSettings.js";
 
 function RequireAdmin({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isAdmin, isInstructor, isStudent } = useAuth();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!isAdmin) {
     if (isInstructor) return <Navigate to="/teacher/courses" replace />;
-    if (isStudent) return <Navigate to="/learn/catalog" replace />;
+    if (isStudent) return <Navigate to="/learn/dashboard" replace />;
     return <Navigate to="/login" replace />;
   }
   return <>{children}</>;
@@ -171,6 +175,11 @@ export function App() {
           <RequireStudent>
             <LearnShell>
               <Routes>
+                <Route
+                  path="/"
+                  element={<Navigate to="/learn/dashboard" replace />}
+                />
+                <Route path="/dashboard" element={<LearnDashboardPage />} />
                 <Route path="/catalog" element={<LearnCatalogPage />} />
                 <Route path="/courses" element={<LearnMyCoursesPage />} />
                 <Route
@@ -189,7 +198,9 @@ export function App() {
                 <Route path="/messages" element={<LearnMessagesPage />} />
                 <Route path="/ai" element={<LearnAIChatPage />} />
                 <Route path="/documents" element={<LearnDocumentsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/notes" element={<LearnNotesPage />} />
+                <Route path="/library" element={<LearnLibraryPage />} />
+                <Route path="/settings" element={<LearnSettingsPage />} />
                 <Route
                   path="/forums"
                   element={<ForumsPage basePath="/learn" />}

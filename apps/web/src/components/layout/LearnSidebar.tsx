@@ -1,86 +1,78 @@
-import { NavLink, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
-  BookOpen,
-  GraduationCap,
-  LogOut,
-  TrendingUp,
-  MessageSquare,
-  Bot,
+  LayoutDashboard,
   Award,
-  FileText,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  BookOpen,
+  StickyNote,
+  TrendingUp,
+  Bot,
+  Library,
+  MessageSquare,
   MessageCircle,
   Settings,
+  LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
-const nav = [
-  {
-    to: "/learn/catalog",
-    label: "Catalogue",
-    icon: GraduationCap,
-    end: false,
-  },
-  {
-    to: "/learn/courses",
-    label: "Mes formations",
-    icon: BookOpen,
-    end: false,
-  },
-  {
-    to: "/learn/progress",
-    label: "Ma progression",
-    icon: TrendingUp,
-    end: false,
-  },
-  {
-    to: "/learn/certificates",
-    label: "Certificats",
-    icon: Award,
-    end: false,
-  },
-  {
-    to: "/learn/messages",
-    label: "Messages",
-    icon: MessageSquare,
-    end: false,
-  },
-  { to: "/learn/ai", label: "IA", icon: Bot, end: false },
-  {
-    to: "/learn/documents",
-    label: "Mes documents",
-    icon: FileText,
-    end: false,
-  },
-  {
-    to: "/learn/forums",
-    label: "Forum",
-    icon: MessageCircle,
-    end: false,
-  },
-  {
-    to: "/learn/settings",
-    label: "Paramètres",
-    icon: Settings,
-    end: false,
-  },
+const FORMATION_PATHS = [
+  "/learn/catalog",
+  "/learn/courses",
+  "/learn/notes",
+  "/learn/progress",
+  "/learn/ai",
+  "/learn/library",
 ];
+
+function linkClass(isActive: boolean): string {
+  return cn(
+    "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
+    isActive
+      ? "text-teal bg-white/5"
+      : "text-white/50 hover:text-white/80 hover:bg-white/5",
+  );
+}
+
+function subLinkClass(isActive: boolean): string {
+  return cn(
+    "flex items-center gap-2.5 pl-8 pr-3 py-2 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+    isActive
+      ? "text-teal bg-white/5"
+      : "text-white/40 hover:text-white/70 hover:bg-white/5",
+  );
+}
 
 export function LearnSidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const unreadMessages = useUnreadMessages();
 
-  function handleLogout() {
+  const isFormationActive = FORMATION_PATHS.some((p) =>
+    location.pathname.startsWith(p),
+  );
+
+  const [formationOpen, setFormationOpen] = useState(isFormationActive);
+
+  function handleLogout(): void {
     logout();
     navigate("/login");
   }
 
+  function toggleFormation(): void {
+    setFormationOpen((v) => !v);
+  }
+
   return (
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
-      <div className="h-14 flex items-center px-6 border-b border-white/10">
+      {/* Brand */}
+      <div className="h-14 flex items-center px-6 border-b border-white/10 shrink-0">
         <span className="text-white font-bold tracking-tight">
           <span className="text-teal">Psycho</span>study
         </span>
@@ -89,36 +81,132 @@ export function LearnSidebar() {
         </span>
       </div>
 
-      <nav className="flex-1 py-6 px-3 space-y-0.5">
-        {nav.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
-                isActive
-                  ? "text-teal bg-white/5"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5",
-              )
-            }
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+        {/* Dashboard */}
+        <NavLink
+          to="/learn/dashboard"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <LayoutDashboard size={15} />
+          <span>Tableau de bord</span>
+        </NavLink>
+
+        {/* Certificates sub-link (indented) */}
+        <NavLink
+          to="/learn/certificates"
+          className={({ isActive }) => subLinkClass(isActive)}
+        >
+          <Award size={13} />
+          <span>Certificats</span>
+        </NavLink>
+
+        {/* Formation collapsible */}
+        <div className="pt-1">
+          <button
+            onClick={toggleFormation}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
           >
-            <Icon size={15} />
-            <span className="flex-1">{label}</span>
-            {to === "/learn/messages" && unreadMessages > 0 && (
-              <span className="ml-auto bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {unreadMessages > 9 ? "9+" : String(unreadMessages)}
-              </span>
+            <BookOpen size={15} />
+            <span className="flex-1 text-left">Formation</span>
+            {formationOpen ? (
+              <ChevronDown size={13} />
+            ) : (
+              <ChevronRight size={13} />
             )}
-          </NavLink>
-        ))}
+          </button>
+
+          {formationOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/learn/catalog"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <GraduationCap size={13} />
+                <span>Catalogue</span>
+              </NavLink>
+
+              <NavLink
+                to="/learn/courses"
+                end={false}
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BookOpen size={13} />
+                <span>Mes formations</span>
+              </NavLink>
+
+              <NavLink
+                to="/learn/notes"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <StickyNote size={13} />
+                <span>Notes</span>
+              </NavLink>
+
+              <NavLink
+                to="/learn/progress"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <TrendingUp size={13} />
+                <span>Progression</span>
+              </NavLink>
+
+              <NavLink
+                to="/learn/ai"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Bot size={13} />
+                <span>IA &amp; Documents</span>
+              </NavLink>
+
+              <NavLink
+                to="/learn/library"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Library size={13} />
+                <span>Bibliothèque</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Messages */}
+        <NavLink
+          to="/learn/messages"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <MessageSquare size={15} />
+          <span className="flex-1">Messages</span>
+          {unreadMessages > 0 && (
+            <span className="bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {unreadMessages > 9 ? "9+" : String(unreadMessages)}
+            </span>
+          )}
+        </NavLink>
+
+        {/* Forum */}
+        <NavLink
+          to="/learn/forums"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <MessageCircle size={15} />
+          <span>Forum</span>
+        </NavLink>
+
+        {/* Settings */}
+        <NavLink
+          to="/learn/settings"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <Settings size={15} />
+          <span>Paramètres</span>
+        </NavLink>
       </nav>
 
-      {/* Notifications */}
+      {/* Notification bell */}
       <NotificationBell />
 
-      <div className="px-3 py-4 border-t border-white/10">
+      {/* User + logout */}
+      <div className="px-3 py-4 border-t border-white/10 shrink-0">
         <div className="px-3 mb-2">
           <p className="text-xs text-white/80 font-medium truncate">
             {user?.firstName} {user?.lastName}

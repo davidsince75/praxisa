@@ -175,6 +175,24 @@ export interface UserSearchResponse {
 
 // ── Courses ────────────────────────────────────────────────────────────────────
 
+export interface MyProfile {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: string;
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+  createdAt: string;
+}
+
+export interface UserMeResponse {
+  user: MyProfile;
+}
+
 export interface Course {
   id: string;
   slug: string;

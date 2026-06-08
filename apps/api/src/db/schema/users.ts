@@ -39,6 +39,13 @@ export const users = pgTable("users", {
   emailVerified: boolean("email_verified").notNull().default(false),
   isRestricted: boolean("is_restricted").notNull().default(false),
 
+  // Profile / civil status
+  phone: text("phone"),
+  address: text("address"),
+  city: text("city"),
+  postalCode: text("postal_code"),
+  country: text("country").default("France"),
+
   // GDPR: soft delete — rows are never hard-deleted; DSR erasure zeroes PII fields
   deletedAt: timestamp("deleted_at", { withTimezone: true }),
 

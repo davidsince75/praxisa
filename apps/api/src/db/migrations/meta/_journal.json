@@ -169,6 +169,13 @@
       "when": 1749427200000,
       "tag": "0023_fix_cascade_deletes",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1749513600000,
+      "tag": "0024_user_profile",
+      "breakpoints": true
     }
   ]
 }

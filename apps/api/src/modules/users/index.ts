@@ -29,6 +29,16 @@ const updateUserSchema = z.object({
   isRestricted: z.boolean().optional(),
 });
 
+const updateMyProfileSchema = z.object({
+  firstName: z.string().min(1).max(100).optional(),
+  lastName: z.string().min(1).max(100).optional(),
+  phone: z.string().max(30).nullable().optional(),
+  address: z.string().max(200).nullable().optional(),
+  city: z.string().max(100).nullable().optional(),
+  postalCode: z.string().max(20).nullable().optional(),
+  country: z.string().max(100).nullable().optional(),
+});
+
 const listUsersQuerySchema = z.object({
   role: z.enum(["admin", "instructor", "student", "migration_lead"]).optional(),
   search: z.string().max(200).optional(),
@@ -375,6 +385,69 @@ export const usersPlugin = (
       });
 
       return reply.status(204).send();
+    },
+  );
+
+  // ── GET /users/me ────────────────────────────────────────────────────────────
+  fastify.get(
+    "/users/me",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { sub } = request.jwtPayload;
+      const rows = await fastify.db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          phone: users.phone,
+          address: users.address,
+          city: users.city,
+          postalCode: users.postalCode,
+          country: users.country,
+          createdAt: users.createdAt,
+        })
+        .from(users)
+        .where(eq(users.id, sub));
+      if (rows.length === 0) {
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
+      }
+      return reply.send({ user: rows[0] });
+    },
+  );
+
+  // ── PATCH /users/me ───────────────────────────────────────────────────────────
+  fastify.patch(
+    "/users/me",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { sub } = request.jwtPayload;
+      const parse = updateMyProfileSchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+      const body = parse.data;
+      const updated = await fastify.db
+        .update(users)
+        .set({ ...body, updatedAt: new Date() })
+        .where(eq(users.id, sub))
+        .returning({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          phone: users.phone,
+          address: users.address,
+          city: users.city,
+          postalCode: users.postalCode,
+          country: users.country,
+        });
+      if (updated.length === 0) {
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
+      }
+      return reply.send({ user: updated[0] });
     },
   );
 
