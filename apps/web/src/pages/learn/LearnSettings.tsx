@@ -188,21 +188,20 @@ export function LearnSettingsPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {PROFILE_FIELDS.map(({ key, label }) => (
-                <div
-                  key={key}
-                  className="flex gap-3 text-xs py-1 border-b border-rule last:border-0"
-                >
-                  <span className="text-meta w-24 shrink-0">{label}</span>
-                  <span className="text-dark font-medium">
-                    {profile?.[key] !== null &&
-                    profile?.[key] !== undefined &&
-                    (profile?.[key] as string).length > 0
-                      ? (profile?.[key] as string)
-                      : "—"}
-                  </span>
-                </div>
-              ))}
+              {PROFILE_FIELDS.map(({ key, label }) => {
+                const val = profile?.[key] ?? "";
+                return (
+                  <div
+                    key={key}
+                    className="flex gap-3 text-xs py-1 border-b border-rule last:border-0"
+                  >
+                    <span className="text-meta w-24 shrink-0">{label}</span>
+                    <span className="text-dark font-medium">
+                      {val.length > 0 ? val : "—"}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           )}
         </CardContent>
