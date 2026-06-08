@@ -422,7 +422,13 @@ export const usersPlugin = (
         city: string | null;
         postalCode: string | null;
         country: string | null;
-      } = { phone: null, address: null, city: null, postalCode: null, country: null };
+      } = {
+        phone: null,
+        address: null,
+        city: null,
+        postalCode: null,
+        country: null,
+      };
 
       try {
         const profileRows = await fastify.db
