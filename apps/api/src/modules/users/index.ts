@@ -464,26 +464,59 @@ export const usersPlugin = (
         return reply.status(400).send({ error: parse.error.flatten() });
       }
       const body = parse.data;
-      const updated = await fastify.db
-        .update(users)
-        .set({ ...body, updatedAt: new Date() })
-        .where(eq(users.id, sub))
-        .returning({
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          role: users.role,
-          phone: users.phone,
-          address: users.address,
-          city: users.city,
-          postalCode: users.postalCode,
-          country: users.country,
+
+      // Try full update including profile columns. If the columns don't exist
+      // yet (migration pending), fall back to updating core fields only.
+      try {
+        const updated = await fastify.db
+          .update(users)
+          .set({ ...body, updatedAt: new Date() })
+          .where(eq(users.id, sub))
+          .returning({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            role: users.role,
+            phone: users.phone,
+            address: users.address,
+            city: users.city,
+            postalCode: users.postalCode,
+            country: users.country,
+          });
+        if (updated.length === 0) {
+          return reply.status(404).send({ error: "Utilisateur introuvable" });
+        }
+        return reply.send({ user: updated[0] });
+      } catch {
+        // Profile columns not yet migrated — update core fields only
+        const { phone, address, city, postalCode, country, ...coreBody } = body;
+        const coreUpdated = await fastify.db
+          .update(users)
+          .set({ ...coreBody, updatedAt: new Date() })
+          .where(eq(users.id, sub))
+          .returning({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            role: users.role,
+          });
+        if (coreUpdated.length === 0) {
+          return reply.status(404).send({ error: "Utilisateur introuvable" });
+        }
+        const row = coreUpdated[0];
+        return reply.send({
+          user: {
+            ...row,
+            phone: null,
+            address: null,
+            city: null,
+            postalCode: null,
+            country: null,
+          },
         });
-      if (updated.length === 0) {
-        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
-      return reply.send({ user: updated[0] });
     },
   );
 
