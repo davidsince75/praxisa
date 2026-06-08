@@ -912,6 +912,27 @@ function LessonViewer({
         </CardContent>
       </Card>
 
+      {/* Quiz exercises attached to non-quiz lessons */}
+      {lesson.contentType !== "quiz" &&
+        lesson.exercises
+          .filter((ex) => ex.type === "quiz")
+          .map((ex) => (
+            <div
+              key={ex.id}
+              className="border border-slate-200 rounded-xl p-5 space-y-4"
+            >
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <HelpCircle size={15} className="text-teal" />
+                Quiz : {ex.title}
+              </div>
+              <Quiz
+                exerciseId={ex.id}
+                enrolmentId={enrolmentId}
+                onComplete={onMarkComplete}
+              />
+            </div>
+          ))}
+
       {/* Assignment / reflection exercises */}
       {lesson.exercises
         .filter((ex) => ex.type === "assignment" || ex.type === "reflection")

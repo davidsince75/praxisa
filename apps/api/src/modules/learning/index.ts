@@ -1954,5 +1954,77 @@ export const learningPlugin = (
     },
   );
 
+  // PATCH /exercises/:exerciseId/questions/:questionId — update question
+  fastify.patch(
+    "/exercises/:exerciseId/questions/:questionId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { exerciseId, questionId } = request.params as {
+        exerciseId: string;
+        questionId: string;
+      };
+      const { role } = request.jwtPayload;
+      if (role !== "instructor" && role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      const bodySchema = z.object({
+        questionText: z.string().min(1).max(1000).optional(),
+        options: z
+          .array(z.object({ id: z.string(), text: z.string().min(1) }))
+          .min(2)
+          .max(6)
+          .optional(),
+        correctOptionId: z.string().min(1).optional(),
+        explanation: z.string().max(2000).nullable().optional(),
+      });
+
+      const parse = bodySchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+
+      const updated = await fastify.db
+        .update(quizQuestions)
+        .set({
+          ...(parse.data.questionText !== undefined
+            ? { questionText: parse.data.questionText }
+            : {}),
+          ...(parse.data.options !== undefined
+            ? { options: JSON.stringify(parse.data.options) }
+            : {}),
+          ...(parse.data.correctOptionId !== undefined
+            ? { correctOptionId: parse.data.correctOptionId }
+            : {}),
+          ...(parse.data.explanation !== undefined
+            ? { explanation: parse.data.explanation }
+            : {}),
+        })
+        .where(
+          and(
+            eq(quizQuestions.id, questionId),
+            eq(quizQuestions.exerciseId, exerciseId),
+          ),
+        )
+        .returning();
+
+      const [q] = updated;
+      if (q === undefined) {
+        return reply.status(404).send({ error: "Question introuvable" });
+      }
+
+      return reply.send({
+        question: {
+          id: q.id,
+          position: q.position,
+          questionText: q.questionText,
+          options: JSON.parse(q.options) as { id: string; text: string }[],
+          correctOptionId: q.correctOptionId,
+          explanation: q.explanation,
+        },
+      });
+    },
+  );
+
   done();
 };
