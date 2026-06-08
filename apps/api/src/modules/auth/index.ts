@@ -122,7 +122,17 @@ export const authPlugin = (
       const body = parse.data;
 
       const rows = await fastify.db
-        .select()
+        .select({
+          id: users.id,
+          email: users.email,
+          passwordHash: users.passwordHash,
+          role: users.role,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          isActive: users.isActive,
+          isRestricted: users.isRestricted,
+          deletedAt: users.deletedAt,
+        })
         .from(users)
         .where(eq(users.email, body.email))
         .limit(1);

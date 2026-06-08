@@ -451,7 +451,18 @@ export const gdprPlugin = (
 
       const [userRows, enrolmentRows, consentRows, auditRows] =
         await Promise.all([
-          fastify.db.select().from(users).where(eq(users.id, userId)).limit(1),
+          fastify.db
+            .select({
+              id: users.id,
+              email: users.email,
+              firstName: users.firstName,
+              lastName: users.lastName,
+              role: users.role,
+              createdAt: users.createdAt,
+            })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1),
           fastify.db
             .select()
             .from(enrolments)
