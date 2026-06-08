@@ -1839,13 +1839,14 @@ export const learningPlugin = (
         options: JSON.parse(q.options) as { id: string; text: string }[],
         explanation: q.explanation,
         // Admins and instructors see the answer key
-        ...(role === "admin" || role === "instructor" ? { correctOptionId: q.correctOptionId } : {}),
+        ...(role === "admin" || role === "instructor"
+          ? { correctOptionId: q.correctOptionId }
+          : {}),
       }));
 
       return reply.send({ exercise, questions: sanitised });
     },
   );
-
 
   // ═══════════════════════════════════════════════════════════════════════════
   // QUIZ QUESTIONS
