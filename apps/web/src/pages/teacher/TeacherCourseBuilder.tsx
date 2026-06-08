@@ -300,7 +300,12 @@ interface ModuleRowProps {
   onRefresh: () => void;
 }
 
-function ModuleRow({ courseId, mod, basePath = "/teacher", onRefresh }: ModuleRowProps) {
+function ModuleRow({
+  courseId,
+  mod,
+  basePath = "/teacher",
+  onRefresh,
+}: ModuleRowProps) {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(true);
   const [editOpen, setEditOpen] = useState(false);
@@ -500,7 +505,10 @@ interface BuilderProps {
   backTo?: string;
 }
 
-export function TeacherCourseBuilderPage({ basePath = "/teacher", backTo }: BuilderProps) {
+export function TeacherCourseBuilderPage({
+  basePath = "/teacher",
+  backTo,
+}: BuilderProps) {
   const { courseId } = useParams<{ courseId: string }>();
   const id = courseId ?? "";
   const queryClient = useQueryClient();

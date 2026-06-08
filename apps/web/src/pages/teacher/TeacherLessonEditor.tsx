@@ -203,7 +203,9 @@ function ExerciseCard({
 
 // ── Main page ────────────────────────────────────────────────────────────────────
 
-export function TeacherLessonEditorPage({ basePath = "/teacher" }: { basePath?: string } = {}) {
+export function TeacherLessonEditorPage({
+  basePath = "/teacher",
+}: { basePath?: string } = {}) {
   const {
     courseId = "",
     moduleId = "",
