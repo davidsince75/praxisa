@@ -233,6 +233,9 @@ export function TeacherLessonEditorPage({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
+  // Sidebar resize
+  const [sidebarWidth, setSidebarWidth] = useState(320);
+
   // Exercise form state
   const [addingExercise, setAddingExercise] = useState(false);
   const [newExTitle, setNewExTitle] = useState("");
@@ -393,6 +396,23 @@ export function TeacherLessonEditorPage({
   const goBack = useCallback(() => {
     navigate(`${basePath}/courses/${courseId}/builder`);
   }, [navigate, courseId]);
+
+  function handleResizeStart(e: React.MouseEvent): void {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+    function onMove(ev: MouseEvent): void {
+      setSidebarWidth(
+        Math.max(280, Math.min(820, startWidth + (startX - ev.clientX))),
+      );
+    }
+    function onUp(): void {
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseup", onUp);
+    }
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseup", onUp);
+  }
 
   return (
     <div className="fixed inset-y-0 left-56 right-0 z-40 bg-white flex flex-col">
@@ -586,8 +606,17 @@ export function TeacherLessonEditorPage({
           </div>
         </div>
 
+        {/* ── Resize handle ──────────────────────────────────────────── */}
+        <div
+          className="w-1.5 shrink-0 cursor-col-resize hover:bg-blue-300/60 bg-transparent transition-colors z-10"
+          onMouseDown={handleResizeStart}
+        />
+
         {/* ── Right sidebar ───────────────────────────────────────────── */}
-        <div className="w-80 shrink-0 overflow-auto border-l border-slate-200 bg-slate-50/50 p-5 space-y-6">
+        <div
+          style={{ width: sidebarWidth }}
+          className="shrink-0 overflow-auto border-l border-slate-200 bg-slate-50/50 p-5 space-y-6"
+        >
           {/* Settings */}
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">

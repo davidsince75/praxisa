@@ -1095,6 +1095,7 @@ export function LearnCoursePlayerPage() {
       return api.get<CourseDetailResponse>(`/courses/${courseId}`);
     },
     enabled: enrolmentData?.enrolment.courseId !== undefined,
+    staleTime: 0,
   });
 
   const progressMutation = useMutation({
