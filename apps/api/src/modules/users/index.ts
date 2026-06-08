@@ -394,26 +394,56 @@ export const usersPlugin = (
     { preHandler: [fastify.authenticate] },
     async (request, reply) => {
       const { sub } = request.jwtPayload;
-      const rows = await fastify.db
+
+      // Core fields — always exist since initial schema
+      const coreRows = await fastify.db
         .select({
           id: users.id,
           email: users.email,
           firstName: users.firstName,
           lastName: users.lastName,
           role: users.role,
-          phone: users.phone,
-          address: users.address,
-          city: users.city,
-          postalCode: users.postalCode,
-          country: users.country,
           createdAt: users.createdAt,
         })
         .from(users)
         .where(eq(users.id, sub));
-      if (rows.length === 0) {
+
+      if (coreRows.length === 0) {
         return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
-      return reply.send({ user: rows[0] });
+
+      const core = coreRows[0];
+
+      // Profile fields — added in migration 0024/0025; fall back to nulls if
+      // the columns haven't been applied to this DB yet.
+      let profile: {
+        phone: string | null;
+        address: string | null;
+        city: string | null;
+        postalCode: string | null;
+        country: string | null;
+      } = { phone: null, address: null, city: null, postalCode: null, country: null };
+
+      try {
+        const profileRows = await fastify.db
+          .select({
+            phone: users.phone,
+            address: users.address,
+            city: users.city,
+            postalCode: users.postalCode,
+            country: users.country,
+          })
+          .from(users)
+          .where(eq(users.id, sub));
+
+        if (profileRows.length > 0 && profileRows[0] !== undefined) {
+          profile = profileRows[0];
+        }
+      } catch {
+        // Migration not yet applied on this environment — return nulls
+      }
+
+      return reply.send({ user: { ...core, ...profile } });
     },
   );
 
