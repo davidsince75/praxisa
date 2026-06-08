@@ -286,6 +286,7 @@ export function CourseManagementPage() {
 
   function invalidate() {
     void queryClient.invalidateQueries({ queryKey: ["courses"] });
+    void queryClient.invalidateQueries({ queryKey: ["analytics", "overview"] });
   }
 
   return (
