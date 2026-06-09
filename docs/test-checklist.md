@@ -4,6 +4,9 @@
 
 - [ ] Login with admin credentials → redirects to dashboard
 - [ ] Create a new user (student role)
+- [ ] Open any user row → click contact icon → profile dialog opens (identity + coordonnées)
+- [ ] Edit phone / address / city / postal code / country in the profile dialog and save
+- [ ] Click "Copier les coordonnées" → clipboard contains formatted name, email, phone, address block
 - [ ] Create a new course, add a lesson, publish it
 - [ ] View analytics dashboard (charts render)
 - [ ] Create a campaign (draft), then send it

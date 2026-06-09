@@ -15,7 +15,13 @@ import {
   Check,
 } from "lucide-react";
 import { api } from "@/lib/api.js";
-import type { User, UserListResponse, UserRole, UserDetail, UserDetailResponse } from "@/lib/api.js";
+import type {
+  User,
+  UserListResponse,
+  UserRole,
+  UserDetail,
+  UserDetailResponse,
+} from "@/lib/api.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
@@ -587,7 +593,11 @@ function UserProfileDialog({ userId, onOpenChange }: UserProfileDialogProps) {
     }, 2000);
   }
 
-  const PROFILE_FIELDS: Array<{ key: keyof ProfileForm; label: string; type: string }> = [
+  const PROFILE_FIELDS: Array<{
+    key: keyof ProfileForm;
+    label: string;
+    type: string;
+  }> = [
     { key: "phone", label: "Telephone", type: "tel" },
     { key: "address", label: "Adresse", type: "text" },
     { key: "city", label: "Ville", type: "text" },
@@ -707,9 +717,13 @@ function UserProfileDialog({ userId, onOpenChange }: UserProfileDialogProps) {
                       <div key={key} className="flex items-start gap-2 text-xs">
                         <span className="text-meta w-24 shrink-0">{label}</span>
                         <span className="text-dark font-medium">
-                          {(val !== null && val !== undefined && val.length > 0)
-                            ? val
-                            : <span className="text-meta">&#8212;</span>}
+                          {val !== null &&
+                          val !== undefined &&
+                          val.length > 0 ? (
+                            val
+                          ) : (
+                            <span className="text-meta">&#8212;</span>
+                          )}
                         </span>
                       </div>
                     );
@@ -744,7 +758,6 @@ function UserProfileDialog({ userId, onOpenChange }: UserProfileDialogProps) {
     </Dialog>
   );
 }
-
 
 // ── Main page ─────────────────────────────────────────────────────────────────────
 
@@ -1044,7 +1057,9 @@ export function UserManagementPage() {
       <UserProfileDialog
         userId={profileUserId}
         onOpenChange={(v) => {
-          if (!v) { setProfileUserId(null); }
+          if (!v) {
+            setProfileUserId(null);
+          }
         }}
       />
 

@@ -1,12 +1,7 @@
 import type { FastifyInstance } from "fastify";
 import { and, eq, sql } from "drizzle-orm";
-import { z } from "zod";
 import { courseRatings, enrolments } from "../../db/schema/index.js";
-
-const ratingSchema = z.object({
-  rating: z.number().int().min(1).max(5),
-  comment: z.string().max(500).optional(),
-});
+import { ratingSchema } from "./validation.js";
 
 export function ratingsPlugin(fastify: FastifyInstance) {
   // POST /courses/:courseId/ratings — student upserts a rating

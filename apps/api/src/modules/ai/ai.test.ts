@@ -178,7 +178,7 @@ describe("generateAdminDraft JSON parsing (unit)", () => {
     const { generateAdminDraft: generate } = await import("./rag.service.js");
     const draft = await generate("some intent", {}, "fake-key");
 
-    expect(draft.subject).toBe("(Draft — review required)");
+    expect(draft.subject).toBe("(Brouillon — vérification requise)");
     expect(draft.body).toContain("Bonjour");
     expect(draft.intentClassification).toBe("unknown");
   });

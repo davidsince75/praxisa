@@ -21,7 +21,7 @@ await pool.query(`
 console.log("OK user_profiles table ready");
 
 const res = await pool.query(
-  "DELETE FROM __drizzle_migrations WHERE tag LIKE '%0026%' RETURNING tag"
+  "DELETE FROM __drizzle_migrations WHERE tag LIKE '%0026%' RETURNING tag",
 );
 if ((res.rowCount ?? 0) > 0) {
   console.log("Cleared stale migration entry:", res.rows[0].tag);
