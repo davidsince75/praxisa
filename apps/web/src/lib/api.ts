@@ -161,6 +161,18 @@ export interface UserListResponse {
   meta: { total: number; page: number; limit: number; pages: number };
 }
 
+export interface UserDetail extends User {
+  phone: string | null;
+  address: string | null;
+  city: string | null;
+  postalCode: string | null;
+  country: string | null;
+}
+
+export interface UserDetailResponse {
+  user: UserDetail;
+}
+
 export interface UserSearchResult {
   id: string;
   firstName: string;

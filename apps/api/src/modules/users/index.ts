@@ -27,6 +27,12 @@ const updateUserSchema = z.object({
   isActive: z.boolean().optional(),
   emailVerified: z.boolean().optional(),
   isRestricted: z.boolean().optional(),
+  // Extended profile fields (stored in user_profiles table)
+  phone: z.string().max(30).nullable().optional(),
+  address: z.string().max(200).nullable().optional(),
+  city: z.string().max(100).nullable().optional(),
+  postalCode: z.string().max(20).nullable().optional(),
+  country: z.string().max(100).nullable().optional(),
 });
 
 const updateMyProfileSchema = z.object({
@@ -185,13 +191,19 @@ export const usersPlugin = (
           role: users.role,
           isActive: users.isActive,
           emailVerified: users.emailVerified,
+          isRestricted: users.isRestricted,
           lastLoginAt: users.lastLoginAt,
           createdAt: users.createdAt,
           updatedAt: users.updatedAt,
+          phone: userProfiles.phone,
+          address: userProfiles.address,
+          city: userProfiles.city,
+          postalCode: userProfiles.postalCode,
+          country: userProfiles.country,
         })
         .from(users)
-        .where(and(eq(users.id, userId), isNull(users.deletedAt)))
-        .limit(1);
+        .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+        .where(and(eq(users.id, userId), isNull(users.deletedAt)));
 
       if (rows[0] === undefined) {
         return reply.status(404).send({ error: "Utilisateur introuvable" });
@@ -306,20 +318,47 @@ export const usersPlugin = (
       }
       const body = parse.data;
 
-      const updated = await fastify.db
-        .update(users)
-        .set({ ...body, updatedAt: new Date() })
-        .where(eq(users.id, userId))
-        .returning({
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          role: users.role,
-          isActive: users.isActive,
-          emailVerified: users.emailVerified,
-          updatedAt: users.updatedAt,
-        });
+      // Separate core identity fields from extended profile fields
+      const { phone, address, city, postalCode, country, ...coreBody } = body;
+
+      const hasCoreUpdate = Object.keys(coreBody).length > 0;
+      const hasProfileUpdate =
+        phone !== undefined ||
+        address !== undefined ||
+        city !== undefined ||
+        postalCode !== undefined ||
+        country !== undefined;
+
+      if (hasCoreUpdate) {
+        await fastify.db
+          .update(users)
+          .set({ ...coreBody, updatedAt: new Date() })
+          .where(eq(users.id, userId));
+      }
+
+      if (hasProfileUpdate) {
+        await fastify.db
+          .insert(userProfiles)
+          .values({
+            userId,
+            phone: phone ?? null,
+            address: address ?? null,
+            city: city ?? null,
+            postalCode: postalCode ?? null,
+            country: country ?? null,
+          })
+          .onConflictDoUpdate({
+            target: userProfiles.userId,
+            set: {
+              ...(phone !== undefined ? { phone } : {}),
+              ...(address !== undefined ? { address } : {}),
+              ...(city !== undefined ? { city } : {}),
+              ...(postalCode !== undefined ? { postalCode } : {}),
+              ...(country !== undefined ? { country } : {}),
+              updatedAt: new Date(),
+            },
+          });
+      }
 
       await emitEvent({
         actorUserId: sub,
@@ -331,7 +370,31 @@ export const usersPlugin = (
         sourceIp: request.ip,
       });
 
-      return reply.send({ user: updated[0] });
+      // Return full user + profile
+      const rows = await fastify.db
+        .select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          isActive: users.isActive,
+          emailVerified: users.emailVerified,
+          isRestricted: users.isRestricted,
+          lastLoginAt: users.lastLoginAt,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
+          phone: userProfiles.phone,
+          address: userProfiles.address,
+          city: userProfiles.city,
+          postalCode: userProfiles.postalCode,
+          country: userProfiles.country,
+        })
+        .from(users)
+        .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+        .where(and(eq(users.id, userId), isNull(users.deletedAt)));
+
+      return reply.send({ user: rows[0] });
     },
   );
 
