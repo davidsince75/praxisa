@@ -903,29 +903,27 @@ export function UserManagementPage() {
                       key={u.id}
                       className="hover:bg-cream/50 transition-colors"
                     >
-                      <td className="px-3 py-2 font-medium text-dark w-36 max-w-[144px]">
+                      <td className="px-3 py-2 font-medium text-dark">
                         <button
                           type="button"
-                          className="flex min-w-0 items-center gap-1.5 text-teal hover:text-teal/80 hover:underline transition-colors text-left"
+                          className="flex items-center gap-1.5 text-teal hover:text-teal/80 hover:underline transition-colors text-left"
                           title="Envoyer un message"
                           onClick={() => {
                             setMessageUser(u);
                           }}
                         >
                           <MessageSquare size={12} className="shrink-0" />
-                          <span className="truncate">
-                            {u.firstName} {u.lastName}
-                          </span>
+                          {u.firstName} {u.lastName}
                         </button>
                       </td>
-                      <td className="px-3 py-2 w-44 max-w-[176px]">
+                      <td className="px-3 py-2">
                         <a
                           href={`mailto:${u.email}`}
-                          className="flex min-w-0 items-center gap-1.5 text-meta hover:text-dark hover:underline transition-colors"
+                          className="flex items-center gap-1.5 text-meta hover:text-dark hover:underline transition-colors"
                           title="Envoyer un email"
                         >
                           <Mail size={12} className="shrink-0" />
-                          <span className="truncate">{u.email}</span>
+                          {u.email}
                         </a>
                       </td>
                       <td className="px-3 py-2">
