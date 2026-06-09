@@ -873,28 +873,28 @@ export function UserManagementPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-rule">
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Nom
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Email
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Rôle
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Statut
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Restriction
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Dernière connexion
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
                       Créé le
                     </th>
-                    <th className="px-6 py-3" />
+                    <th className="px-3 py-2" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-rule">
@@ -903,35 +903,37 @@ export function UserManagementPage() {
                       key={u.id}
                       className="hover:bg-cream/50 transition-colors"
                     >
-                      <td className="px-6 py-3 font-medium text-dark">
+                      <td className="px-3 py-2 font-medium text-dark w-36 max-w-[144px]">
                         <button
                           type="button"
-                          className="flex items-center gap-1.5 text-teal hover:text-teal/80 hover:underline transition-colors text-left"
+                          className="flex min-w-0 items-center gap-1.5 text-teal hover:text-teal/80 hover:underline transition-colors text-left"
                           title="Envoyer un message"
                           onClick={() => {
                             setMessageUser(u);
                           }}
                         >
                           <MessageSquare size={12} className="shrink-0" />
-                          {u.firstName} {u.lastName}
+                          <span className="truncate">
+                            {u.firstName} {u.lastName}
+                          </span>
                         </button>
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="px-3 py-2 w-44 max-w-[176px]">
                         <a
                           href={`mailto:${u.email}`}
-                          className="flex items-center gap-1.5 text-meta hover:text-dark hover:underline transition-colors"
+                          className="flex min-w-0 items-center gap-1.5 text-meta hover:text-dark hover:underline transition-colors"
                           title="Envoyer un email"
                         >
                           <Mail size={12} className="shrink-0" />
-                          {u.email}
+                          <span className="truncate">{u.email}</span>
                         </a>
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="px-3 py-2">
                         <Badge variant={roleBadgeVariant(u.role)}>
                           {ROLE_LABELS[u.role]}
                         </Badge>
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="px-3 py-2">
                         {u.isActive ? (
                           <span className="flex items-center gap-1.5 text-xs text-olive font-bold uppercase tracking-wider">
                             <UserCheck size={12} />
@@ -944,22 +946,22 @@ export function UserManagementPage() {
                           </span>
                         )}
                       </td>
-                      <td className="px-6 py-3">
+                      <td className="px-3 py-2">
                         {u.isRestricted ? (
                           <Badge variant="pending">Restreint</Badge>
                         ) : (
                           <span className="text-meta">—</span>
                         )}
                       </td>
-                      <td className="px-6 py-3 text-meta">
+                      <td className="px-3 py-2 text-meta">
                         {u.lastLoginAt !== null
                           ? formatDate(u.lastLoginAt)
                           : "—"}
                       </td>
-                      <td className="px-6 py-3 text-meta">
+                      <td className="px-3 py-2 text-meta">
                         {formatDate(u.createdAt)}
                       </td>
-                      <td className="px-6 py-3 text-right">
+                      <td className="px-3 py-2 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
                             type="button"
