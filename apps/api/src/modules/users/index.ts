@@ -3,7 +3,7 @@ import { and, asc, count, eq, ilike, isNull, or, sql } from "drizzle-orm";
 import { hash } from "@node-rs/argon2";
 import { z } from "zod";
 import { emitEvent } from "@praxisa/audit-sdk";
-import { users } from "../../db/schema/index.js";
+import { users, userProfiles } from "../../db/schema/index.js";
 
 // ── Validation schemas ─────────────────────────────────────────────────────────
 
@@ -403,13 +403,14 @@ export const usersPlugin = (
           lastName: users.lastName,
           role: users.role,
           createdAt: users.createdAt,
-          phone: users.phone,
-          address: users.address,
-          city: users.city,
-          postalCode: users.postalCode,
-          country: users.country,
+          phone: userProfiles.phone,
+          address: userProfiles.address,
+          city: userProfiles.city,
+          postalCode: userProfiles.postalCode,
+          country: userProfiles.country,
         })
         .from(users)
+        .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
         .where(eq(users.id, sub));
 
       if (rows.length === 0) {
@@ -432,27 +433,77 @@ export const usersPlugin = (
       }
       const body = parse.data;
 
-      const updated = await fastify.db
-        .update(users)
-        .set({ ...body, updatedAt: new Date() })
-        .where(eq(users.id, sub))
-        .returning({
+      // Update core identity fields (name) if provided
+      if (body.firstName !== undefined || body.lastName !== undefined) {
+        await fastify.db
+          .update(users)
+          .set({
+            ...(body.firstName !== undefined
+              ? { firstName: body.firstName }
+              : {}),
+            ...(body.lastName !== undefined ? { lastName: body.lastName } : {}),
+            updatedAt: new Date(),
+          })
+          .where(eq(users.id, sub));
+      }
+
+      // Upsert extended profile fields into the separate user_profiles table
+      const hasProfileFields =
+        body.phone !== undefined ||
+        body.address !== undefined ||
+        body.city !== undefined ||
+        body.postalCode !== undefined ||
+        body.country !== undefined;
+
+      if (hasProfileFields) {
+        await fastify.db
+          .insert(userProfiles)
+          .values({
+            userId: sub,
+            phone: body.phone ?? null,
+            address: body.address ?? null,
+            city: body.city ?? null,
+            postalCode: body.postalCode ?? null,
+            country: body.country ?? null,
+          })
+          .onConflictDoUpdate({
+            target: userProfiles.userId,
+            set: {
+              ...(body.phone !== undefined ? { phone: body.phone } : {}),
+              ...(body.address !== undefined ? { address: body.address } : {}),
+              ...(body.city !== undefined ? { city: body.city } : {}),
+              ...(body.postalCode !== undefined
+                ? { postalCode: body.postalCode }
+                : {}),
+              ...(body.country !== undefined ? { country: body.country } : {}),
+              updatedAt: new Date(),
+            },
+          });
+      }
+
+      // Return full user + profile via LEFT JOIN
+      const rows = await fastify.db
+        .select({
           id: users.id,
           email: users.email,
           firstName: users.firstName,
           lastName: users.lastName,
           role: users.role,
           createdAt: users.createdAt,
-          phone: users.phone,
-          address: users.address,
-          city: users.city,
-          postalCode: users.postalCode,
-          country: users.country,
-        });
-      if (updated.length === 0) {
+          phone: userProfiles.phone,
+          address: userProfiles.address,
+          city: userProfiles.city,
+          postalCode: userProfiles.postalCode,
+          country: userProfiles.country,
+        })
+        .from(users)
+        .leftJoin(userProfiles, eq(userProfiles.userId, users.id))
+        .where(eq(users.id, sub));
+
+      if (rows.length === 0) {
         return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
-      return reply.send({ user: updated[0] });
+      return reply.send({ user: rows[0] });
     },
   );
 

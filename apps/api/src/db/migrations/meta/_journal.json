@@ -183,6 +183,13 @@
       "when": 1749600000000,
       "tag": "0025_ensure_user_profile_columns",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1749686400000,
+      "tag": "0026_user_profiles",
+      "breakpoints": true
     }
   ]
 }

@@ -16,3 +16,4 @@ export * from "./preferences.js";
 export * from "./tags.js";
 export * from "./gmail.js";
 export * from "./files.js";
+export * from "./user_profiles.js";

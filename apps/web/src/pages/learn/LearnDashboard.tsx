@@ -64,9 +64,10 @@ export function LearnDashboardPage() {
   });
 
   const saveMutation = useMutation({
-    mutationFn: (body: typeof form) => api.patch("/users/me", body),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["users-me"] });
+    mutationFn: (body: typeof form) =>
+      api.patch<UserMeResponse>("/users/me", body),
+    onSuccess: (data) => {
+      queryClient.setQueryData<UserMeResponse>(["users-me"], data);
       setEditMode(false);
       setSaveError("");
     },
