@@ -78,6 +78,20 @@ await app.register(rateLimit, {
 // DB
 await app.register(dbPlugin, { databaseUrl: config.databaseUrl });
 
+// Self-heal: ensure user_profiles table exists regardless of migration tracking state.
+// CREATE TABLE IF NOT EXISTS is idempotent — safe to run on every startup.
+await app.db.execute(sql`
+  CREATE TABLE IF NOT EXISTS user_profiles (
+    user_id     UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    phone       TEXT,
+    address     TEXT,
+    city        TEXT,
+    postal_code TEXT,
+    country     TEXT NOT NULL DEFAULT 'France',
+    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  )
+`);
+
 // Comms
 await app.register(commsPlugin, {
   brevoApiKey: config.comms.brevoApiKey,
