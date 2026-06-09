@@ -1,4 +1,6 @@
-import { NavLink, useNavigate } from "react-router-dom";
+﻿import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import type { LucideIcon } from "lucide-react";
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -15,35 +17,93 @@ import {
   Settings,
   Inbox,
   CreditCard,
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  ClipboardList,
+  Layers,
+  Megaphone,
+  TrendingUp,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
-const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
-  { to: "/users", label: "Utilisateurs", icon: Users, end: false },
-  { to: "/courses", label: "Cours/Modules", icon: BookOpen, end: false },
-  { to: "/analytics", label: "Analytiques", icon: BarChart2, end: false },
-  { to: "/messages", label: "Messages", icon: MessageSquare, end: false },
-  { to: "/forums", label: "Forum", icon: MessageCircle, end: false },
-  { to: "/campaigns", label: "Campagnes", icon: Mail, end: false },
-  { to: "/ai-assistant", label: "IA", icon: Bot, end: false },
-  { to: "/email", label: "Admissions", icon: Inbox, end: false },
-  { to: "/payments", label: "Paiements", icon: CreditCard, end: false },
-  { to: "/import", label: "Import", icon: Upload, end: false },
-  { to: "/gdpr", label: "DSR Queue", icon: ShieldCheck, end: false },
-  { to: "/audit", label: "Audit Log", icon: ScrollText, end: false },
-  { to: "/settings", label: "Paramètres", icon: Settings, end: false },
+const PLATEFORME_PATHS = [
+  "/users",
+  "/courses",
+  "/email",
+  "/payments",
+  "/import",
 ];
+const COMMUNICATION_PATHS = ["/messages", "/campaigns", "/forums"];
+const ANALYSES_PATHS = ["/analytics", "/ai-assistant"];
+const SYSTEME_PATHS = ["/gdpr", "/audit", "/settings"];
+const FORMATEUR_PATHS = ["/teacher"];
+
+function linkClass(isActive: boolean): string {
+  return cn(
+    "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
+    isActive
+      ? "text-teal bg-white/5"
+      : "text-white/50 hover:text-white/80 hover:bg-white/5",
+  );
+}
+
+function subLinkClass(isActive: boolean): string {
+  return cn(
+    "flex items-center gap-2.5 pl-8 pr-3 py-2 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+    isActive
+      ? "text-teal bg-white/5"
+      : "text-white/40 hover:text-white/70 hover:bg-white/5",
+  );
+}
+
+interface GroupToggleProps {
+  label: string;
+  icon: LucideIcon;
+  open: boolean;
+  onToggle: () => void;
+}
+
+function GroupToggle({ label, icon: Icon, open, onToggle }: GroupToggleProps) {
+  return (
+    <button
+      onClick={onToggle}
+      className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+    >
+      <Icon size={15} />
+      <span className="flex-1 text-left">{label}</span>
+      {open ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
+    </button>
+  );
+}
 
 export function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const unreadMessages = useUnreadMessages();
 
-  function handleLogout() {
+  const [plateformeOpen, setPlateformeOpen] = useState(
+    PLATEFORME_PATHS.some((p) => location.pathname.startsWith(p)),
+  );
+  const [communicationOpen, setCommunicationOpen] = useState(
+    COMMUNICATION_PATHS.some((p) => location.pathname.startsWith(p)),
+  );
+  const [analysesOpen, setAnalysesOpen] = useState(
+    ANALYSES_PATHS.some((p) => location.pathname.startsWith(p)),
+  );
+  const [systemeOpen, setSystemeOpen] = useState(
+    SYSTEME_PATHS.some((p) => location.pathname.startsWith(p)),
+  );
+  const [formateurOpen, setFormateurOpen] = useState(
+    FORMATEUR_PATHS.some((p) => location.pathname.startsWith(p)),
+  );
+
+  function handleLogout(): void {
     logout();
     navigate("/login");
   }
@@ -51,7 +111,7 @@ export function Sidebar() {
   return (
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
       {/* Logo */}
-      <div className="h-14 flex items-center px-6 border-b border-white/10">
+      <div className="h-14 flex items-center px-6 border-b border-white/10 shrink-0">
         <span className="text-white font-bold tracking-tight">
           <span className="text-teal">Psycho</span>study
         </span>
@@ -60,38 +120,233 @@ export function Sidebar() {
         </span>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-6 px-3 space-y-0.5">
-        {nav.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
-                isActive
-                  ? "text-teal bg-white/5"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5",
-              )
-            }
-          >
-            <Icon size={15} />
-            <span className="flex-1">{label}</span>
-            {to === "/messages" && unreadMessages > 0 && (
-              <span className="ml-auto bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {unreadMessages > 9 ? "9+" : String(unreadMessages)}
-              </span>
-            )}
-          </NavLink>
-        ))}
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+        {/* Dashboard */}
+        <NavLink to="/" end className={({ isActive }) => linkClass(isActive)}>
+          <LayoutDashboard size={15} />
+          <span>Dashboard</span>
+        </NavLink>
+
+        {/* Plateforme */}
+        <div className="pt-1">
+          <GroupToggle
+            label="Plateforme"
+            icon={Layers}
+            open={plateformeOpen}
+            onToggle={() => {
+              setPlateformeOpen((v) => !v);
+            }}
+          />
+          {plateformeOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/users"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Users size={13} />
+                <span>Utilisateurs</span>
+              </NavLink>
+              <NavLink
+                to="/courses"
+                end={false}
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BookOpen size={13} />
+                <span>Cours / Modules</span>
+              </NavLink>
+              <NavLink
+                to="/email"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Inbox size={13} />
+                <span>Admissions</span>
+              </NavLink>
+              <NavLink
+                to="/payments"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <CreditCard size={13} />
+                <span>Paiements</span>
+              </NavLink>
+              <NavLink
+                to="/import"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Upload size={13} />
+                <span>Import</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Communication */}
+        <div className="pt-1">
+          <GroupToggle
+            label="Communication"
+            icon={Megaphone}
+            open={communicationOpen}
+            onToggle={() => {
+              setCommunicationOpen((v) => !v);
+            }}
+          />
+          {communicationOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/messages"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <MessageSquare size={13} />
+                <span className="flex-1">Messages</span>
+                {unreadMessages > 0 && (
+                  <span className="bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                    {unreadMessages > 9 ? "9+" : String(unreadMessages)}
+                  </span>
+                )}
+              </NavLink>
+              <NavLink
+                to="/campaigns"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Mail size={13} />
+                <span>Campagnes</span>
+              </NavLink>
+              <NavLink
+                to="/forums"
+                end={false}
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <MessageCircle size={13} />
+                <span>Forum</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Analyses */}
+        <div className="pt-1">
+          <GroupToggle
+            label="Analyses"
+            icon={TrendingUp}
+            open={analysesOpen}
+            onToggle={() => {
+              setAnalysesOpen((v) => !v);
+            }}
+          />
+          {analysesOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/analytics"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BarChart2 size={13} />
+                <span>Analytiques</span>
+              </NavLink>
+              <NavLink
+                to="/ai-assistant"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Bot size={13} />
+                <span>IA Assistant</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Système */}
+        <div className="pt-1">
+          <GroupToggle
+            label="Système"
+            icon={Lock}
+            open={systemeOpen}
+            onToggle={() => {
+              setSystemeOpen((v) => !v);
+            }}
+          />
+          {systemeOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/gdpr"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <ShieldCheck size={13} />
+                <span>DSR Queue</span>
+              </NavLink>
+              <NavLink
+                to="/audit"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <ScrollText size={13} />
+                <span>Audit Log</span>
+              </NavLink>
+              <NavLink
+                to="/settings"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Settings size={13} />
+                <span>Paramètres</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Espace Formateur */}
+        <div className="pt-1">
+          <GroupToggle
+            label="Formateur"
+            icon={GraduationCap}
+            open={formateurOpen}
+            onToggle={() => {
+              setFormateurOpen((v) => !v);
+            }}
+          />
+          {formateurOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/teacher/courses"
+                end={false}
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BookOpen size={13} />
+                <span>Mes cours</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/students"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Users size={13} />
+                <span>Mes élèves</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/grading"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <ClipboardList size={13} />
+                <span>Travaux</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/analytics"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BarChart2 size={13} />
+                <span>Analytiques cours</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/ai"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Bot size={13} />
+                <span>IA Ingest</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
       </nav>
 
       {/* Notifications */}
       <NotificationBell />
 
       {/* User */}
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-white/10 shrink-0">
         <div className="px-3 mb-2">
           <p className="text-xs text-white/80 font-medium truncate">
             {user?.firstName} {user?.lastName}

@@ -1,6 +1,6 @@
-import { NavLink, useNavigate } from "react-router-dom";
+﻿import { useState } from "react";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
 import {
-  BookOpen,
   LayoutDashboard,
   LogOut,
   BarChart2,
@@ -8,64 +8,69 @@ import {
   Bot,
   Users,
   ClipboardList,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
   MessageCircle,
   Settings,
+  GraduationCap,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
-const nav = [
-  { to: "/teacher/courses", label: "Mes cours", icon: BookOpen, end: false },
-  { to: "/teacher/students", label: "Mes élèves", icon: Users, end: false },
-  {
-    to: "/teacher/grading",
-    label: "Travaux",
-    icon: ClipboardList,
-    end: false,
-  },
-  {
-    to: "/teacher/analytics",
-    label: "Analytiques",
-    icon: BarChart2,
-    end: false,
-  },
-  {
-    to: "/teacher/messages",
-    label: "Messages",
-    icon: MessageSquare,
-    end: false,
-  },
-  { to: "/teacher/ai", label: "IA", icon: Bot, end: false },
-  {
-    to: "/teacher/forums",
-    label: "Forum",
-    icon: MessageCircle,
-    end: false,
-  },
-  {
-    to: "/teacher/settings",
-    label: "Paramètres",
-    icon: Settings,
-    end: false,
-  },
+const ENSEIGNEMENT_PATHS = [
+  "/teacher/courses",
+  "/teacher/students",
+  "/teacher/grading",
+  "/teacher/analytics",
+  "/teacher/ai",
 ];
+
+function linkClass(isActive: boolean): string {
+  return cn(
+    "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
+    isActive
+      ? "text-teal bg-white/5"
+      : "text-white/50 hover:text-white/80 hover:bg-white/5",
+  );
+}
+
+function subLinkClass(isActive: boolean): string {
+  return cn(
+    "flex items-center gap-2.5 pl-8 pr-3 py-2 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+    isActive
+      ? "text-teal bg-white/5"
+      : "text-white/40 hover:text-white/70 hover:bg-white/5",
+  );
+}
 
 export function TeacherSidebar() {
   const { user, logout, isAdmin } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const unreadMessages = useUnreadMessages();
 
-  function handleLogout() {
+  const isEnseignementActive = ENSEIGNEMENT_PATHS.some((p) =>
+    location.pathname.startsWith(p),
+  );
+  const [enseignementOpen, setEnseignementOpen] =
+    useState(isEnseignementActive);
+
+  function handleLogout(): void {
     logout();
     navigate("/login");
+  }
+
+  function toggleEnseignement(): void {
+    setEnseignementOpen((v) => !v);
   }
 
   return (
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
       {/* Logo */}
-      <div className="h-14 flex items-center px-6 border-b border-white/10">
+      <div className="h-14 flex items-center px-6 border-b border-white/10 shrink-0">
         <span className="text-white font-bold tracking-tight">
           <span className="text-teal">Psycho</span>study
         </span>
@@ -74,46 +79,101 @@ export function TeacherSidebar() {
         </span>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-6 px-3 space-y-0.5">
-        {nav.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
-                isActive
-                  ? "text-teal bg-white/5"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5",
-              )
-            }
+      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+        {/* Enseignement collapsible */}
+        <div>
+          <button
+            onClick={toggleEnseignement}
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
           >
-            <Icon size={15} />
-            <span className="flex-1">{label}</span>
-            {to === "/teacher/messages" && unreadMessages > 0 && (
-              <span className="ml-auto bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                {unreadMessages > 9 ? "9+" : String(unreadMessages)}
-              </span>
+            <GraduationCap size={15} />
+            <span className="flex-1 text-left">Enseignement</span>
+            {enseignementOpen ? (
+              <ChevronDown size={13} />
+            ) : (
+              <ChevronRight size={13} />
             )}
-          </NavLink>
-        ))}
+          </button>
+
+          {enseignementOpen && (
+            <div className="space-y-0.5 mt-0.5">
+              <NavLink
+                to="/teacher/courses"
+                end={false}
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BookOpen size={13} />
+                <span>Mes cours</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/students"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Users size={13} />
+                <span>Mes élèves</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/grading"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <ClipboardList size={13} />
+                <span>Travaux</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/analytics"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <BarChart2 size={13} />
+                <span>Analytiques</span>
+              </NavLink>
+              <NavLink
+                to="/teacher/ai"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Bot size={13} />
+                <span>IA Ingest</span>
+              </NavLink>
+            </div>
+          )}
+        </div>
+
+        {/* Messages */}
+        <NavLink
+          to="/teacher/messages"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <MessageSquare size={15} />
+          <span className="flex-1">Messages</span>
+          {unreadMessages > 0 && (
+            <span className="bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              {unreadMessages > 9 ? "9+" : String(unreadMessages)}
+            </span>
+          )}
+        </NavLink>
+
+        {/* Forum */}
+        <NavLink
+          to="/teacher/forums"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <MessageCircle size={15} />
+          <span>Forum</span>
+        </NavLink>
+
+        {/* Settings */}
+        <NavLink
+          to="/teacher/settings"
+          className={({ isActive }) => linkClass(isActive)}
+        >
+          <Settings size={15} />
+          <span>Paramètres</span>
+        </NavLink>
+
+        {/* Switch to admin portal (admin users only) */}
         {isAdmin && (
-          <NavLink
-            to="/"
-            end
-            className={({ isActive }) =>
-              cn(
-                "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
-                isActive
-                  ? "text-teal bg-white/5"
-                  : "text-white/50 hover:text-white/80 hover:bg-white/5",
-              )
-            }
-          >
+          <NavLink to="/" end className={({ isActive }) => linkClass(isActive)}>
             <LayoutDashboard size={15} />
-            Admin
+            <span>Admin</span>
           </NavLink>
         )}
       </nav>
@@ -122,7 +182,7 @@ export function TeacherSidebar() {
       <NotificationBell />
 
       {/* User */}
-      <div className="px-3 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-white/10 shrink-0">
         <div className="px-3 mb-2">
           <p className="text-xs text-white/80 font-medium truncate">
             {user?.firstName} {user?.lastName}
