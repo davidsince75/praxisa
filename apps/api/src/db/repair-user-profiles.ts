@@ -24,7 +24,8 @@ const res = await pool.query(
   "DELETE FROM __drizzle_migrations WHERE tag LIKE '%0026%' RETURNING tag",
 );
 if ((res.rowCount ?? 0) > 0) {
-  console.log("Cleared stale migration entry:", res.rows[0].tag);
+  const row = res.rows[0] as { tag: string };
+  console.log("Cleared stale migration entry:", row.tag);
 } else {
   console.log("No stale tracking entry found");
 }

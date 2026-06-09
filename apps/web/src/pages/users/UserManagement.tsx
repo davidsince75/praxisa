@@ -593,11 +593,11 @@ function UserProfileDialog({ userId, onOpenChange }: UserProfileDialogProps) {
     }, 2000);
   }
 
-  const PROFILE_FIELDS: Array<{
+  const PROFILE_FIELDS: {
     key: keyof ProfileForm;
     label: string;
     type: string;
-  }> = [
+  }[] = [
     { key: "phone", label: "Telephone", type: "tel" },
     { key: "address", label: "Adresse", type: "text" },
     { key: "city", label: "Ville", type: "text" },
@@ -717,9 +717,7 @@ function UserProfileDialog({ userId, onOpenChange }: UserProfileDialogProps) {
                       <div key={key} className="flex items-start gap-2 text-xs">
                         <span className="text-meta w-24 shrink-0">{label}</span>
                         <span className="text-dark font-medium">
-                          {val !== null &&
-                          val !== undefined &&
-                          val.length > 0 ? (
+                          {val !== null && val.length > 0 ? (
                             val
                           ) : (
                             <span className="text-meta">&#8212;</span>
