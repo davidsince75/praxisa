@@ -40,11 +40,10 @@ export function LearnSettingsPage() {
   const profile = meData?.user;
 
   const saveMutation = useMutation({
-    mutationFn: async (body: typeof profileForm) => {
-      await api.patch("/users/me", body);
-      await queryClient.refetchQueries({ queryKey: ["users-me"] });
-    },
-    onSuccess: () => {
+    mutationFn: (body: typeof profileForm) =>
+      api.patch<UserMeResponse>("/users/me", body),
+    onSuccess: (data) => {
+      queryClient.setQueryData<UserMeResponse>(["users-me"], data);
       setProfileError("");
       setProfileSuccess(true);
       setTimeout(() => {

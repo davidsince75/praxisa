@@ -395,8 +395,7 @@ export const usersPlugin = (
     async (request, reply) => {
       const { sub } = request.jwtPayload;
 
-      // Core fields — always exist since initial schema
-      const coreRows = await fastify.db
+      const rows = await fastify.db
         .select({
           id: users.id,
           email: users.email,
@@ -404,52 +403,20 @@ export const usersPlugin = (
           lastName: users.lastName,
           role: users.role,
           createdAt: users.createdAt,
+          phone: users.phone,
+          address: users.address,
+          city: users.city,
+          postalCode: users.postalCode,
+          country: users.country,
         })
         .from(users)
         .where(eq(users.id, sub));
 
-      if (coreRows.length === 0) {
+      if (rows.length === 0) {
         return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
 
-      const core = coreRows[0];
-
-      // Profile fields — added in migration 0024/0025; fall back to nulls if
-      // the columns haven't been applied to this DB yet.
-      let profile: {
-        phone: string | null;
-        address: string | null;
-        city: string | null;
-        postalCode: string | null;
-        country: string | null;
-      } = {
-        phone: null,
-        address: null,
-        city: null,
-        postalCode: null,
-        country: null,
-      };
-
-      try {
-        const profileRows = await fastify.db
-          .select({
-            phone: users.phone,
-            address: users.address,
-            city: users.city,
-            postalCode: users.postalCode,
-            country: users.country,
-          })
-          .from(users)
-          .where(eq(users.id, sub));
-
-        if (profileRows.length > 0 && profileRows[0] !== undefined) {
-          profile = profileRows[0];
-        }
-      } catch {
-        // Migration not yet applied on this environment — return nulls
-      }
-
-      return reply.send({ user: { ...core, ...profile } });
+      return reply.send({ user: rows[0] });
     },
   );
 
@@ -465,61 +432,27 @@ export const usersPlugin = (
       }
       const body = parse.data;
 
-      // Try full update including profile columns. If the columns don't exist
-      // yet (migration pending), fall back to updating core fields only.
-      try {
-        const updated = await fastify.db
-          .update(users)
-          .set({ ...body, updatedAt: new Date() })
-          .where(eq(users.id, sub))
-          .returning({
-            id: users.id,
-            email: users.email,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            role: users.role,
-            phone: users.phone,
-            address: users.address,
-            city: users.city,
-            postalCode: users.postalCode,
-            country: users.country,
-          });
-        if (updated.length === 0) {
-          return reply.status(404).send({ error: "Utilisateur introuvable" });
-        }
-        return reply.send({ user: updated[0] });
-      } catch {
-        // Profile columns not yet migrated — update core fields only
-        const coreBody = {
-          ...(body.firstName !== undefined && { firstName: body.firstName }),
-          ...(body.lastName !== undefined && { lastName: body.lastName }),
-        };
-        const coreUpdated = await fastify.db
-          .update(users)
-          .set({ ...coreBody, updatedAt: new Date() })
-          .where(eq(users.id, sub))
-          .returning({
-            id: users.id,
-            email: users.email,
-            firstName: users.firstName,
-            lastName: users.lastName,
-            role: users.role,
-          });
-        if (coreUpdated.length === 0) {
-          return reply.status(404).send({ error: "Utilisateur introuvable" });
-        }
-        const row = coreUpdated[0];
-        return reply.send({
-          user: {
-            ...row,
-            phone: null,
-            address: null,
-            city: null,
-            postalCode: null,
-            country: null,
-          },
+      const updated = await fastify.db
+        .update(users)
+        .set({ ...body, updatedAt: new Date() })
+        .where(eq(users.id, sub))
+        .returning({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          role: users.role,
+          createdAt: users.createdAt,
+          phone: users.phone,
+          address: users.address,
+          city: users.city,
+          postalCode: users.postalCode,
+          country: users.country,
         });
+      if (updated.length === 0) {
+        return reply.status(404).send({ error: "Utilisateur introuvable" });
       }
+      return reply.send({ user: updated[0] });
     },
   );
 
