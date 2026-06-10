@@ -4,6 +4,16 @@ server {
     root         /usr/share/nginx/html;
     index        index.html;
 
+    # Security headers. script-src 'self' is the main XSS mitigation — JWTs
+    # live in localStorage, and lesson bodies are teacher-authored HTML.
+    # frame-src allows the two embed origins lessons actually use:
+    # Google Docs viewer (PDF) and YouTube. img/media allow https: because
+    # lesson content may reference external images and audio.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; font-src 'self' data:; connect-src 'self'; frame-src 'self' https://docs.google.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
     # gzip compression
     gzip on;
     gzip_types text/plain text/css application/json application/javascript text/xml application/xml text/javascript;
@@ -14,10 +24,13 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Static assets — long cache with immutable hint
+    # Static assets — long cache with immutable hint.
+    # NB: add_header in a location block discards server-level add_headers,
+    # so nosniff is repeated here.
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff2?)$ {
         expires 30d;
         add_header Cache-Control "public, immutable";
+        add_header X-Content-Type-Options "nosniff" always;
     }
 
     # API reverse proxy — forward /v1 requests to the API service

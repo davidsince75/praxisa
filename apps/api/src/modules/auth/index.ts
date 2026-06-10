@@ -8,6 +8,10 @@ import {
   signToken,
   signEmailToken,
   verifyEmailToken,
+  passwordInvalidationKey,
+  resetTokenUsedKey,
+  RESET_TOKEN_TTL_SECONDS,
+  TOKEN_TTL_SECONDS,
 } from "./service.js";
 import {
   registerBodySchema,
@@ -34,6 +38,7 @@ export const authPlugin = (
 
   fastify.post(
     "/register",
+    { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parse = registerBodySchema.safeParse(request.body);
       if (!parse.success) {
@@ -60,7 +65,9 @@ export const authPlugin = (
           firstName: body.firstName,
           lastName: body.lastName,
           passwordHash,
-          role: body.role,
+          // Self-registration is always a student account — staff roles are
+          // granted only through the admin users API.
+          role: "student",
         })
         .returning();
 
@@ -114,6 +121,7 @@ export const authPlugin = (
 
   fastify.post(
     "/login",
+    { config: { rateLimit: { max: 10, timeWindow: "1 minute" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parse = loginBodySchema.safeParse(request.body);
       if (!parse.success) {
@@ -228,11 +236,11 @@ export const authPlugin = (
 
       let userId: string;
       try {
-        userId = await verifyEmailToken(
+        ({ userId } = await verifyEmailToken(
           parse.data.token,
           "email_verify",
           config.jwt.publicKey,
-        );
+        ));
       } catch {
         return reply.status(400).send({ error: "Jeton invalide ou expiré" });
       }
@@ -260,6 +268,7 @@ export const authPlugin = (
 
   fastify.post(
     "/resend-verification",
+    { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parse = resendVerificationBodySchema.safeParse(request.body);
       if (!parse.success) {
@@ -304,6 +313,7 @@ export const authPlugin = (
 
   fastify.post(
     "/forgot-password",
+    { config: { rateLimit: { max: 5, timeWindow: "15 minutes" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parse = forgotPasswordBodySchema.safeParse(request.body);
       if (!parse.success) {
@@ -348,6 +358,7 @@ export const authPlugin = (
 
   fastify.post(
     "/reset-password",
+    { config: { rateLimit: { max: 10, timeWindow: "15 minutes" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       const parse = resetPasswordBodySchema.safeParse(request.body);
       if (!parse.success) {
@@ -355,14 +366,30 @@ export const authPlugin = (
       }
 
       let userId: string;
+      let jti: string | null;
       try {
-        userId = await verifyEmailToken(
+        ({ userId, jti } = await verifyEmailToken(
           parse.data.token,
           "pwd_reset",
           config.jwt.publicKey,
-        );
+        ));
       } catch {
         return reply.status(400).send({ error: "Jeton invalide ou expiré" });
+      }
+
+      // Single-use: SET NX atomically claims the jti — a second attempt with
+      // the same token fails even within its 30-minute validity window.
+      if (jti !== null) {
+        const claimed = await fastify.redis.set(
+          resetTokenUsedKey(jti),
+          "1",
+          "EX",
+          RESET_TOKEN_TTL_SECONDS,
+          "NX",
+        );
+        if (claimed === null) {
+          return reply.status(400).send({ error: "Jeton invalide ou expiré" });
+        }
       }
 
       const passwordHash = await hashPassword(parse.data.password);
@@ -370,6 +397,15 @@ export const authPlugin = (
         .update(users)
         .set({ passwordHash })
         .where(eq(users.id, userId));
+
+      // Invalidate every session JWT issued before this reset. The decorator
+      // rejects tokens whose iat is older than this watermark.
+      await fastify.redis.set(
+        passwordInvalidationKey(userId),
+        String(Math.floor(Date.now() / 1000)),
+        "EX",
+        TOKEN_TTL_SECONDS,
+      );
 
       await emitEvent({
         actorUserId: userId,

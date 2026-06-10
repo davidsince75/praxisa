@@ -205,3 +205,27 @@ jobs:
           fi
         env:
           DATABASE_URL: postgresql://praxisa:test_password@localhost:5432/praxisa_migration_test
+
+  # ── 5. Production build ───────────────────────────────────────────────────────
+  # Catches failures tsc alone cannot (Vite/Rollup bundling, asset resolution)
+  # before they surface as a broken Railway deploy.
+  build:
+    name: Build (all workspaces)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build all workspaces
+        run: pnpm build

@@ -24,32 +24,20 @@ export function PdfUpload({
       setError("Seuls les fichiers PDF sont acceptés.");
       return;
     }
-    if (file.size > 30 * 1024 * 1024) {
-      setError("Fichier trop volumineux (max 30 Mo).");
+    if (file.size > 50 * 1024 * 1024) {
+      setError("Fichier trop volumineux (max 50 Mo).");
       return;
     }
 
     setUploading(true);
     setError("");
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(arrayBuffer);
-      let binary = "";
-      for (const byte of bytes) {
-        binary += String.fromCharCode(byte);
-      }
-      const base64 = btoa(binary);
-
-      const res = await api.post<UploadFileResponse>("/files", {
-        filename: file.name,
-        mimeType: "application/pdf",
-        data: base64,
-      });
-
+      // Send raw binary — no base64 conversion, no JSON overhead
+      const res = await api.upload<UploadFileResponse>("/files", file);
       setFilename(file.name);
       onUpload(res.file.id);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Erreur d'upload");
+      setError(err instanceof Error ? err.message : "Erreur d’upload");
     } finally {
       setUploading(false);
     }

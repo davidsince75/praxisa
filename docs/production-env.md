@@ -32,7 +32,7 @@ Railway pulls them at deploy time via the Doppler → Railway integration.
 | `CORS_ORIGINS`           | `CORS_ORIGINS`           | `https://app.praxisa.fr` (no trailing slash, no wildcard) |
 | `APP_BASE_URL`           | `APP_BASE_URL`           | `https://app.praxisa.fr`                                  |
 | `JWT_SIGNING_KEY`        | `JWT_SIGNING_KEY`        | **New key pair — never reuse staging keys in production** |
-| `JWT_SIGNING_KEY_PUBLIC` | `JWT_SIGNING_KEY_PUBLIC` | Base64-encoded Ed25519 public key (PEM)                   |
+| `JWT_SIGNING_KEY_PUBLIC` | `JWT_SIGNING_KEY_PUBLIC` | Base64-encoded RSA public key (PEM, SPKI)                 |
 | `BREVO_API_KEY`          | `BREVO_API_KEY`          | Production Brevo API key (separate from staging)          |
 | `BREVO_SENDER_EMAIL`     | `BREVO_SENDER_EMAIL`     | `noreply@praxisa.fr`                                      |
 | `BREVO_SENDER_NAME`      | `BREVO_SENDER_NAME`      | `Praxisa`                                                 |
@@ -41,7 +41,7 @@ Railway pulls them at deploy time via the Doppler → Railway integration.
 ### Generating production JWT keys
 
 ```bash
-openssl genpkey -algorithm ed25519 -out prod_jwt_private.pem
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out prod_jwt_private.pem
 openssl pkey -in prod_jwt_private.pem -pubout -out prod_jwt_public.pem
 
 base64 -w0 prod_jwt_private.pem   # → JWT_SIGNING_KEY (Doppler prd)

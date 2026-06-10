@@ -2,10 +2,13 @@ import { generateKeyPairSync } from "crypto";
 import { describe, expect, it } from "vitest";
 import {
   hashPassword,
+  signEmailToken,
   signToken,
+  verifyEmailToken,
   verifyPassword,
   verifyToken,
 } from "./service.js";
+import { registerBodySchema } from "./types.js";
 
 // Ephemeral RS256 key pair — no secrets needed in CI
 const { privateKey, publicKey } = generateKeyPairSync("rsa", {
@@ -79,5 +82,89 @@ describe("signToken / verifyToken", () => {
     const token = await signToken(TEST_PAYLOAD, privateKeyPem);
     const tampered = token.slice(0, -4) + "XXXX";
     await expect(verifyToken(tampered, publicKeyPem)).rejects.toThrow();
+  });
+});
+
+// ── Register schema — privilege-escalation regression ─────────────────────────
+
+describe("registerBodySchema — role cannot be injected", () => {
+  const VALID_BODY = {
+    email: "newuser@example.com",
+    password: "a-long-enough-password",
+    firstName: "Alice",
+    lastName: "Martin",
+  };
+
+  it("accepts a valid registration body", () => {
+    const result = registerBodySchema.safeParse(VALID_BODY);
+    expect(result.success).toBe(true);
+  });
+
+  it("strips a client-supplied admin role (regression: privilege escalation)", () => {
+    const result = registerBodySchema.safeParse({
+      ...VALID_BODY,
+      role: "admin",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect("role" in result.data).toBe(false);
+    }
+  });
+
+  it("strips a client-supplied instructor role", () => {
+    const result = registerBodySchema.safeParse({
+      ...VALID_BODY,
+      role: "instructor",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect("role" in result.data).toBe(false);
+    }
+  });
+});
+
+// ── Email-purpose tokens ───────────────────────────────────────────────────────
+
+describe("signEmailToken / verifyEmailToken", () => {
+  const USER_ID = "00000000-0000-0000-0000-000000000002";
+
+  it("round-trips userId and returns a jti", async () => {
+    const token = await signEmailToken(USER_ID, "pwd_reset", privateKeyPem);
+    const verified = await verifyEmailToken(token, "pwd_reset", publicKeyPem);
+
+    expect(verified.userId).toBe(USER_ID);
+    expect(verified.jti).toBeTruthy();
+  });
+
+  it("issues a unique jti per token (single-use enforcement relies on this)", async () => {
+    const t1 = await signEmailToken(USER_ID, "pwd_reset", privateKeyPem);
+    const t2 = await signEmailToken(USER_ID, "pwd_reset", privateKeyPem);
+
+    const v1 = await verifyEmailToken(t1, "pwd_reset", publicKeyPem);
+    const v2 = await verifyEmailToken(t2, "pwd_reset", publicKeyPem);
+
+    expect(v1.jti).not.toBe(v2.jti);
+  });
+
+  it("rejects a token used for the wrong purpose", async () => {
+    const token = await signEmailToken(USER_ID, "email_verify", privateKeyPem);
+    await expect(
+      verifyEmailToken(token, "pwd_reset", publicKeyPem),
+    ).rejects.toThrow();
+  });
+});
+
+// ── iat passthrough (session invalidation depends on it) ──────────────────────
+
+describe("verifyToken — iat claim", () => {
+  it("returns the issued-at timestamp", async () => {
+    const before = Math.floor(Date.now() / 1000);
+    const token = await signToken(TEST_PAYLOAD, privateKeyPem);
+    const verified = await verifyToken(token, publicKeyPem);
+    const after = Math.floor(Date.now() / 1000);
+
+    expect(verified.iat).toBeDefined();
+    expect(verified.iat).toBeGreaterThanOrEqual(before);
+    expect(verified.iat).toBeLessThanOrEqual(after);
   });
 });

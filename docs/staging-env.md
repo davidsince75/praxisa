@@ -23,8 +23,8 @@ Railway pulls them at deploy time via the Doppler → Railway integration.
 | `REDIS_URL`              | `REDIS_URL`              | Railway Redis plugin injects this automatically         |
 | `CORS_ORIGINS`           | `CORS_ORIGINS`           | Comma-separated list, e.g. `https://staging.praxisa.fr` |
 | `APP_BASE_URL`           | `APP_BASE_URL`           | e.g. `https://staging.praxisa.fr`                       |
-| `JWT_SIGNING_KEY`        | `JWT_SIGNING_KEY`        | Base64-encoded Ed25519 private key (PEM)                |
-| `JWT_SIGNING_KEY_PUBLIC` | `JWT_SIGNING_KEY_PUBLIC` | Base64-encoded Ed25519 public key (PEM)                 |
+| `JWT_SIGNING_KEY`        | `JWT_SIGNING_KEY`        | Base64-encoded RSA private key (PEM, PKCS8)             |
+| `JWT_SIGNING_KEY_PUBLIC` | `JWT_SIGNING_KEY_PUBLIC` | Base64-encoded RSA public key (PEM, SPKI)               |
 | `BREVO_API_KEY`          | `BREVO_API_KEY`          | Brevo v3 API key                                        |
 | `BREVO_SENDER_EMAIL`     | `BREVO_SENDER_EMAIL`     | e.g. `noreply@staging.praxisa.fr`                       |
 | `BREVO_SENDER_NAME`      | `BREVO_SENDER_NAME`      | e.g. `Praxisa Staging`                                  |
@@ -33,8 +33,8 @@ Railway pulls them at deploy time via the Doppler → Railway integration.
 ### Generating JWT keys
 
 ```bash
-# Generate an Ed25519 key pair
-openssl genpkey -algorithm ed25519 -out jwt_private.pem
+# Generate an RSA key pair (the API signs with RS256 — Ed25519 keys will NOT work)
+openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out jwt_private.pem
 openssl pkey -in jwt_private.pem -pubout -out jwt_public.pem
 
 # Base64-encode for Doppler
@@ -85,5 +85,5 @@ Migrations (`0001`–`0004`) run automatically on API container start.
 | Secret name                   | Value                                                          |
 | ----------------------------- | -------------------------------------------------------------- |
 | `RAILWAY_TOKEN`               | Railway project token (Settings → Tokens in Railway dashboard) |
-| `JWT_SIGNING_KEY_TEST`        | Base64-encoded Ed25519 private key for CI test runs            |
-| `JWT_SIGNING_KEY_PUBLIC_TEST` | Base64-encoded Ed25519 public key for CI test runs             |
+| `JWT_SIGNING_KEY_TEST`        | Base64-encoded RSA private key for CI test runs                |
+| `JWT_SIGNING_KEY_PUBLIC_TEST` | Base64-encoded RSA public key for CI test runs                 |

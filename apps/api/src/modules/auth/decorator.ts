@@ -1,6 +1,6 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-import { verifyToken } from "./service.js";
+import { verifyToken, passwordInvalidationKey } from "./service.js";
 import type { AppConfig } from "../../shared/config.js";
 import type { JwtPayload } from "./types.js";
 
@@ -27,20 +27,42 @@ export const authDecoratorPlugin = fp(
         if (!auth?.startsWith("Bearer ")) {
           return reply.status(401).send({ error: "Non autorisé" });
         }
+
+        let payload: JwtPayload;
         try {
-          request.jwtPayload = await verifyToken(
-            auth.slice(7),
-            config.jwt.publicKey,
-          );
+          payload = await verifyToken(auth.slice(7), config.jwt.publicKey);
         } catch {
           return reply.status(401).send({ error: "Jeton invalide ou expiré" });
         }
+
+        // Reject session tokens issued before the user's last password reset.
+        // Fail-open on Redis errors: this is a secondary control and must not
+        // take the whole API down with it.
+        if (payload.iat !== undefined) {
+          try {
+            const invalidatedAt = await fastify.redis.get(
+              passwordInvalidationKey(payload.sub),
+            );
+            if (invalidatedAt !== null && payload.iat < Number(invalidatedAt)) {
+              return reply
+                .status(401)
+                .send({ error: "Session expirée — veuillez vous reconnecter" });
+            }
+          } catch (err: unknown) {
+            request.log.error(
+              { err },
+              "Password-invalidation check failed — allowing request",
+            );
+          }
+        }
+
+        request.jwtPayload = payload;
       },
     );
 
     done();
   },
-  { name: "auth-decorator", dependencies: ["db"] },
+  { name: "auth-decorator", dependencies: ["db", "redis"] },
 );
 
 // ── Fastify type augmentation ──────────────────────────────────────────────────

@@ -43,6 +43,7 @@ const app = Fastify({
   requestIdHeader: "x-request-id",
   genReqId: () => crypto.randomUUID(),
   trustProxy: true,
+  bodyLimit: 10 * 1024 * 1024, // 10 MB default; /files route overrides to 55 MB
 });
 
 // Redis (fp-scoped — must precede rate-limit so app.redis is decorated first)
@@ -66,8 +67,17 @@ app.addContentTypeParser(
   },
 );
 
+// Binary upload parser — used by POST /v1/files
+app.addContentTypeParser(
+  "application/octet-stream",
+  { parseAs: "buffer" },
+  function (_req, body, done) {
+    done(null, body);
+  },
+);
+
 // Security middleware
-await app.register(helmet, { contentSecurityPolicy: false });
+await app.register(helmet);
 await app.register(cors, { origin: config.corsOrigins, credentials: true });
 await app.register(rateLimit, {
   max: 100,
@@ -77,20 +87,6 @@ await app.register(rateLimit, {
 
 // DB
 await app.register(dbPlugin, { databaseUrl: config.databaseUrl });
-
-// Self-heal: ensure user_profiles table exists regardless of migration tracking state.
-// CREATE TABLE IF NOT EXISTS is idempotent — safe to run on every startup.
-await app.db.execute(sql`
-  CREATE TABLE IF NOT EXISTS user_profiles (
-    user_id     UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    phone       TEXT,
-    address     TEXT,
-    city        TEXT,
-    postal_code TEXT,
-    country     TEXT NOT NULL DEFAULT 'France',
-    updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
-  )
-`);
 
 // Comms
 await app.register(commsPlugin, {

@@ -3,6 +3,9 @@ import type { UserRole } from "../../db/schema/index.js";
 
 // ── Request schemas ────────────────────────────────────────────────────────────
 
+// SECURITY: no `role` field here. Public self-registration always creates a
+// student account; admin/instructor accounts are created via the admin users
+// API. Accepting a client-supplied role was a privilege-escalation hole.
 export const registerBodySchema = z.object({
   email: z
     .string()
@@ -12,10 +15,6 @@ export const registerBodySchema = z.object({
   password: z.string().min(12).max(128),
   firstName: z.string().min(1).max(100).trim(),
   lastName: z.string().min(1).max(100).trim(),
-  // Role defaults to student; admin/instructor assignment is done via admin API
-  role: z
-    .enum(["admin", "instructor", "student", "migration_lead"])
-    .default("student"),
 });
 
 export const loginBodySchema = z.object({
@@ -61,6 +60,11 @@ export interface JwtPayload {
   sub: string;
   role: UserRole;
   email: string;
+  /**
+   * Issued-at (epoch seconds). Present on verified tokens; the authenticate
+   * decorator compares it against the password-reset invalidation watermark.
+   */
+  iat?: number;
 }
 
 // ── Response shapes ────────────────────────────────────────────────────────────

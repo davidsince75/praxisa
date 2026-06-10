@@ -233,3 +233,12 @@ export async function upsertLessonProgress(
     .returning();
   return rows[0];
 }
+
+/** Admins manage every course; instructors only their own. */
+export function canManageCourse(
+  course: { instructorId: string | null },
+  userId: string,
+  role: string,
+): boolean {
+  return role === "admin" || isInstructor(course, userId);
+}
