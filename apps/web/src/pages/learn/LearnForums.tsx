@@ -164,7 +164,7 @@ export function ForumsPage({ basePath }: { basePath: string }) {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-dark">Forum</h1>
+        <h1 className="text-2xl font-semibold text-dark">Forum</h1>
         {selectedCourseId !== "" && (
           <Button
             size="sm"
@@ -216,7 +216,7 @@ export function ForumsPage({ basePath }: { basePath: string }) {
       {selectedCourseId !== "" && !isLoading && threads.length === 0 && (
         <Card>
           <CardContent className="p-12 text-center">
-            <MessageCircle size={32} className="text-meta/40 mx-auto mb-3" />
+            <MessageCircle size={32} className="text-meta mx-auto mb-3" />
             <p className="text-meta text-sm">
               Aucune discussion pour ce cours. Lancez le d&eacute;bat !
             </p>

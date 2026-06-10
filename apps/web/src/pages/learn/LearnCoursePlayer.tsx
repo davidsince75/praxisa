@@ -175,14 +175,16 @@ export function LearnCoursePlayerPage() {
     <div className="-mx-8 -my-8">
       {/* Top bar */}
       <div className="flex items-center gap-4 px-8 py-3 bg-white border-b border-rule">
-        <Link to="/learn/courses">
-          <button className="text-meta hover:text-dark transition-colors">
-            <ArrowLeft size={16} />
-          </button>
+        <Link
+          to="/learn/courses"
+          aria-label="Retour à mes cours"
+          className="flex min-h-[44px] min-w-[44px] items-center justify-center text-meta hover:text-dark transition-colors"
+        >
+          <ArrowLeft size={16} aria-hidden="true" />
         </Link>
-        <p className="flex-1 font-semibold text-sm text-dark truncate min-w-0">
+        <h1 className="flex-1 font-semibold text-sm text-dark truncate min-w-0">
           {courseName}
-        </p>
+        </h1>
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="w-32 h-1.5 bg-rule rounded-full overflow-hidden">
             <div
@@ -292,7 +294,7 @@ export function LearnCoursePlayerPage() {
                 className="w-full flex items-center gap-2 px-3 py-2.5 text-left border-b border-rule hover:bg-cream/40 transition-colors text-teal"
               >
                 <ArrowLeft size={12} />
-                <span className="text-[11px] font-bold uppercase tracking-wider">
+                <span className="text-xs font-semibold uppercase tracking-wider">
                   Modules
                 </span>
               </button>
@@ -336,7 +338,7 @@ export function LearnCoursePlayerPage() {
               />
             ) : (
               <div className="flex flex-col items-center justify-center h-64 gap-3">
-                <CheckCircle2 size={40} className="text-meta/30" />
+                <CheckCircle2 size={40} className="text-meta" />
                 <p className="text-meta text-sm">
                   Sélectionnez une leçon pour commencer.
                 </p>

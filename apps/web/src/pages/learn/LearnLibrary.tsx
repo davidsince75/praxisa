@@ -32,7 +32,7 @@ export function LearnLibraryPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Bibliothèque</h1>
+        <h1 className="text-2xl font-semibold text-dark">Bibliothèque</h1>
         <p className="text-meta text-sm mt-0.5">
           Ressources, notes personnelles et documents archivés
         </p>
@@ -50,8 +50,8 @@ export function LearnLibraryPage() {
                   <h2 className="text-sm font-semibold text-dark">{title}</h2>
                   <p className="text-xs text-meta mt-0.5">{description}</p>
                   <div className="mt-4 py-8 flex flex-col items-center gap-2 border border-dashed border-rule rounded-lg">
-                    <Download size={20} className="text-meta/30" />
-                    <p className="text-xs text-meta/60">
+                    <Download size={20} className="text-meta" />
+                    <p className="text-xs text-meta">
                       Aucun document disponible pour le moment
                     </p>
                   </div>

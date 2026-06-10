@@ -77,7 +77,7 @@ export function LessonNotes({
             onClick={() => {
               setCreating(true);
             }}
-            className="text-[11px] font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors"
           >
             + Nouvelle note
           </button>
@@ -128,7 +128,7 @@ export function LessonNotes({
               onClick={() => {
                 createMutation.mutate();
               }}
-              className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded bg-teal text-white hover:bg-teal/90 disabled:opacity-40 transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded bg-teal text-white hover:bg-teal/90 disabled:opacity-40 transition-colors"
             >
               {createMutation.isPending ? "Création…" : "Enregistrer"}
             </button>
@@ -137,7 +137,7 @@ export function LessonNotes({
               onClick={() => {
                 setCreating(false);
               }}
-              className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider rounded text-meta hover:text-dark transition-colors"
+              className="px-3 py-1.5 text-xs font-semibold uppercase tracking-wider rounded text-meta hover:text-dark transition-colors"
             >
               Annuler
             </button>
@@ -167,7 +167,7 @@ export function NoteRow({ note }: { note: StudentDocumentRow }) {
     <div className="px-5 py-3 hover:bg-cream/30 transition-colors">
       <div className="flex items-center justify-between">
         <span className="text-xs font-semibold text-dark">{note.title}</span>
-        <span className="text-[10px] text-meta">
+        <span className="text-xs text-meta">
           {new Date(note.updatedAt).toLocaleDateString("fr-FR")}
         </span>
       </div>

@@ -293,7 +293,7 @@ export function CourseManagementPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Cours</h1>
+          <h1 className="text-2xl font-semibold text-dark">Cours</h1>
           <p className="text-meta text-sm mt-1">
             {isLoading ? "Chargement…" : `${String(courses.length)} cours`}
           </p>
@@ -320,22 +320,22 @@ export function CourseManagementPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-rule">
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Titre
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Statut
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Langue
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Formateur
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Publié le
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Créé le
                     </th>
                     <th className="px-6 py-3" />
@@ -359,7 +359,7 @@ export function CourseManagementPage() {
                             />
                             <div>
                               <p className="font-medium text-dark">{c.title}</p>
-                              <p className="text-[11px] text-meta font-mono">
+                              <p className="text-xs text-meta font-mono">
                                 {c.slug}
                               </p>
                             </div>

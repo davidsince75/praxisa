@@ -73,7 +73,7 @@ export function LearnCertificatePage() {
           <div className="flex justify-center mb-8">
             <div className="flex items-center gap-3">
               <Award size={40} className="text-teal" />
-              <span className="text-3xl font-bold tracking-tight text-dark">
+              <span className="text-3xl font-semibold tracking-tight text-dark">
                 Psycho<span className="text-teal">study</span>
               </span>
             </div>
@@ -81,7 +81,7 @@ export function LearnCertificatePage() {
 
           {/* Title */}
           <div className="text-center mb-10">
-            <p className="text-xs font-bold uppercase tracking-[0.3em] text-meta mb-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-meta mb-2">
               Certificat de completion
             </p>
             <div className="h-px w-24 bg-teal mx-auto" />
@@ -90,7 +90,7 @@ export function LearnCertificatePage() {
           {/* Body */}
           <div className="text-center space-y-6">
             <p className="text-sm text-meta">Ce certificat est decerne a</p>
-            <h1 className="text-4xl font-bold text-dark tracking-tight">
+            <h1 className="text-4xl font-semibold text-dark tracking-tight">
               {cert.studentName}
             </h1>
             <p className="text-sm text-meta">
@@ -114,10 +114,8 @@ export function LearnCertificatePage() {
               <p className="text-xs text-meta">Psychostudy Learning Platform</p>
             </div>
             <div className="text-right">
-              <p className="text-xs text-meta/60 font-mono">
-                {cert.enrolmentId}
-              </p>
-              <p className="text-xs text-meta/40">
+              <p className="text-xs text-meta font-mono">{cert.enrolmentId}</p>
+              <p className="text-xs text-meta">
                 Emis le{" "}
                 {new Date(cert.issuedAt).toLocaleDateString("fr-FR", {
                   day: "numeric",

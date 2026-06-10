@@ -20,7 +20,7 @@ export function LearnCertificatesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Mes certificats</h1>
+        <h1 className="text-2xl font-semibold text-dark">Mes certificats</h1>
         <p className="text-meta text-sm mt-1">
           {isLoading
             ? "Chargement…"
@@ -33,7 +33,7 @@ export function LearnCertificatesPage() {
       ) : completed.length === 0 ? (
         <Card>
           <CardContent className="p-12 flex flex-col items-center text-center gap-3">
-            <Award size={32} className="text-meta/40" />
+            <Award size={32} className="text-meta" />
             <p className="text-meta text-sm">
               Aucun certificat pour le moment. Terminez un cours pour obtenir
               votre certificat.
@@ -63,7 +63,7 @@ export function LearnCertificatesPage() {
                   </p>
                   <Link
                     to={`/learn/courses/${e.enrolmentId}/certificate`}
-                    className="inline-flex items-center gap-1.5 mt-3 text-xs font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors"
+                    className="inline-flex items-center gap-1.5 mt-3 text-xs font-semibold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors"
                   >
                     <Download size={12} />
                     Voir le certificat

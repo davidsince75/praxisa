@@ -111,7 +111,7 @@ export function DsrDetailPage() {
           >
             <ArrowLeft size={14} /> File DSR
           </Link>
-          <h1 className="text-2xl font-bold text-dark">
+          <h1 className="text-2xl font-semibold text-dark">
             {user.firstName} {user.lastName}
           </h1>
           <p className="text-meta text-sm font-mono">{user.email}</p>
@@ -180,7 +180,7 @@ export function DsrDetailPage() {
                   <li key={req.id} className="px-6 py-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-bold capitalize">
+                        <span className="text-sm font-semibold capitalize">
                           {TYPE_LABELS[req.type]}
                         </span>
                         <Badge variant={req.status}>
@@ -247,7 +247,7 @@ export function DsrDetailPage() {
 
       {pendingRequests.length > 0 && (
         <div className="bg-sand/20 border border-sand/40 px-5 py-4">
-          <p className="text-sm font-bold text-dark">
+          <p className="text-sm font-semibold text-dark">
             {pendingRequests.length} demande
             {pendingRequests.length > 1 ? "s" : ""} en attente de traitement
           </p>
@@ -273,7 +273,7 @@ function Row({
 }) {
   return (
     <div className="flex items-center justify-between gap-4">
-      <span className="text-meta text-xs uppercase tracking-wider font-bold">
+      <span className="text-meta text-xs uppercase tracking-wider font-semibold">
         {label}
       </span>
       <span className={`text-dark ${mono ? "font-mono text-xs" : ""}`}>

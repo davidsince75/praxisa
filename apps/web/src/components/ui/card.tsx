@@ -31,7 +31,7 @@ function CardTitle({
   return (
     <h3
       className={cn(
-        "text-base font-bold uppercase tracking-wider text-mid",
+        "text-base font-semibold uppercase tracking-wider text-mid",
         className,
       )}
       {...props}

@@ -96,7 +96,7 @@ export function TeacherStudentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Mes élèves</h1>
+        <h1 className="text-2xl font-semibold text-dark">Mes élèves</h1>
         <p className="text-meta text-sm mt-1">
           {isLoading
             ? "Chargement…"
@@ -109,7 +109,7 @@ export function TeacherStudentsPage() {
       ) : allStudents.length === 0 ? (
         <Card>
           <CardContent className="p-12 flex flex-col items-center text-center gap-3">
-            <Users size={32} className="text-meta/40" />
+            <Users size={32} className="text-meta" />
             <p className="text-meta text-sm">
               Aucun élève inscrit pour le moment.
             </p>
@@ -122,19 +122,19 @@ export function TeacherStudentsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-rule">
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Élève
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Email
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Cours
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                       Statut
                     </th>
-                    <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta min-w-[140px]">
+                    <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta min-w-[140px]">
                       Progression
                     </th>
                     <th className="px-6 py-3" />

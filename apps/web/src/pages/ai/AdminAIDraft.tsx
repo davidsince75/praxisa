@@ -65,10 +65,12 @@ export function AdminAIDraftPage() {
       <div className="flex items-center gap-3">
         <Bot size={20} className="text-teal" />
         <div>
-          <h1 className="text-xl font-bold text-dark">Assistant IA — Admin</h1>
+          <h1 className="text-xl font-semibold text-dark">
+            Assistant IA — Admin
+          </h1>
           <p className="text-xs text-meta mt-0.5">
             Générez des brouillons de communications ou de contenus.{" "}
-            <span className="font-bold text-amber-600">
+            <span className="font-semibold text-amber-600">
               Toute sortie requiert une révision humaine avant envoi.
             </span>
           </p>
@@ -78,14 +80,14 @@ export function AdminAIDraftPage() {
       {/* Form */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wider">
+          <CardTitle className="text-sm font-semibold uppercase tracking-wider">
             Nouveau brouillon
           </CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 Intention
               </label>
               <input
@@ -96,19 +98,15 @@ export function AdminAIDraftPage() {
                 }}
                 maxLength={500}
                 placeholder="Ex : Email de bienvenue pour les nouveaux apprenants du mois de juin"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
-              <p className="text-[11px] text-meta/60 mt-1">
-                {intent.length} / 500
-              </p>
+              <p className="text-xs text-meta mt-1">{intent.length} / 500</p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 Contexte{" "}
-                <span className="text-meta/60 font-normal">
-                  (JSON, optionnel)
-                </span>
+                <span className="text-meta font-normal">(JSON, optionnel)</span>
               </label>
               <textarea
                 value={contextRaw}
@@ -119,7 +117,7 @@ export function AdminAIDraftPage() {
                 placeholder={
                   '{"courseName": "Sécurité au travail", "cohort": "Juin 2025"}'
                 }
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm font-mono text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm font-mono text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
               />
             </div>
 
@@ -143,7 +141,7 @@ export function AdminAIDraftPage() {
         <Card className="border-amber-200">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+              <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
                 <Bot size={14} className="text-teal" />
                 Brouillon généré
               </CardTitle>
@@ -174,7 +172,9 @@ export function AdminAIDraftPage() {
                 className="text-amber-600 mt-0.5 flex-shrink-0"
               />
               <p className="text-xs text-amber-800 leading-relaxed">
-                <span className="font-bold">Révision humaine obligatoire.</span>{" "}
+                <span className="font-semibold">
+                  Révision humaine obligatoire.
+                </span>{" "}
                 Ce brouillon est généré automatiquement et ne doit jamais être
                 envoyé sans vérification préalable.
               </p>
@@ -186,17 +186,17 @@ export function AdminAIDraftPage() {
             </div>
 
             {/* Metadata */}
-            <div className="flex items-center gap-4 text-[11px] text-meta">
+            <div className="flex items-center gap-4 text-xs text-meta">
               <span>
                 Classification :{" "}
-                <span className="font-bold text-dark">
+                <span className="font-semibold text-dark">
                   {result.draft.intentClassification}
                 </span>
               </span>
               <span>
                 Politique :{" "}
                 <span
-                  className={`font-bold ${result.draft.policyPassed ? "text-teal" : "text-destructive"}`}
+                  className={`font-semibold ${result.draft.policyPassed ? "text-teal" : "text-destructive"}`}
                 >
                   {result.draft.policyPassed ? "✓ Conforme" : "✗ Non conforme"}
                 </span>

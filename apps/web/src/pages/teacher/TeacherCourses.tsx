@@ -44,7 +44,7 @@ export function TeacherCoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Mes cours</h1>
+        <h1 className="text-2xl font-semibold text-dark">Mes cours</h1>
         <p className="text-meta text-sm mt-1">
           {isLoading
             ? "Chargement…"
@@ -57,7 +57,7 @@ export function TeacherCoursesPage() {
       ) : myCourses.length === 0 ? (
         <Card>
           <CardContent className="p-12 flex flex-col items-center text-center gap-3">
-            <BookOpen size={32} className="text-meta/40" />
+            <BookOpen size={32} className="text-meta" />
             <p className="text-meta text-sm">
               Aucun cours assigné pour le moment.
             </p>
@@ -82,7 +82,7 @@ export function TeacherCoursesPage() {
                           {STATUS_LABELS[course.status]}
                         </Badge>
                       </div>
-                      <p className="text-[11px] text-meta font-mono mt-0.5">
+                      <p className="text-xs text-meta font-mono mt-0.5">
                         {course.slug}
                       </p>
                       {course.description !== null && (

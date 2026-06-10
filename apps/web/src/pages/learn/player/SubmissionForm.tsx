@@ -69,7 +69,7 @@ export function SubmissionForm({
         {dueAt !== null && (
           <span
             className={cn(
-              "flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded",
+              "flex items-center gap-1 text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded",
               new Date(dueAt) < new Date()
                 ? "text-rose bg-rose/10"
                 : "text-meta bg-cream",
@@ -87,7 +87,7 @@ export function SubmissionForm({
 
       {saved !== null && saved.status === "graded" && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 space-y-1">
-          <p className="text-xs font-bold text-teal uppercase tracking-wider">
+          <p className="text-xs font-semibold text-teal uppercase tracking-wider">
             Note reçue
           </p>
           {saved.score !== null && (

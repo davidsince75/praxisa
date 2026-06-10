@@ -9,17 +9,21 @@
     --card: 0 0% 100%;
     --card-foreground: 60 3% 10%;
     --border: 35 18% 84%;
-    --input: 35 18% 84%;
-    --ring: 213 33% 53%;
-    --primary: 213 33% 53%;
+    /* Input borders are UI components — 3.29:1 on white (RGAA: >=3:1) */
+    --input: 35 12% 54%;
+    /* Matches teal #4A6F96 — 5.24:1 on white, 3.32:1 on dark */
+    --ring: 211 34% 44%;
+    --primary: 211 34% 44%;
     --primary-foreground: 0 0% 100%;
     --secondary: 40 25% 93%;
     --secondary-foreground: 60 3% 10%;
     --muted: 40 25% 93%;
-    --muted-foreground: 27 6% 46%;
+    /* 5.73:1 on white, 4.95:1 on cream */
+    --muted-foreground: 27 6% 40%;
     --accent: 40 25% 93%;
     --accent-foreground: 60 3% 10%;
-    --destructive: 12 46% 57%;
+    /* White button text on this reads at 5.89:1 */
+    --destructive: 12 46% 42%;
     --destructive-foreground: 0 0% 100%;
     --radius: 0.25rem;
   }
@@ -29,9 +33,53 @@
   }
 
   body {
-    @apply bg-background text-foreground font-light;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 15px;
+    @apply bg-background text-foreground font-normal;
+    font-family:
+      "Segoe UI", system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /* RGAA: corps de texte 16 px minimum, en rem (jamais en px fixes) */
+    font-size: 1rem;
     line-height: 1.6;
+  }
+
+  /*
+   * Focus visible — RGAA: outline >= 3 px, contraste >= 3:1.
+   * #4A6F96 reads at 5.24:1 on white, 4.54:1 on cream and 3.32:1 on the
+   * dark login/sidebar surfaces, so one universal color works everywhere.
+   * !important wins over Tailwind's focus-visible:outline-none utilities.
+   * outline (not box-shadow) so Windows High Contrast / forced-colors
+   * keeps rendering it.
+   */
+  *:focus-visible {
+    outline: 3px solid #4a6f96 !important;
+    outline-offset: 2px;
+  }
+
+  /* Skip link — visually hidden until keyboard-focused */
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 0.75rem 1.25rem;
+    background: #1a1a18;
+    color: #ffffff;
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    left: 0.5rem;
+    top: 0.5rem;
+  }
+
+  /* RGAA: animations neutralized when the user asks for reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }

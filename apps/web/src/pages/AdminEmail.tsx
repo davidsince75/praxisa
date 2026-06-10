@@ -187,7 +187,7 @@ function MessageList({ onSelect }: MessageListProps) {
               >
                 {extractSenderName(m.from)}
               </span>
-              <span className="ml-auto text-[11px] text-meta shrink-0">
+              <span className="ml-auto text-xs text-meta shrink-0">
                 {relativeTime(m.date)}
               </span>
             </div>

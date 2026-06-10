@@ -75,7 +75,7 @@ export function LearnSettingsPage() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Paramètres</h1>
+        <h1 className="text-2xl font-semibold text-dark">Paramètres</h1>
         <p className="text-meta text-sm mt-0.5">
           Gérez vos informations personnelles
         </p>
@@ -86,7 +86,7 @@ export function LearnSettingsPage() {
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <User size={14} className="text-meta" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-meta">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-meta">
               Identité
             </h2>
           </div>
@@ -96,24 +96,20 @@ export function LearnSettingsPage() {
             <div className="space-y-3">
               <div className="flex gap-3">
                 <div className="flex-1">
-                  <label className="text-[11px] text-meta block mb-1">
-                    Prénom
-                  </label>
+                  <label className="text-xs text-meta block mb-1">Prénom</label>
                   <p className="text-sm font-medium text-dark">
                     {profile?.firstName ?? "—"}
                   </p>
                 </div>
                 <div className="flex-1">
-                  <label className="text-[11px] text-meta block mb-1">
-                    Nom
-                  </label>
+                  <label className="text-xs text-meta block mb-1">Nom</label>
                   <p className="text-sm font-medium text-dark">
                     {profile?.lastName ?? "—"}
                   </p>
                 </div>
               </div>
               <div>
-                <label className="text-[11px] text-meta block mb-1 flex items-center gap-1.5">
+                <label className="text-xs text-meta block mb-1 flex items-center gap-1.5">
                   <Mail size={11} />
                   Email
                 </label>
@@ -121,7 +117,7 @@ export function LearnSettingsPage() {
                   {profile?.email ?? "—"}
                 </p>
               </div>
-              <p className="text-[11px] text-meta/60 mt-2">
+              <p className="text-xs text-meta mt-2">
                 Pour modifier votre nom ou email, contactez un administrateur.
               </p>
             </div>
@@ -135,7 +131,7 @@ export function LearnSettingsPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <Phone size={14} className="text-meta" />
-              <h2 className="text-xs font-bold uppercase tracking-wider text-meta">
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-meta">
                 Coordonnées
               </h2>
             </div>
@@ -156,7 +152,7 @@ export function LearnSettingsPage() {
             <div className="space-y-3">
               {PROFILE_FIELDS.map(({ key, label, type }) => (
                 <div key={key}>
-                  <label className="text-[11px] text-meta block mb-1">
+                  <label className="text-xs text-meta block mb-1">
                     {label}
                   </label>
                   <input
@@ -213,13 +209,13 @@ export function LearnSettingsPage() {
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-4">
             <Lock size={14} className="text-meta" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-meta">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-meta">
               Mot de passe
             </h2>
           </div>
           <div className="space-y-3">
             <div>
-              <label className="text-[11px] text-meta block mb-1">
+              <label className="text-xs text-meta block mb-1">
                 Mot de passe actuel
               </label>
               <input
@@ -230,7 +226,7 @@ export function LearnSettingsPage() {
               />
             </div>
             <div>
-              <label className="text-[11px] text-meta block mb-1">
+              <label className="text-xs text-meta block mb-1">
                 Nouveau mot de passe
               </label>
               <input
@@ -240,7 +236,7 @@ export function LearnSettingsPage() {
                 className="w-full text-sm border border-rule rounded px-3 py-2 bg-surface text-meta cursor-not-allowed"
               />
             </div>
-            <p className="text-[11px] text-meta/60">
+            <p className="text-xs text-meta">
               La modification du mot de passe sera disponible prochainement.
             </p>
           </div>
@@ -252,7 +248,7 @@ export function LearnSettingsPage() {
         <CardContent className="p-5">
           <div className="flex items-center gap-2 mb-3">
             <MapPin size={14} className="text-meta" />
-            <h2 className="text-xs font-bold uppercase tracking-wider text-meta">
+            <h2 className="text-xs font-semibold uppercase tracking-wider text-meta">
               Adresse complète
             </h2>
           </div>

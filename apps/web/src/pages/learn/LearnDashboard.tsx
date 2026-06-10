@@ -97,7 +97,7 @@ export function LearnDashboardPage() {
     <div className="space-y-6 max-w-3xl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Tableau de bord</h1>
+          <h1 className="text-2xl font-semibold text-dark">Tableau de bord</h1>
           <p className="text-meta text-sm mt-0.5">
             Bienvenue, {authUser?.firstName}
           </p>
@@ -113,7 +113,7 @@ export function LearnDashboardPage() {
       {/* Civil status */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-meta mb-4">
             Mes informations
           </h2>
           {isLoading ? (
@@ -198,15 +198,15 @@ export function LearnDashboardPage() {
       {/* Contrat Praxisa */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-meta mb-4">
             Contrat Praxisa
           </h2>
           <div className="flex flex-col items-center py-6 gap-2">
-            <AlertCircle size={24} className="text-meta/40" />
+            <AlertCircle size={24} className="text-meta" />
             <p className="text-xs text-meta">
               Aucun contrat signé pour le moment.
             </p>
-            <p className="text-[11px] text-meta/60">
+            <p className="text-xs text-meta">
               Votre contrat apparaîtra ici une fois signé.
             </p>
           </div>
@@ -216,11 +216,11 @@ export function LearnDashboardPage() {
       {/* Factures */}
       <Card>
         <CardContent className="p-5">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-meta mb-4">
             Factures
           </h2>
           <div className="flex flex-col items-center py-6 gap-2">
-            <FileText size={24} className="text-meta/40" />
+            <FileText size={24} className="text-meta" />
             <p className="text-xs text-meta">Aucune facture disponible.</p>
           </div>
         </CardContent>

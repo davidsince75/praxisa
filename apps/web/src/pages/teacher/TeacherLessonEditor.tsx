@@ -129,7 +129,7 @@ function ExerciseCard({
           onChange={(e) => {
             updateMutation.mutate({ type: e.target.value });
           }}
-          className="text-[10px] font-bold uppercase tracking-wider text-white bg-blue-600 pl-1.5 pr-4 py-0.5 rounded border-none appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400"
+          className="text-xs font-semibold uppercase tracking-wider text-white bg-blue-600 pl-1.5 pr-4 py-0.5 rounded border-none appearance-none cursor-pointer focus:outline-none focus:ring-1 focus:ring-blue-400"
           title="Type d'exercice"
           style={{
             backgroundImage:
@@ -192,7 +192,7 @@ function ExerciseCard({
             onClick={() => {
               updateMutation.mutate({ dueAt: null });
             }}
-            className="text-[10px] text-slate-400 hover:text-red-500 transition-colors shrink-0"
+            className="text-xs text-slate-400 hover:text-red-500 transition-colors shrink-0"
             title="Supprimer l'echeance"
           >
             ✕
@@ -285,6 +285,17 @@ export function TeacherLessonEditorPage({
     "image" | "video" | "link" | null
   >(null);
   const [mediaUrl, setMediaUrl] = useState("");
+  const [mediaAlt, setMediaAlt] = useState("");
+
+  // RGAA: informative images need a text alternative; an empty alt marks
+  // the image as decorative. The value lands in an HTML attribute.
+  function escapeHtmlAttribute(value: string): string {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
   function insertMedia(): void {
     const url = mediaUrl.trim();
@@ -295,7 +306,7 @@ export function TeacherLessonEditorPage({
       document.execCommand(
         "insertHTML",
         false,
-        `<img src="${url}" alt="" style="max-width:100%;height:auto;border-radius:6px;margin:12px 0;" />`,
+        `<img src="${url}" alt="${escapeHtmlAttribute(mediaAlt.trim())}" style="max-width:100%;height:auto;border-radius:6px;margin:12px 0;" />`,
       );
     } else if (mediaPopover === "video") {
       // Convert YouTube watch URLs to embed
@@ -309,13 +320,14 @@ export function TeacherLessonEditorPage({
       document.execCommand(
         "insertHTML",
         false,
-        `<div style="position:relative;padding-bottom:56.25%;height:0;margin:12px 0;border-radius:6px;overflow:hidden;"><iframe src="${embedUrl}" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`,
+        `<div style="position:relative;padding-bottom:56.25%;height:0;margin:12px 0;border-radius:6px;overflow:hidden;"><iframe src="${embedUrl}" title="Vidéo de la leçon" style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;" allowfullscreen></iframe></div>`,
       );
     } else if (mediaPopover === "link") {
       document.execCommand("createLink", false, url);
     }
 
     setMediaUrl("");
+    setMediaAlt("");
     setMediaPopover(null);
   }
 
@@ -423,11 +435,13 @@ export function TeacherLessonEditorPage({
           Retour
         </Button>
         <div className="h-5 w-px bg-slate-200" />
+        <h1 className="sr-only">Éditeur de leçon</h1>
         <input
           value={title}
           onChange={(e) => {
             setTitle(e.target.value);
           }}
+          aria-label="Titre de la leçon"
           placeholder="Titre de la lecon..."
           className="flex-1 text-lg font-semibold border-none bg-transparent text-slate-800 placeholder:text-slate-300 focus:outline-none"
         />
@@ -560,8 +574,25 @@ export function TeacherLessonEditorPage({
                   }
                 }}
                 placeholder="https://..."
+                aria-label="URL du media"
                 className="flex-1 h-8 px-2 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
               />
+              {mediaPopover === "image" && (
+                <input
+                  value={mediaAlt}
+                  onChange={(e) => {
+                    setMediaAlt(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      insertMedia();
+                    }
+                  }}
+                  placeholder="Description de l'image (alt)"
+                  aria-label="Description de l'image pour les lecteurs d'écran"
+                  className="flex-1 h-8 px-2 text-sm border border-slate-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              )}
               <Button
                 size="sm"
                 disabled={mediaUrl.trim().length === 0}
@@ -573,7 +604,9 @@ export function TeacherLessonEditorPage({
                 onClick={() => {
                   setMediaPopover(null);
                   setMediaUrl("");
+                  setMediaAlt("");
                 }}
+                aria-label="Fermer"
                 className="p-1 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 <X size={14} />
@@ -589,14 +622,14 @@ export function TeacherLessonEditorPage({
                 contentEditable
                 suppressContentEditableWarning
                 className="min-h-[60vh] outline-none text-slate-800 leading-relaxed
-                  [&_h2]:text-xl [&_h2]:font-bold [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-slate-900
+                  [&_h2]:text-xl [&_h2]:font-semibold [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-slate-900
                   [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:mt-5 [&_h3]:mb-2 [&_h3]:text-slate-800
                   [&_p]:mb-3 [&_p]:text-sm [&_p]:leading-relaxed
                   [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:mb-3
                   [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:mb-3
                   [&_li]:mb-1 [&_li]:text-sm
                   [&_hr]:my-6 [&_hr]:border-slate-200
-                  [&_b]:font-bold [&_strong]:font-bold
+                  [&_b]:font-semibold [&_strong]:font-semibold
                   [&_i]:italic [&_em]:italic
                   [&_img]:max-w-full [&_img]:h-auto [&_img]:rounded-md [&_img]:my-3
                   [&_a]:text-blue-600 [&_a]:underline [&_a]:underline-offset-2"
@@ -619,7 +652,7 @@ export function TeacherLessonEditorPage({
         >
           {/* Settings */}
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-3">
               Parametres
             </h3>
             <div className="space-y-3">
@@ -715,7 +748,7 @@ export function TeacherLessonEditorPage({
           {!isNew && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
                   <ClipboardList size={12} />
                   Exercices
                 </h3>
@@ -766,7 +799,7 @@ export function TeacherLessonEditorPage({
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-slate-500 mb-0.5">
+                    <label className="block text-xs text-slate-500 mb-0.5">
                       Echeance recommandee
                     </label>
                     <Input

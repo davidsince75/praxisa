@@ -109,7 +109,7 @@ export function ForumThreadPage({ backPath }: { backPath: string }) {
           <div className="flex items-center gap-2">
             {thread.isPinned && <Pin size={13} className="text-amber-500" />}
             {thread.isLocked && <Lock size={13} className="text-meta" />}
-            <h1 className="text-lg font-bold text-dark">{thread.title}</h1>
+            <h1 className="text-lg font-semibold text-dark">{thread.title}</h1>
           </div>
           <div className="flex items-center gap-2 text-xs text-meta">
             <span>
@@ -135,7 +135,7 @@ export function ForumThreadPage({ backPath }: { backPath: string }) {
 
       {/* Replies */}
       <div>
-        <h2 className="text-sm font-bold uppercase tracking-wider text-meta mb-3 flex items-center gap-2">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-meta mb-3 flex items-center gap-2">
           <MessageCircle size={14} />
           {String(replies.length)} r&eacute;ponse
           {replies.length !== 1 ? "s" : ""}

@@ -55,7 +55,7 @@ export function AuditLogPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Journal d'audit</h1>
+        <h1 className="text-2xl font-semibold text-dark">Journal d'audit</h1>
         <p className="text-meta text-sm mt-1">
           Trace immuable de toutes les actions système
         </p>
@@ -94,16 +94,16 @@ export function AuditLogPage() {
           {/* Header */}
           {(data?.events.length ?? 0) > 0 && (
             <div className="grid grid-cols-12 px-6 py-2 border-b border-rule bg-cream">
-              <span className="col-span-3 text-xs font-bold uppercase tracking-wider text-meta">
+              <span className="col-span-3 text-xs font-semibold uppercase tracking-wider text-meta">
                 Date
               </span>
-              <span className="col-span-3 text-xs font-bold uppercase tracking-wider text-meta">
+              <span className="col-span-3 text-xs font-semibold uppercase tracking-wider text-meta">
                 Type
               </span>
-              <span className="col-span-3 text-xs font-bold uppercase tracking-wider text-meta">
+              <span className="col-span-3 text-xs font-semibold uppercase tracking-wider text-meta">
                 Entité
               </span>
-              <span className="col-span-3 text-xs font-bold uppercase tracking-wider text-meta">
+              <span className="col-span-3 text-xs font-semibold uppercase tracking-wider text-meta">
                 Acteur
               </span>
             </div>

@@ -74,7 +74,7 @@ export function TeacherAIIngestPage() {
       <div className="flex items-center gap-3">
         <Bot size={20} className="text-teal" />
         <div>
-          <h1 className="text-xl font-bold text-dark">
+          <h1 className="text-xl font-semibold text-dark">
             Assistant IA — Contenu
           </h1>
           <p className="text-xs text-meta mt-0.5">
@@ -87,7 +87,7 @@ export function TeacherAIIngestPage() {
       {/* Ingest card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+          <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
             <Upload size={14} />
             Ingérer du contenu
           </CardTitle>
@@ -95,7 +95,7 @@ export function TeacherAIIngestPage() {
         <CardContent>
           <form onSubmit={(e) => void handleIngest(e)} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 ID de la leçon
               </label>
               <input
@@ -105,15 +105,15 @@ export function TeacherAIIngestPage() {
                   setLessonId(e.target.value);
                 }}
                 placeholder="uuid de la leçon"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
-              <p className="text-[11px] text-meta/60 mt-1">
+              <p className="text-xs text-meta mt-1">
                 Trouvez l'UUID dans l'URL du constructeur de cours.
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 Contenu de la leçon
               </label>
               <textarea
@@ -123,9 +123,9 @@ export function TeacherAIIngestPage() {
                 }}
                 rows={10}
                 placeholder="Collez ici le texte intégral de la leçon…"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
               />
-              <p className="text-[11px] text-meta/60 mt-1">
+              <p className="text-xs text-meta mt-1">
                 {ingestText.length.toLocaleString()} / 500 000 caractères
               </p>
             </div>
@@ -135,7 +135,7 @@ export function TeacherAIIngestPage() {
             )}
 
             {ingestResult !== null && (
-              <div className="flex items-center gap-2 text-xs text-teal font-bold">
+              <div className="flex items-center gap-2 text-xs text-teal font-semibold">
                 <CheckCircle2 size={14} />
                 {ingestResult.chunkCount} chunks ingérés pour la leçon{" "}
                 <span className="font-mono text-dark">
@@ -162,7 +162,7 @@ export function TeacherAIIngestPage() {
       {/* Test card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wider flex items-center gap-2">
+          <CardTitle className="text-sm font-semibold uppercase tracking-wider flex items-center gap-2">
             <Search size={14} />
             Tester une requête
           </CardTitle>
@@ -170,7 +170,7 @@ export function TeacherAIIngestPage() {
         <CardContent>
           <form onSubmit={(e) => void handleTest(e)} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 Question de test
               </label>
               <input
@@ -181,14 +181,14 @@ export function TeacherAIIngestPage() {
                   setTestQuestion(e.target.value);
                 }}
                 placeholder="Ex : Quels sont les objectifs de cette leçon ?"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 Restreindre à une leçon{" "}
-                <span className="text-meta/60 font-normal">(optionnel)</span>
+                <span className="text-meta font-normal">(optionnel)</span>
               </label>
               <input
                 type="text"
@@ -197,7 +197,7 @@ export function TeacherAIIngestPage() {
                   setTestLessonId(e.target.value);
                 }}
                 placeholder="uuid de la leçon"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
             </div>
 
@@ -217,21 +217,21 @@ export function TeacherAIIngestPage() {
           {testResult !== null && (
             <div className="mt-5 space-y-3">
               <div className="rounded-lg bg-muted px-4 py-3">
-                <p className="text-xs font-bold text-dark mb-1 uppercase tracking-wider">
+                <p className="text-xs font-semibold text-dark mb-1 uppercase tracking-wider">
                   Réponse
                 </p>
                 <p className="text-sm text-dark leading-relaxed">
                   {testResult.answer}
                 </p>
                 {testResult.escalated && (
-                  <p className="text-[11px] text-amber-600 mt-2 font-bold">
+                  <p className="text-xs text-amber-600 mt-2 font-semibold">
                     ⚠ Escaladé — contenu non trouvé
                   </p>
                 )}
               </div>
               {testResult.chunks.length > 0 && (
                 <div>
-                  <p className="text-xs font-bold text-dark mb-1.5 uppercase tracking-wider">
+                  <p className="text-xs font-semibold text-dark mb-1.5 uppercase tracking-wider">
                     Chunks utilisés ({testResult.chunks.length})
                   </p>
                   <div className="space-y-2">
@@ -241,7 +241,7 @@ export function TeacherAIIngestPage() {
                         className="rounded border border-border bg-white px-3 py-2 text-xs text-meta"
                       >
                         <p className="line-clamp-2">{c.chunkText}</p>
-                        <p className="text-[10px] text-meta/50 mt-1">
+                        <p className="text-xs text-meta mt-1">
                           sim {(c.similarity * 100).toFixed(0)}%
                         </p>
                       </div>

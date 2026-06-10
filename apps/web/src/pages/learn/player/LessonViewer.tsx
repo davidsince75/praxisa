@@ -44,7 +44,7 @@ export function LessonViewer({
     <div className="space-y-6">
       {/* Lesson header */}
       <div>
-        <div className="flex items-center gap-2 text-xs text-meta uppercase tracking-wider font-bold mb-2">
+        <div className="flex items-center gap-2 text-xs text-meta uppercase tracking-wider font-semibold mb-2">
           <Icon size={12} />
           {CONTENT_TYPE_LABELS[lesson.contentType]}
           {lesson.durationMinutes !== null && (
@@ -57,7 +57,7 @@ export function LessonViewer({
           )}
         </div>
         <div className="flex items-start justify-between gap-3">
-          <h2 className="text-xl font-bold text-dark">{lesson.title}</h2>
+          <h2 className="text-xl font-semibold text-dark">{lesson.title}</h2>
           <div className="flex items-center gap-2">
             <button
               type="button"
@@ -65,7 +65,7 @@ export function LessonViewer({
                 setShowNotes((v) => !v);
               }}
               className={cn(
-                "flex items-center gap-1.5 flex-shrink-0 text-[11px] font-bold uppercase tracking-wider transition-colors border rounded px-2 py-1",
+                "flex items-center gap-1.5 flex-shrink-0 text-xs font-semibold uppercase tracking-wider transition-colors border rounded px-2 py-1",
                 showNotes
                   ? "bg-teal/10 text-teal border-teal/40"
                   : "text-teal hover:text-teal/70 border-teal/30",
@@ -76,7 +76,7 @@ export function LessonViewer({
             </button>
             <Link
               to={`/learn/ai?lessonId=${lesson.id}&lessonTitle=${encodeURIComponent(lesson.title)}`}
-              className="flex items-center gap-1.5 flex-shrink-0 text-[11px] font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors border border-teal/30 rounded px-2 py-1"
+              className="flex items-center gap-1.5 flex-shrink-0 text-xs font-semibold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors border border-teal/30 rounded px-2 py-1"
             >
               <Bot size={11} />
               Ask AI
@@ -140,7 +140,7 @@ export function LessonViewer({
                       href={lesson.contentUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors border border-teal/30 rounded px-3 py-1.5"
+                      className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors border border-teal/30 rounded px-3 py-1.5"
                     >
                       Ouvrir le PDF ↗
                     </a>
@@ -244,7 +244,7 @@ export function LessonViewer({
           </Button>
         )}
         {status === "completed" && (
-          <span className="flex items-center gap-1.5 text-xs text-teal font-bold uppercase tracking-wider">
+          <span className="flex items-center gap-1.5 text-xs text-teal font-semibold uppercase tracking-wider">
             <CheckCircle2 size={13} />
             Terminé
           </span>

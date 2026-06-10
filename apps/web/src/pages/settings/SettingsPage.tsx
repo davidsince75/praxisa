@@ -437,7 +437,7 @@ export function SettingsPage() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold text-dark">Param&egrave;tres</h1>
+      <h1 className="text-2xl font-semibold text-dark">Param&egrave;tres</h1>
 
       <div className="flex gap-2 flex-wrap">
         {tabs.map((t) => {

@@ -97,7 +97,7 @@ function CreateForm({ onClose }: CreateFormProps) {
     <Card className="mb-6">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-bold uppercase tracking-wider">
+          <CardTitle className="text-sm font-semibold uppercase tracking-wider">
             Nouvelle campagne
           </CardTitle>
           <button
@@ -112,7 +112,7 @@ function CreateForm({ onClose }: CreateFormProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Delivery type selector */}
           <div>
-            <label className="block text-xs font-bold text-dark mb-1.5">
+            <label className="block text-xs font-semibold text-dark mb-1.5">
               Type d&apos;envoi
             </label>
             <div className="flex gap-3">
@@ -166,7 +166,7 @@ function CreateForm({ onClose }: CreateFormProps) {
             className={`grid gap-4 ${deliveryType === "internal" ? "grid-cols-1" : "grid-cols-2"}`}
           >
             <div>
-              <label className="block text-xs font-bold text-dark mb-1.5">
+              <label className="block text-xs font-semibold text-dark mb-1.5">
                 Nom interne
               </label>
               <input
@@ -176,12 +176,12 @@ function CreateForm({ onClose }: CreateFormProps) {
                   setName(e.target.value);
                 }}
                 placeholder="Ex : Relance juin 2025"
-                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30"
               />
             </div>
             {deliveryType !== "internal" && (
               <div>
-                <label className="block text-xs font-bold text-dark mb-1.5">
+                <label className="block text-xs font-semibold text-dark mb-1.5">
                   Objet de l&apos;email
                 </label>
                 <input
@@ -191,14 +191,14 @@ function CreateForm({ onClose }: CreateFormProps) {
                     setSubject(e.target.value);
                   }}
                   placeholder="Ex : Votre prochaine formation vous attend"
-                  className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30"
+                  className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30"
                 />
               </div>
             )}
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-dark mb-1.5">
+            <label className="block text-xs font-semibold text-dark mb-1.5">
               Contenu
             </label>
             <textarea
@@ -208,12 +208,12 @@ function CreateForm({ onClose }: CreateFormProps) {
               }}
               rows={6}
               placeholder="Rédigez votre message ici…"
-              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta/50 focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
+              className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-dark placeholder:text-meta focus:outline-none focus:ring-2 focus:ring-teal/30 resize-y"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-dark mb-1.5">
+            <label className="block text-xs font-semibold text-dark mb-1.5">
               Destinataires
             </label>
             <div className="flex gap-3">
@@ -339,7 +339,9 @@ function CampaignRow({ campaign }: CampaignRowProps) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-dark truncate">{campaign.name}</p>
+        <p className="text-sm font-semibold text-dark truncate">
+          {campaign.name}
+        </p>
         <p className="text-xs text-meta truncate">
           {campaign.subject ?? "(messagerie interne)"}
         </p>
@@ -431,7 +433,7 @@ export function AdminCampaignsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-dark">Campagnes</h1>
+          <h1 className="text-xl font-semibold text-dark">Campagnes</h1>
           <p className="text-xs text-meta mt-0.5">
             Créez et envoyez des communications internes ou via Brevo.
           </p>
@@ -462,26 +464,30 @@ export function AdminCampaignsPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-meta uppercase tracking-wider font-bold">
+            <p className="text-xs text-meta uppercase tracking-wider font-semibold">
               Total
             </p>
-            <p className="text-2xl font-bold text-dark mt-1">{list.length}</p>
+            <p className="text-2xl font-semibold text-dark mt-1">
+              {list.length}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-meta uppercase tracking-wider font-bold">
+            <p className="text-xs text-meta uppercase tracking-wider font-semibold">
               Brouillons
             </p>
-            <p className="text-2xl font-bold text-dark mt-1">{drafts.length}</p>
+            <p className="text-2xl font-semibold text-dark mt-1">
+              {drafts.length}
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4">
-            <p className="text-xs text-meta uppercase tracking-wider font-bold">
+            <p className="text-xs text-meta uppercase tracking-wider font-semibold">
               Envoyées
             </p>
-            <p className="text-2xl font-bold text-dark mt-1">
+            <p className="text-2xl font-semibold text-dark mt-1">
               {sent.filter((c) => c.status === "sent").length}
             </p>
           </CardContent>
@@ -491,7 +497,7 @@ export function AdminCampaignsPage() {
       {/* Campaign list */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-xs font-bold uppercase tracking-wider text-meta">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-meta">
             Toutes les campagnes
           </CardTitle>
         </CardHeader>
@@ -503,11 +509,11 @@ export function AdminCampaignsPage() {
           )}
           {!isLoading && list.length === 0 && (
             <div className="px-4 py-10 text-center">
-              <Mail size={24} className="text-meta/30 mx-auto mb-2" />
+              <Mail size={24} className="text-meta mx-auto mb-2" />
               <p className="text-sm text-meta">
                 Aucune campagne pour l'instant.
               </p>
-              <p className="text-xs text-meta/60 mt-1">
+              <p className="text-xs text-meta mt-1">
                 Créez votre première campagne ci-dessus.
               </p>
             </div>

@@ -144,9 +144,7 @@ export function AICourseStructureDialog({
                 </div>
                 <div>
                   <p className="text-xs font-semibold">{mod.title}</p>
-                  <p className="text-[11px] text-meta mt-0.5">
-                    {mod.description}
-                  </p>
+                  <p className="text-xs text-meta mt-0.5">{mod.description}</p>
                 </div>
               </div>
             ))}

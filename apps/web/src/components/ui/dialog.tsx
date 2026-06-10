@@ -43,7 +43,7 @@ function DialogContent({
         {children}
         <DialogPrimitive.Close className="absolute right-4 top-4 text-meta hover:text-dark transition-colors">
           <X size={16} />
-          <span className="sr-only">Close</span>
+          <span className="sr-only">Fermer</span>
         </DialogPrimitive.Close>
       </DialogPrimitive.Content>
     </DialogPortal>
@@ -84,7 +84,7 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       className={cn(
-        "text-sm font-bold uppercase tracking-widest text-dark",
+        "text-sm font-semibold uppercase tracking-widest text-dark",
         className,
       )}
       {...props}

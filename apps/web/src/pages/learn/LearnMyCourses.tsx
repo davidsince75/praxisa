@@ -61,7 +61,7 @@ export function LearnMyCoursesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Mes formations</h1>
+        <h1 className="text-2xl font-semibold text-dark">Mes formations</h1>
         <p className="text-meta text-sm mt-1">
           {isLoading
             ? "Chargement..."
@@ -74,7 +74,7 @@ export function LearnMyCoursesPage() {
       ) : enrolments.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <BookOpen size={32} className="text-meta/40 mx-auto mb-3" />
+            <BookOpen size={32} className="text-meta mx-auto mb-3" />
             <p className="text-meta text-sm mb-4">
               Vous n&apos;etes inscrit a aucune formation.
             </p>
@@ -88,7 +88,7 @@ export function LearnMyCoursesPage() {
           {/* Active courses */}
           {active.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-meta">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-meta">
                 En cours
               </h2>
               <div className="grid gap-4">
@@ -145,7 +145,7 @@ export function LearnMyCoursesPage() {
           {/* Completed courses — with certificate link */}
           {completed.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-meta">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-meta">
                 Terminees
               </h2>
               <div className="grid gap-3">
@@ -186,7 +186,7 @@ export function LearnMyCoursesPage() {
           {/* Cancelled */}
           {others.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-xs font-bold uppercase tracking-widest text-meta">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-meta">
                 Annulees
               </h2>
               <div className="grid gap-3">

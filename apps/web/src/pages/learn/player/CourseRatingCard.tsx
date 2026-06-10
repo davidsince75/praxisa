@@ -45,7 +45,7 @@ export function CourseRatingCard({ courseId }: CourseRatingCardProps) {
 
   return (
     <div className="p-4 border-t border-rule">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-meta mb-2">
+      <p className="text-xs font-semibold uppercase tracking-wider text-meta mb-2">
         Évaluer ce cours
       </p>
       {submitted ? (
@@ -74,14 +74,14 @@ export function CourseRatingCard({ courseId }: CourseRatingCardProps) {
                   className={
                     n <= display
                       ? "text-yellow-400 fill-yellow-400"
-                      : "text-meta/30"
+                      : "text-meta"
                   }
                 />
               </button>
             ))}
           </div>
           <textarea
-            className="w-full rounded border border-rule bg-cream/40 px-2 py-1.5 text-xs text-dark resize-none focus:outline-none focus:ring-1 focus:ring-teal placeholder:text-meta/40"
+            className="w-full rounded border border-rule bg-cream/40 px-2 py-1.5 text-xs text-dark resize-none focus:outline-none focus:ring-1 focus:ring-teal placeholder:text-meta"
             rows={2}
             maxLength={500}
             placeholder="Commentaire (optionnel)"
@@ -100,7 +100,7 @@ export function CourseRatingCard({ courseId }: CourseRatingCardProps) {
                   : {}),
               });
             }}
-            className="mt-2 w-full text-[11px] font-bold uppercase tracking-wider text-center py-1.5 rounded bg-teal/20 text-teal hover:bg-teal/30 disabled:opacity-40 transition-colors"
+            className="mt-2 w-full text-xs font-semibold uppercase tracking-wider text-center py-1.5 rounded bg-teal/20 text-teal hover:bg-teal/30 disabled:opacity-40 transition-colors"
           >
             {mutation.isPending
               ? "Envoi…"

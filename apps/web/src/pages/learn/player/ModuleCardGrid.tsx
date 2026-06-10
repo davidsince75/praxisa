@@ -69,7 +69,7 @@ export function ModuleCardGrid({
               </div>
 
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px]">
+                <div className="flex items-center justify-between text-xs">
                   <span className="text-meta">
                     {String(done)} / {String(total)} leçon
                     {total !== 1 ? "s" : ""}
@@ -90,7 +90,7 @@ export function ModuleCardGrid({
               </div>
 
               {pct === 100 && (
-                <p className="text-[10px] font-bold uppercase tracking-wider text-teal">
+                <p className="text-xs font-semibold uppercase tracking-wider text-teal">
                   Terminé
                 </p>
               )}

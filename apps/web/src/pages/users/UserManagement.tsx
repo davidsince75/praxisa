@@ -88,7 +88,7 @@ export function UserManagementPage() {
     <div className="space-y-6">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark">Utilisateurs</h1>
+          <h1 className="text-2xl font-semibold text-dark">Utilisateurs</h1>
           <p className="text-meta text-sm mt-1">
             {meta !== undefined
               ? `${String(meta.total)} utilisateurs au total`
@@ -150,25 +150,25 @@ export function UserManagementPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-rule">
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Nom
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Email
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Rôle
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Statut
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Restriction
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Dernière connexion
                     </th>
-                    <th className="text-left px-3 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-3 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       Créé le
                     </th>
                     <th className="px-3 py-2" />
@@ -210,12 +210,12 @@ export function UserManagementPage() {
                       </td>
                       <td className="px-3 py-2">
                         {u.isActive ? (
-                          <span className="flex items-center gap-1.5 text-xs text-olive font-bold uppercase tracking-wider">
+                          <span className="flex items-center gap-1.5 text-xs text-olive font-semibold uppercase tracking-wider">
                             <UserCheck size={12} />
                             Actif
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1.5 text-xs text-rose font-bold uppercase tracking-wider">
+                          <span className="flex items-center gap-1.5 text-xs text-rose font-semibold uppercase tracking-wider">
                             <UserX size={12} />
                             Inactif
                           </span>

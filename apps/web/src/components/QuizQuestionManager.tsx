@@ -70,9 +70,9 @@ function EditableSuggestion({
                 onChange({ ...question, options: newOpts });
               }}
               className={
-                "flex-1 text-[10px] border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-300 " +
+                "flex-1 text-xs border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-blue-300 " +
                 (opt.id === question.correctOptionId
-                  ? "border-teal/50 text-teal font-bold"
+                  ? "border-teal/50 text-teal font-semibold"
                   : "border-slate-200 text-meta")
               }
             />
@@ -86,7 +86,7 @@ function EditableSuggestion({
           onChange={(e) => {
             onChange({ ...question, explanation: e.target.value });
           }}
-          className="w-full text-[10px] border border-slate-200 rounded px-2 py-1 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 text-meta italic"
+          className="w-full text-xs border border-slate-200 rounded px-2 py-1 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 text-meta italic"
           placeholder="Explication"
         />
       )}
@@ -248,9 +248,9 @@ function QuestionRow({
                         );
                       }}
                       className={
-                        "flex-1 text-[10px] border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 " +
+                        "flex-1 text-xs border rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 " +
                         (opt.id === editCorrect
-                          ? "border-teal/50 text-teal font-bold focus:ring-teal/40"
+                          ? "border-teal/50 text-teal font-semibold focus:ring-teal/40"
                           : "border-slate-200 text-meta focus:ring-blue-300")
                       }
                     />
@@ -263,11 +263,11 @@ function QuestionRow({
                 onChange={(e) => {
                   setEditExplanation(e.target.value);
                 }}
-                className="w-full text-[10px] border border-slate-200 rounded px-2 py-1 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 text-meta italic"
+                className="w-full text-xs border border-slate-200 rounded px-2 py-1 resize-none focus:outline-none focus:ring-1 focus:ring-blue-300 text-meta italic"
                 placeholder="Explication (optionnel)"
               />
               {saveError.length > 0 && (
-                <p className="text-[10px] text-rose">{saveError}</p>
+                <p className="text-xs text-rose">{saveError}</p>
               )}
               <div className="flex gap-1.5">
                 <button
@@ -277,14 +277,14 @@ function QuestionRow({
                   onClick={() => {
                     patchMutation.mutate();
                   }}
-                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded bg-teal text-white hover:bg-teal/90 disabled:opacity-40 transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-semibold uppercase tracking-wider rounded bg-teal text-white hover:bg-teal/90 disabled:opacity-40 transition-colors"
                 >
                   <Check size={10} />
                   {patchMutation.isPending ? "Sauvegarde…" : "Enregistrer"}
                 </button>
                 <button
                   onClick={cancelEdit}
-                  className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded text-meta hover:text-dark transition-colors"
+                  className="flex items-center gap-1 px-2 py-1 text-xs font-semibold uppercase tracking-wider rounded text-meta hover:text-dark transition-colors"
                 >
                   <X size={10} />
                   Annuler
@@ -299,8 +299,8 @@ function QuestionRow({
                   key={opt.id}
                   className={
                     opt.id === correctOptionId
-                      ? "text-[10px] text-teal font-bold"
-                      : "text-[10px] text-meta"
+                      ? "text-xs text-teal font-semibold"
+                      : "text-xs text-meta"
                   }
                 >
                   {(opt.id === correctOptionId ? "✓ " : "  ") + opt.text}
@@ -309,9 +309,7 @@ function QuestionRow({
               {explanation !== null &&
                 explanation !== undefined &&
                 explanation.length > 0 && (
-                  <p className="text-[10px] text-meta/60 italic mt-1">
-                    {explanation}
-                  </p>
+                  <p className="text-xs text-meta italic mt-1">{explanation}</p>
                 )}
             </div>
           )}
@@ -384,7 +382,7 @@ export function QuizQuestionManager({ exerciseId }: QuizQuestionManagerProps) {
 
   return (
     <div className="space-y-2">
-      {isLoading && <p className="text-[10px] text-meta">Chargement&hellip;</p>}
+      {isLoading && <p className="text-xs text-meta">Chargement&hellip;</p>}
 
       {/* Existing questions */}
       {questions.length > 0 && (
@@ -407,15 +405,13 @@ export function QuizQuestionManager({ exerciseId }: QuizQuestionManagerProps) {
       )}
 
       {questions.length === 0 && !isLoading && !aiOpen && (
-        <p className="text-[10px] text-meta italic py-1">
-          Aucune question QCM.
-        </p>
+        <p className="text-xs text-meta italic py-1">Aucune question QCM.</p>
       )}
 
       {/* AI generation panel */}
       {aiOpen ? (
         <div className="bg-blue-50/60 border border-blue-200 rounded p-3 space-y-2">
-          <p className="text-[10px] font-bold uppercase tracking-wider text-blue-700">
+          <p className="text-xs font-semibold uppercase tracking-wider text-blue-700">
             Générer avec l&apos;IA
           </p>
           <input
@@ -427,7 +423,7 @@ export function QuizQuestionManager({ exerciseId }: QuizQuestionManagerProps) {
             className="w-full h-8 px-2 text-xs border border-blue-200 rounded bg-white text-slate-700 focus:outline-none focus:ring-1 focus:ring-blue-400"
           />
           <div className="flex items-center gap-2">
-            <label className="text-[10px] text-meta shrink-0">Nombre :</label>
+            <label className="text-xs text-meta shrink-0">Nombre :</label>
             <select
               value={count}
               onChange={(e) => {
@@ -463,14 +459,12 @@ export function QuizQuestionManager({ exerciseId }: QuizQuestionManagerProps) {
               Annuler
             </button>
           </div>
-          {aiError.length > 0 && (
-            <p className="text-[10px] text-rose">{aiError}</p>
-          )}
+          {aiError.length > 0 && <p className="text-xs text-rose">{aiError}</p>}
 
           {/* Editable suggestions */}
           {suggestions !== null && suggestions.length > 0 && (
             <div className="space-y-2 pt-1">
-              <p className="text-[10px] text-meta">
+              <p className="text-xs text-meta">
                 {String(suggestions.length) +
                   " question" +
                   (suggestions.length !== 1 ? "s" : "") +
@@ -507,7 +501,7 @@ export function QuizQuestionManager({ exerciseId }: QuizQuestionManagerProps) {
           onClick={() => {
             setAiOpen(true);
           }}
-          className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-blue-600 hover:text-blue-700 transition-colors"
+          className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-blue-600 hover:text-blue-700 transition-colors"
         >
           <Sparkles size={11} />
           Générer avec l&apos;IA

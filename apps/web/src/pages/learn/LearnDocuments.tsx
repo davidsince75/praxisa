@@ -138,7 +138,7 @@ function DocTagChips({ documentId, allTags }: DocTagChipsProps) {
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-bold text-meta uppercase tracking-wider">
+      <p className="text-xs font-semibold text-meta uppercase tracking-wider">
         <Tag size={10} className="inline mr-1" />
         Tags
       </p>
@@ -146,7 +146,7 @@ function DocTagChips({ documentId, allTags }: DocTagChipsProps) {
         {docTags.map((t) => (
           <span
             key={t.id}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white"
             style={{ backgroundColor: t.color }}
           >
             {t.name}
@@ -163,7 +163,7 @@ function DocTagChips({ documentId, allTags }: DocTagChipsProps) {
         ))}
         {available.length > 0 && (
           <select
-            className="h-6 px-1.5 text-[10px] border border-rule rounded bg-white text-meta"
+            className="h-6 px-1.5 text-xs border border-rule rounded bg-white text-meta"
             value=""
             onChange={(e) => {
               if (e.target.value !== "") {
@@ -254,7 +254,7 @@ function DocRow({
               </p>
               {detail.document.feedback !== null && (
                 <div className="bg-teal/5 rounded-lg px-4 py-3">
-                  <p className="text-xs font-bold text-teal uppercase tracking-wider mb-1">
+                  <p className="text-xs font-semibold text-teal uppercase tracking-wider mb-1">
                     <MessageSquare size={11} className="inline mr-1" />
                     Retour du formateur
                   </p>
@@ -339,7 +339,7 @@ export function LearnDocumentsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-dark">Mes documents</h1>
+        <h1 className="text-2xl font-semibold text-dark">Mes documents</h1>
         <Button
           size="sm"
           onClick={() => {
@@ -359,7 +359,7 @@ export function LearnDocumentsPage() {
             onClick={() => {
               setFilter(s);
             }}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors ${
               filter === s
                 ? "bg-teal text-white"
                 : "bg-cream text-meta hover:text-dark"
@@ -373,14 +373,14 @@ export function LearnDocumentsPage() {
       {/* Tags */}
       {allTags.length > 0 && (
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[10px] font-bold text-meta uppercase tracking-wider mr-1">
+          <span className="text-xs font-semibold text-meta uppercase tracking-wider mr-1">
             <Tag size={10} className="inline mr-0.5" />
             Mes tags :
           </span>
           {allTags.map((t) => (
             <span
               key={t.id}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold text-white"
               style={{ backgroundColor: t.color }}
             >
               {t.name}
@@ -421,7 +421,7 @@ export function LearnDocumentsPage() {
           onClick={() => {
             createTagMutation.mutate(newTagName.trim());
           }}
-          className="h-8 px-3 text-[10px] font-bold uppercase tracking-wider rounded bg-teal/10 text-teal hover:bg-teal/20 disabled:opacity-40 transition-colors"
+          className="h-8 px-3 text-xs font-semibold uppercase tracking-wider rounded bg-teal/10 text-teal hover:bg-teal/20 disabled:opacity-40 transition-colors"
         >
           {createTagMutation.isPending ? "…" : "+ Tag"}
         </button>
@@ -440,7 +440,7 @@ export function LearnDocumentsPage() {
       {!isLoading && docs.length === 0 && !creating && (
         <Card>
           <CardContent className="p-12 text-center">
-            <FileText size={32} className="text-meta/40 mx-auto mb-3" />
+            <FileText size={32} className="text-meta mx-auto mb-3" />
             <p className="text-meta text-sm">
               Aucun document. Cr&eacute;ez votre premier document !
             </p>

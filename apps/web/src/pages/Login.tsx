@@ -40,8 +40,8 @@ export function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <h1 className="text-white text-2xl font-bold tracking-tight">
-            <span className="text-teal">Psycho</span>study
+          <h1 className="text-white text-2xl font-semibold tracking-tight">
+            <span className="text-teal-light">Psycho</span>study
           </h1>
         </div>
 
@@ -62,7 +62,7 @@ export function LoginPage() {
               onChange={(e) => {
                 setEmail(e.target.value);
               }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-teal"
+              className="bg-white/5 border-white/40 text-white placeholder:text-white/50 focus-visible:ring-teal"
               placeholder="admin@psychostudy.fr"
             />
           </div>
@@ -78,12 +78,14 @@ export function LoginPage() {
               onChange={(e) => {
                 setPassword(e.target.value);
               }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/20 focus-visible:ring-teal"
+              className="bg-white/5 border-white/40 text-white placeholder:text-white/50 focus-visible:ring-teal"
             />
           </div>
 
           {error !== null && (
-            <p className="text-xs text-rose font-medium">{error}</p>
+            <p role="alert" className="text-sm text-rose-light font-medium">
+              {error}
+            </p>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>

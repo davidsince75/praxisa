@@ -43,7 +43,7 @@ export function DsrQueuePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">File DSR</h1>
+        <h1 className="text-2xl font-semibold text-dark">File DSR</h1>
         <p className="text-meta text-sm mt-1">
           Demandes de droits des personnes (RGPD Art. 15–22)
         </p>
@@ -60,7 +60,7 @@ export function DsrQueuePage() {
               onClick={() => {
                 setStatusFilter(s);
               }}
-              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+              className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
                 statusFilter === s
                   ? "bg-dark text-white"
                   : "bg-white border border-rule text-meta hover:text-dark"
@@ -85,7 +85,7 @@ export function DsrQueuePage() {
               onClick={() => {
                 setTypeFilter(t);
               }}
-              className={`px-3 py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+              className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wider transition-colors ${
                 typeFilter === t
                   ? "bg-teal text-white"
                   : "bg-white border border-rule text-meta hover:text-dark"
@@ -113,7 +113,7 @@ export function DsrQueuePage() {
                 >
                   <div className="space-y-0.5">
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-bold text-dark capitalize">
+                      <span className="text-sm font-semibold text-dark capitalize">
                         {TYPE_LABELS[req.type]}
                       </span>
                       <Badge variant={req.status}>

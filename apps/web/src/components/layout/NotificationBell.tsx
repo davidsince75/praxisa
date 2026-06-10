@@ -92,12 +92,17 @@ export function NotificationBell() {
         onClick={() => {
           setOpen((prev) => !prev);
         }}
-        className="relative flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+        aria-expanded={open}
+        aria-haspopup="true"
+        className="relative flex min-h-[44px] items-center gap-3 w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
       >
-        <Bell size={15} />
+        <Bell size={15} aria-hidden="true" />
         Notifications
         {unreadCount > 0 && (
-          <span className="absolute top-1.5 left-7 w-2 h-2 rounded-full bg-red-500" />
+          <span className="ml-auto inline-flex min-w-[1.25rem] items-center justify-center rounded-full bg-red-700 px-1.5 py-0.5 text-[0.6875rem] font-semibold leading-none text-white">
+            {unreadCount}
+            <span className="sr-only"> notifications non lues</span>
+          </span>
         )}
       </button>
 
@@ -130,11 +135,11 @@ export function NotificationBell() {
                         n.readAt === null ? "bg-teal/5" : ""
                       }`}
                     >
-                      <p className="text-xs font-bold text-dark truncate">
+                      <p className="text-xs font-semibold text-dark truncate">
                         {n.title}
                       </p>
-                      <p className="text-[11px] text-meta truncate">{n.body}</p>
-                      <p className="text-[10px] text-meta/60 mt-0.5">
+                      <p className="text-xs text-meta truncate">{n.body}</p>
+                      <p className="text-xs text-meta mt-0.5">
                         {relativeTime(n.createdAt)}
                       </p>
                     </button>
@@ -146,7 +151,7 @@ export function NotificationBell() {
                   onClick={() => {
                     markAllMutation.mutate();
                   }}
-                  className="w-full px-4 py-2.5 text-xs font-medium text-teal hover:bg-teal/5 transition-colors border-t border-rule"
+                  className="w-full min-h-[44px] px-4 py-2.5 text-xs font-medium text-teal hover:bg-teal/5 transition-colors border-t border-rule"
                 >
                   Tout marquer lu
                 </button>

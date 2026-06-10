@@ -30,10 +30,10 @@ function StatCard({
       <CardContent className="p-6">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-meta mb-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-meta mb-1">
               {label}
             </p>
-            <p className="text-3xl font-bold text-dark">{value}</p>
+            <p className="text-3xl font-semibold text-dark">{value}</p>
             {sub !== undefined && (
               <p className="text-xs text-meta mt-1">{sub}</p>
             )}
@@ -119,7 +119,7 @@ export function DashboardPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Dashboard</h1>
+        <h1 className="text-2xl font-semibold text-dark">Dashboard</h1>
         <p className="text-meta text-sm mt-1">
           Vue d’ensemble de la plateforme
         </p>
@@ -162,7 +162,7 @@ export function DashboardPage() {
       {/* Courses overview */}
       {analytics !== undefined && analytics.courseStats.length > 0 && (
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-meta mb-4">
             Cours &mdash; inscriptions &amp; progression
           </h2>
           <Card>
@@ -185,7 +185,7 @@ export function DashboardPage() {
 
       {/* Recent audit events */}
       <div>
-        <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
+        <h2 className="text-xs font-semibold uppercase tracking-wider text-meta mb-4">
           Activité récente
         </h2>
         <Card>
@@ -221,7 +221,7 @@ export function DashboardPage() {
       {/* Pending DSR */}
       {pending > 0 && (
         <div>
-          <h2 className="text-xs font-bold uppercase tracking-wider text-meta mb-4">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-meta mb-4">
             DSR en attente
           </h2>
           <Card>

@@ -161,11 +161,11 @@ export function UserProfileDialog({
                   {ROLE_LABELS[u.role]}
                 </Badge>
                 {u.isActive ? (
-                  <span className="text-[11px] text-olive font-semibold uppercase tracking-wide">
+                  <span className="text-xs text-olive font-semibold uppercase tracking-wide">
                     Actif
                   </span>
                 ) : (
-                  <span className="text-[11px] text-rose font-semibold uppercase tracking-wide">
+                  <span className="text-xs text-rose font-semibold uppercase tracking-wide">
                     Inactif
                   </span>
                 )}
@@ -175,7 +175,7 @@ export function UserProfileDialog({
             {/* Profile fields */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <p className="text-xs font-bold uppercase tracking-wider text-meta flex items-center gap-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-meta flex items-center gap-1.5">
                   <Phone size={11} />
                   Coordonnees
                 </p>

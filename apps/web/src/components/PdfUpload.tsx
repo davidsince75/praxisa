@@ -72,7 +72,7 @@ export function PdfUpload({
               inputRef.current?.click();
             }}
             disabled={uploading}
-            className="text-[10px] font-bold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors disabled:opacity-40"
+            className="text-xs font-semibold uppercase tracking-wider text-teal hover:text-teal/70 transition-colors disabled:opacity-40"
           >
             {uploading ? "Upload..." : "Remplacer"}
           </button>
@@ -80,7 +80,7 @@ export function PdfUpload({
             href={hasFile ? `/v1/files/${currentFileId}` : undefined}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-[10px] font-bold uppercase tracking-wider text-meta hover:text-dark transition-colors"
+            className="text-xs font-semibold uppercase tracking-wider text-meta hover:text-dark transition-colors"
           >
             Ouvrir ↗
           </a>

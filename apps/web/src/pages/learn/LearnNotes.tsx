@@ -5,7 +5,7 @@ export function LearnNotesPage() {
   return (
     <div className="space-y-6 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-dark">
+        <h1 className="text-2xl font-semibold text-dark">
           Notes &amp; Commentaires
         </h1>
         <p className="text-meta text-sm mt-0.5">

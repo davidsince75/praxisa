@@ -50,7 +50,7 @@ function InlineRating({ courseId }: { courseId: string }) {
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[11px] text-meta">Évaluer :</span>
+      <span className="text-xs text-meta">Évaluer :</span>
       <div className="flex gap-0.5">
         {[1, 2, 3, 4, 5].map((n) => (
           <button
@@ -79,7 +79,7 @@ function InlineRating({ courseId }: { courseId: string }) {
         ))}
       </div>
       {justSubmitted && (
-        <span className="text-[11px] text-teal font-medium">Merci !</span>
+        <span className="text-xs text-teal font-medium">Merci !</span>
       )}
     </div>
   );
@@ -140,7 +140,7 @@ export function LearnCatalogPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">
+        <h1 className="text-2xl font-semibold text-dark">
           Catalogue des formations
         </h1>
         <p className="text-meta text-sm mt-1">
@@ -171,7 +171,7 @@ export function LearnCatalogPage() {
       ) : published.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <BookOpen size={32} className="text-meta/40 mx-auto mb-3" />
+            <BookOpen size={32} className="text-meta mx-auto mb-3" />
             <p className="text-meta text-sm">
               Aucune formation disponible pour le moment.
             </p>
@@ -216,7 +216,7 @@ export function LearnCatalogPage() {
                       <span className="flex items-center gap-1 text-yellow-500">
                         <Star size={11} fill="currentColor" />
                         {String(course.averageRating)}
-                        <span className="text-meta/60">
+                        <span className="text-meta">
                           ({String(course.totalRatings)})
                         </span>
                       </span>
@@ -246,7 +246,7 @@ export function LearnCatalogPage() {
                         onClick={() => {
                           navigate(`/learn/courses/${enrolment.enrolmentId}`);
                         }}
-                        className="w-full flex items-center justify-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal border border-teal/40 px-3 py-2 hover:bg-teal/5 transition-colors"
+                        className="w-full flex items-center justify-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-teal border border-teal/40 px-3 py-2 hover:bg-teal/5 transition-colors"
                       >
                         <CheckCircle2 size={13} />
                         {enrolment.status === "completed"

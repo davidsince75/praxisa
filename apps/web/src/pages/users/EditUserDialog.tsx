@@ -150,7 +150,7 @@ export function EditUserDialog({
               />
               <Label htmlFor="eu-restricted" className="cursor-pointer">
                 Accès restreint
-                <span className="block text-[11px] text-meta font-normal">
+                <span className="block text-xs text-meta font-normal">
                   Limite l'apprenant à 1 formation et 3 premiers modules
                 </span>
               </Label>

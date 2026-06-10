@@ -49,7 +49,7 @@ export function TeacherGradingOverviewPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">Travaux</h1>
+        <h1 className="text-2xl font-semibold text-dark">Travaux</h1>
         <p className="text-meta text-sm mt-1">
           {isLoading
             ? "Chargement…"
@@ -62,7 +62,7 @@ export function TeacherGradingOverviewPage() {
       ) : myCourses.length === 0 ? (
         <Card>
           <CardContent className="p-12 flex flex-col items-center text-center gap-3">
-            <ClipboardList size={32} className="text-meta/40" />
+            <ClipboardList size={32} className="text-meta" />
             <p className="text-meta text-sm">Aucun cours pour le moment.</p>
           </CardContent>
         </Card>

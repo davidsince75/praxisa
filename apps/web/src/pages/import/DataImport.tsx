@@ -154,7 +154,7 @@ export function DataImportPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-dark">
+        <h1 className="text-2xl font-semibold text-dark">
           Import de donn&eacute;es
         </h1>
         <p className="text-meta text-sm mt-1">
@@ -169,7 +169,7 @@ export function DataImportPage() {
             setMode("users");
             handleReset();
           }}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider border transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider border transition-colors ${
             mode === "users"
               ? "border-teal bg-teal/5 text-teal"
               : "border-rule text-meta hover:border-teal/40"
@@ -183,7 +183,7 @@ export function DataImportPage() {
             setMode("enrolments");
             handleReset();
           }}
-          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-bold uppercase tracking-wider border transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider border transition-colors ${
             mode === "enrolments"
               ? "border-teal bg-teal/5 text-teal"
               : "border-rule text-meta hover:border-teal/40"
@@ -256,7 +256,7 @@ export function DataImportPage() {
                   onChange={handleFileChange}
                   className="hidden"
                 />
-                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-teal border border-teal/40 px-4 py-2 hover:bg-teal/5 transition-colors">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-teal border border-teal/40 px-4 py-2 hover:bg-teal/5 transition-colors">
                   <Upload size={13} />
                   {fileName !== null ? "Changer" : "Choisir un fichier"}
                 </span>
@@ -290,13 +290,13 @@ export function DataImportPage() {
               <table className="w-full text-sm">
                 <thead className="sticky top-0 bg-cream">
                   <tr className="border-b border-rule">
-                    <th className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-meta">
+                    <th className="text-left px-4 py-2 text-xs font-semibold uppercase tracking-wider text-meta">
                       #
                     </th>
                     {parsed.headers.map((h) => (
                       <th
                         key={h}
-                        className="text-left px-4 py-2 text-xs font-bold uppercase tracking-wider text-meta"
+                        className="text-left px-4 py-2 text-xs font-semibold uppercase tracking-wider text-meta"
                       >
                         {h}
                       </th>

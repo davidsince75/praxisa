@@ -32,18 +32,18 @@ const FORMATION_PATHS = [
 
 function linkClass(isActive: boolean): string {
   return cn(
-    "flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-widest transition-colors",
+    "flex items-center gap-3 px-3 py-2.5 text-xs font-semibold uppercase tracking-widest transition-colors",
     isActive
-      ? "text-teal bg-white/5"
+      ? "text-teal-light bg-white/5"
       : "text-white/50 hover:text-white/80 hover:bg-white/5",
   );
 }
 
 function subLinkClass(isActive: boolean): string {
   return cn(
-    "flex items-center gap-2.5 pl-8 pr-3 py-2 text-[11px] font-semibold uppercase tracking-widest transition-colors",
+    "flex items-center gap-2.5 pl-8 pr-3 py-2 text-xs font-semibold uppercase tracking-widest transition-colors",
     isActive
-      ? "text-teal bg-white/5"
+      ? "text-teal-light bg-white/5"
       : "text-white/40 hover:text-white/70 hover:bg-white/5",
   );
 }
@@ -73,15 +73,18 @@ export function LearnSidebar() {
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
       {/* Brand */}
       <div className="h-14 flex items-center px-6 border-b border-white/10 shrink-0">
-        <span className="text-white font-bold tracking-tight">
-          <span className="text-teal">Psycho</span>study
+        <span className="text-white font-semibold tracking-tight">
+          <span className="text-teal-light">Psycho</span>study
         </span>
-        <span className="ml-2 text-[10px] font-bold uppercase tracking-widest text-white/30">
+        <span className="ml-2 text-xs font-semibold uppercase tracking-widest text-white/60">
           Apprenant
         </span>
       </div>
 
-      <nav className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto">
+      <nav
+        aria-label="Navigation apprenant"
+        className="flex-1 py-4 px-3 space-y-0.5 overflow-y-auto"
+      >
         {/* Dashboard */}
         <NavLink
           to="/learn/dashboard"
@@ -104,7 +107,7 @@ export function LearnSidebar() {
         <div className="pt-1">
           <button
             onClick={toggleFormation}
-            className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
           >
             <BookOpen size={15} />
             <span className="flex-1 text-left">Formation</span>
@@ -177,7 +180,7 @@ export function LearnSidebar() {
           <MessageSquare size={15} />
           <span className="flex-1">Messages</span>
           {unreadMessages > 0 && (
-            <span className="bg-rose text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">
+            <span className="bg-rose text-white text-xs font-semibold rounded-full w-5 h-5 flex items-center justify-center">
               {unreadMessages > 9 ? "9+" : String(unreadMessages)}
             </span>
           )}
@@ -211,11 +214,11 @@ export function LearnSidebar() {
           <p className="text-xs text-white/80 font-medium truncate">
             {user?.firstName} {user?.lastName}
           </p>
-          <p className="text-[11px] text-white/30 truncate">{user?.email}</p>
+          <p className="text-xs text-white/60 truncate">{user?.email}</p>
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-bold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+          className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
         >
           <LogOut size={15} />
           Sign out

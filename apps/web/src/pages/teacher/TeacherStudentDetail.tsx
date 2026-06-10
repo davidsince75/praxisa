@@ -124,7 +124,7 @@ function ModuleAccordion({ mod }: { mod: StudentDetailModule }) {
               ) : lesson.status === "in_progress" ? (
                 <Clock size={13} className="text-amber-500" />
               ) : (
-                <XCircle size={13} className="text-meta/30" />
+                <XCircle size={13} className="text-meta" />
               )}
               <span className="flex-1 text-dark">{lesson.title}</span>
               <span className="text-xs text-meta">
@@ -198,7 +198,7 @@ function EnrolmentCard({ enrolment }: { enrolment: StudentDetailEnrolment }) {
             {/* Module/Lesson breakdown */}
             {enrolment.modules.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-meta">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-meta">
                   Modules & Leçons
                 </h4>
                 {enrolment.modules.map((mod) => (
@@ -210,20 +210,20 @@ function EnrolmentCard({ enrolment }: { enrolment: StudentDetailEnrolment }) {
             {/* Quiz attempts */}
             {enrolment.quizAttempts.length > 0 && (
               <div className="space-y-2">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-meta">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-meta">
                   Quiz
                 </h4>
                 <div className="border border-rule rounded-lg overflow-hidden">
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-cream/50 border-b border-rule">
-                        <th className="text-left px-4 py-2 text-xs font-bold uppercase text-meta">
+                        <th className="text-left px-4 py-2 text-xs font-semibold uppercase text-meta">
                           Exercice
                         </th>
-                        <th className="text-left px-4 py-2 text-xs font-bold uppercase text-meta">
+                        <th className="text-left px-4 py-2 text-xs font-semibold uppercase text-meta">
                           Score
                         </th>
-                        <th className="text-left px-4 py-2 text-xs font-bold uppercase text-meta">
+                        <th className="text-left px-4 py-2 text-xs font-semibold uppercase text-meta">
                           Date
                         </th>
                       </tr>
@@ -321,7 +321,7 @@ function InlineGradeForm({
 
   return (
     <div className="space-y-3 mt-3 border-t border-rule pt-3">
-      <h4 className="text-xs font-bold uppercase tracking-wider text-meta">
+      <h4 className="text-xs font-semibold uppercase tracking-wider text-meta">
         Attribuer une note
       </h4>
       {formError !== null && (
@@ -429,7 +429,7 @@ function SubmissionRow({ sub }: { sub: StudentSubmission }) {
           <p className="text-sm text-dark whitespace-pre-wrap">{sub.body}</p>
           {sub.status === "graded" && sub.feedback !== null && (
             <div className="bg-teal/5 rounded-lg px-4 py-3">
-              <p className="text-xs font-bold text-teal uppercase tracking-wider mb-1">
+              <p className="text-xs font-semibold text-teal uppercase tracking-wider mb-1">
                 Note attribu&eacute;e
               </p>
               {sub.score !== null && (
@@ -478,7 +478,7 @@ function StudentSubmissionsSection({ studentId }: { studentId: string }) {
 
   return (
     <div className="space-y-3">
-      <h2 className="text-lg font-bold text-dark flex items-center gap-2">
+      <h2 className="text-lg font-semibold text-dark flex items-center gap-2">
         <FileText size={18} className="text-teal" />
         Travaux soumis
         {subs.length > 0 && (
@@ -491,7 +491,7 @@ function StudentSubmissionsSection({ studentId }: { studentId: string }) {
       {!isLoading && subs.length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
-            <FileText size={28} className="text-meta/40 mx-auto mb-2" />
+            <FileText size={28} className="text-meta mx-auto mb-2" />
             <p className="text-meta text-sm">
               Aucun travail soumis par cet &eacute;l&egrave;ve.
             </p>
@@ -570,7 +570,7 @@ export function TeacherStudentDetailPage() {
       {/* Student header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-dark">
+          <h1 className="text-2xl font-semibold text-dark">
             {student.firstName} {student.lastName}
           </h1>
           <div className="flex items-center gap-3 mt-1 text-sm text-meta">
@@ -587,7 +587,7 @@ export function TeacherStudentDetailPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-dark">
+            <p className="text-2xl font-semibold text-dark">
               {String(totalCourses)}
             </p>
             <p className="text-xs text-meta mt-1">Formations</p>
@@ -595,7 +595,7 @@ export function TeacherStudentDetailPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-teal">
+            <p className="text-2xl font-semibold text-teal">
               {String(completedCourses)}
             </p>
             <p className="text-xs text-meta mt-1">Termin&eacute;es</p>
@@ -603,7 +603,7 @@ export function TeacherStudentDetailPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-dark">
+            <p className="text-2xl font-semibold text-dark">
               {String(avgCompletion)}%
             </p>
             <p className="text-xs text-meta mt-1">Progression moy.</p>
@@ -611,7 +611,7 @@ export function TeacherStudentDetailPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold text-dark">
+            <p className="text-2xl font-semibold text-dark">
               {formatDuration(totalTime)}
             </p>
             <p className="text-xs text-meta mt-1">Temps total</p>
@@ -637,7 +637,7 @@ export function TeacherStudentDetailPage() {
       {enrolments.length === 0 ? (
         <Card>
           <CardContent className="p-12 text-center">
-            <BookOpen size={32} className="text-meta/40 mx-auto mb-3" />
+            <BookOpen size={32} className="text-meta mx-auto mb-3" />
             <p className="text-meta text-sm">
               Aucune formation pour cet &eacute;l&egrave;ve.
             </p>

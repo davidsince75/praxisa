@@ -76,8 +76,8 @@ function StatCard({ label, value, icon, accent = "text-teal" }: StatCardProps) {
       <CardContent className="px-5 py-4 flex items-center gap-4">
         <div className={`${accent} opacity-80`}>{icon}</div>
         <div>
-          <p className="text-2xl font-bold text-dark">{String(value)}</p>
-          <p className="text-xs text-meta uppercase tracking-wider font-bold mt-0.5">
+          <p className="text-2xl font-semibold text-dark">{String(value)}</p>
+          <p className="text-xs text-meta uppercase tracking-wider font-semibold mt-0.5">
             {label}
           </p>
         </div>
@@ -153,7 +153,7 @@ function EnrolModal({ courseId, onClose }: EnrolModalProps) {
         </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="text-xs font-bold uppercase tracking-wider text-meta block mb-1.5">
+            <label className="text-xs font-semibold uppercase tracking-wider text-meta block mb-1.5">
               Adresse email
             </label>
             <input
@@ -256,7 +256,7 @@ export function TeacherCourseDetailPage() {
             </Link>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-bold text-dark">
+                <h1 className="text-2xl font-semibold text-dark">
                   {course?.title ?? "Chargement..."}
                 </h1>
                 {course !== undefined && (
@@ -330,7 +330,7 @@ export function TeacherCourseDetailPage() {
             onClick={() => {
               setActiveTab("students");
             }}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`pb-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
               activeTab === "students"
                 ? "text-teal border-b-2 border-teal"
                 : "text-meta hover:text-dark"
@@ -342,7 +342,7 @@ export function TeacherCourseDetailPage() {
             onClick={() => {
               setActiveTab("ratings");
             }}
-            className={`pb-2 text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`pb-2 text-xs font-semibold uppercase tracking-wider transition-colors ${
               activeTab === "ratings"
                 ? "text-teal border-b-2 border-teal"
                 : "text-meta hover:text-dark"
@@ -367,19 +367,19 @@ export function TeacherCourseDetailPage() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="border-b border-rule">
-                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                           Apprenant
                         </th>
-                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                           Email
                         </th>
-                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                           Statut
                         </th>
-                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta">
+                        <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta">
                           Inscrit le
                         </th>
-                        <th className="text-left px-6 py-3 text-xs font-bold uppercase tracking-wider text-meta min-w-[160px]">
+                        <th className="text-left px-6 py-3 text-xs font-semibold uppercase tracking-wider text-meta min-w-[160px]">
                           Progression
                         </th>
                         <th className="px-6 py-3" />
@@ -448,7 +448,7 @@ export function TeacherCourseDetailPage() {
               ) : (
                 <div className="space-y-6">
                   <div className="flex items-center gap-3">
-                    <span className="text-4xl font-bold text-dark">
+                    <span className="text-4xl font-semibold text-dark">
                       {String(ratingsData.averageRating)}
                     </span>
                     <div>
@@ -460,7 +460,7 @@ export function TeacherCourseDetailPage() {
                             className={
                               n <= Math.round(ratingsData.averageRating)
                                 ? "text-yellow-400 fill-yellow-400"
-                                : "text-meta/20"
+                                : "text-meta"
                             }
                           />
                         ))}
@@ -483,12 +483,12 @@ export function TeacherCourseDetailPage() {
                                 className={
                                   n <= r.rating
                                     ? "text-yellow-400 fill-yellow-400"
-                                    : "text-meta/20"
+                                    : "text-meta"
                                 }
                               />
                             ))}
                           </div>
-                          <span className="text-[11px] text-meta">
+                          <span className="text-xs text-meta">
                             {formatDate(r.createdAt)}
                           </span>
                         </div>

@@ -261,7 +261,7 @@ function ExerciseDeadlineRow({
 
   return (
     <div className="flex items-center gap-2 px-10 py-1.5 bg-cream/20">
-      <span className="text-[10px] font-bold uppercase tracking-wider text-meta border border-rule px-1.5 py-0.5 rounded">
+      <span className="text-xs font-semibold uppercase tracking-wider text-meta border border-rule px-1.5 py-0.5 rounded">
         {typeLabels[exercise.type] ?? exercise.type}
       </span>
       <span className="flex-1 text-xs text-dark truncate">
@@ -284,7 +284,7 @@ function ExerciseDeadlineRow({
           onClick={() => {
             deadlineMutation.mutate(null);
           }}
-          className="text-[10px] text-meta hover:text-rose transition-colors"
+          className="text-xs text-meta hover:text-rose transition-colors"
           title="Supprimer l'échéance"
         >
           ✕
@@ -394,7 +394,7 @@ function ModuleRow({
                   {les.title}
                 </span>
                 {les.exercises.length > 0 && (
-                  <span className="text-[10px] text-meta mr-1">
+                  <span className="text-xs text-meta mr-1">
                     {String(les.exercises.length)} exercice
                     {les.exercises.length !== 1 ? "s" : ""}
                   </span>
@@ -405,7 +405,7 @@ function ModuleRow({
                   </span>
                 )}
                 {les.isFreePreview && (
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal border border-teal/30 px-1.5 py-0.5 rounded mr-1">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-teal border border-teal/30 px-1.5 py-0.5 rounded mr-1">
                     Aperçu
                   </span>
                 )}
@@ -550,7 +550,7 @@ export function TeacherCourseBuilderPage({
             </button>
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-dark">
+            <h1 className="text-2xl font-semibold text-dark">
               {course?.title ?? "Chargement…"}
             </h1>
             <p className="text-meta text-sm mt-1">Éditeur de contenu</p>
@@ -583,14 +583,14 @@ export function TeacherCourseBuilderPage({
       {course !== undefined && (
         <div className="flex items-center gap-4 text-xs text-meta">
           <span>
-            <span className="font-bold text-dark">
+            <span className="font-semibold text-dark">
               {String(modules.length)}
             </span>{" "}
             module{modules.length !== 1 ? "s" : ""}
           </span>
           <span>·</span>
           <span>
-            <span className="font-bold text-dark">
+            <span className="font-semibold text-dark">
               {String(modules.reduce((n, m) => n + m.lessons.length, 0))}
             </span>{" "}
             leçons au total
@@ -601,7 +601,7 @@ export function TeacherCourseBuilderPage({
       {/* Course PDF */}
       {course !== undefined && (
         <div className="border border-rule rounded bg-white/60 p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-meta mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-meta mb-2">
             PDF de cours complet
           </p>
           <PdfUpload
@@ -620,7 +620,7 @@ export function TeacherCourseBuilderPage({
       ) : modules.length === 0 ? (
         <Card>
           <CardContent className="p-12 flex flex-col items-center text-center gap-3">
-            <BookOpen size={32} className="text-meta/40" />
+            <BookOpen size={32} className="text-meta" />
             <p className="text-meta text-sm">
               Aucun module pour l&apos;instant. Cliquez sur «Nouveau module»
               pour commencer.

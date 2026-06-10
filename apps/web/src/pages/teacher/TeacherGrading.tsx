@@ -205,7 +205,7 @@ function SubmissionCard({ row }: { row: CourseSubmissionRow }) {
                 </p>
                 {row.status === "graded" && (
                   <div className="mt-3 bg-blue-50 rounded-lg px-4 py-3">
-                    <p className="text-xs font-bold text-teal uppercase tracking-wider mb-1">
+                    <p className="text-xs font-semibold text-teal uppercase tracking-wider mb-1">
                       Note attribuée
                     </p>
                     {detail.submission.score !== null && (
@@ -282,7 +282,7 @@ export function TeacherGradingPage() {
           Travaux à corriger
         </h1>
         {pending > 0 && (
-          <span className="bg-amber-100 text-amber-700 text-xs font-bold px-2 py-0.5 rounded-full">
+          <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">
             {pending.toString()} en attente
           </span>
         )}
@@ -296,7 +296,7 @@ export function TeacherGradingPage() {
             onClick={() => {
               setStatusFilter(s);
             }}
-            className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${
+            className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider transition-colors ${
               statusFilter === s
                 ? "bg-blue-500 text-white"
                 : "bg-slate-100 text-slate-500 hover:bg-slate-200"

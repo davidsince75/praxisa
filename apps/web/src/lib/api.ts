@@ -40,6 +40,33 @@ export function isTokenExpired(): boolean {
   }
 }
 
+function decodeTokenExp(token: string): number | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    let b64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const pad = b64.length % 4;
+    if (pad > 0) {
+      b64 += "=".repeat(4 - pad);
+    }
+    const payload = JSON.parse(atob(b64)) as { exp?: number };
+    return typeof payload.exp === "number" ? payload.exp : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Milliseconds until the session token expires; null when unknown.
+ * Drives the session-expiry warning banner (RGAA: timeout with warning).
+ */
+export function getTokenRemainingMs(): number | null {
+  const token = getToken();
+  if (token === null) return null;
+  const exp = decodeTokenExp(token);
+  return exp === null ? null : exp * 1000 - Date.now();
+}
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,

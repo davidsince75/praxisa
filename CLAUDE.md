@@ -135,6 +135,26 @@ from `@/lib/api.js` — import sites never reference `lib/types` directly.
 
 ---
 
+## Accessibility (RGAA 4.1 / WCAG 2.2 AA — do not regress)
+
+A full accessibility pass landed 2026-06-10 — see `docs/accessibility.md` for
+the audit, the measured contrast ratios, and the remaining manual checks.
+Hard rules when touching the UI:
+
+- Color tokens (`teal`, `rose`, `olive`, `meta`, CSS vars) are contrast-tuned —
+  never lighten them without recomputing ratios. `teal.light`/`rose.light` are
+  for dark surfaces only; `sand`/`steel` are decorative, never text colors.
+- No `font-bold` (700) — `font-semibold` (600) is the ceiling. No text below
+  `text-xs` (12 px). Body text stays 1 rem.
+- Focus comes from the global `*:focus-visible` outline in `index.css` — do not
+  add `focus-visible:outline-none` back to components.
+- Buttons/inputs are 44 px targets (`h-11`); icon-only controls need
+  `aria-label` (French); form fields need a visible label or `aria-label`.
+- Every page has exactly one `h1`; new shells/layouts need the skip link +
+  `<main id="contenu" tabIndex={-1}>` + `<nav aria-label>` pattern.
+
+---
+
 ## Current State (all phases complete, 2026-06-10)
 
 Shipped: Auth (JWT RS256 + argon2id) · Users CRUD + profiles (user_profiles

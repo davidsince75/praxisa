@@ -41,14 +41,14 @@ export function LessonNavItem({
         ) : status === "in_progress" ? (
           <PlayCircle size={13} className="text-olive" />
         ) : (
-          <Circle size={13} className="text-meta/40" />
+          <Circle size={13} className="text-meta" />
         )}
       </span>
       <span className="flex-1 min-w-0">
         <span className="text-xs font-medium leading-snug block truncate">
           {lesson.title}
         </span>
-        <span className="flex items-center gap-1 text-[10px] text-meta/60 mt-0.5">
+        <span className="flex items-center gap-1 text-xs text-meta mt-0.5">
           <Icon size={10} />
           {CONTENT_TYPE_LABELS[lesson.contentType]}
           {lesson.durationMinutes !== null && (
@@ -89,7 +89,7 @@ export function ModuleNavSection({
         ) : (
           <ChevronRight size={12} className="text-meta flex-shrink-0" />
         )}
-        <span className="flex-1 text-[11px] font-bold uppercase tracking-wider text-dark truncate">
+        <span className="flex-1 text-xs font-semibold uppercase tracking-wider text-dark truncate">
           {mod.title}
         </span>
       </button>
