@@ -1,6 +1,9 @@
 packages:
   - "apps/*"
   - "packages/*"
+# Force-patch transitive vulnerabilities (GHSA-w7jw-789q-3m8p: shell-quote via gel)
+overrides:
+  shell-quote: ">=1.8.4"
 allowBuilds:
   "@node-rs/argon2": true
   es5-ext: true
