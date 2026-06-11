@@ -1,4 +1,4 @@
-import { extractText, getDocumentProxy } from "unpdf";
+import { extractText } from "unpdf";
 
 // ── Text normalization ─────────────────────────────────────────────────────────
 // PDF text layers carry typographic artefacts that pollute prompts and
@@ -42,10 +42,13 @@ export function normalizePdfText(text: string): string {
  * (e.g. scanned images) yield empty strings.
  */
 export async function extractPdfPages(buffer: Buffer): Promise<string[]> {
-  // Copy: pdf.js may transfer (detach) the buffer it is given.
-  const pdf = await getDocumentProxy(new Uint8Array(buffer));
-  const { text } = await extractText(pdf, { mergePages: false });
-  return text.map(normalizePdfText);
+  // Copy: pdf.js may transfer (detach) the buffer it is given. The result
+  // shape is asserted because unpdf's declarations reference pdfjs-dist types
+  // that the type-aware linter cannot resolve (error-typed otherwise).
+  const result = (await extractText(new Uint8Array(buffer), {
+    mergePages: false,
+  })) as { totalPages: number; text: string[] };
+  return result.text.map(normalizePdfText);
 }
 
 /**
