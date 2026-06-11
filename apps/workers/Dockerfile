@@ -1,6 +1,6 @@
 # ── Stage 1: dependency install ────────────────────────────────────────────────
 FROM node:20-alpine AS deps
-RUN npm install -g pnpm@9 --quiet
+RUN npm install -g pnpm@10 --quiet
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
@@ -33,7 +33,7 @@ RUN pnpm --filter @praxisa/shared-types build && \
 
 # ── Stage 3: production runtime ────────────────────────────────────────────────
 FROM node:20-alpine AS runtime
-RUN npm install -g pnpm@9 --quiet
+RUN npm install -g pnpm@10 --quiet
 
 RUN addgroup -S praxisa && adduser -S -G praxisa praxisa
 WORKDIR /app

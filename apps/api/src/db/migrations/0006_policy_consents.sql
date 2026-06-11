@@ -6,8 +6,9 @@
 --     types can be introduced without a DDL migration.
 --   - source_ip stores a /24 subnet string for pseudonymisation.
 --   - request_id links each row to the corresponding audit_events row.
+-- Idempotency guards added 2026-06-10 (journal drift repair — see migrate.ts).
 
-CREATE TABLE "policy_consents" (
+CREATE TABLE IF NOT EXISTS "policy_consents" (
   "id"             uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   "user_id"        uuid        NOT NULL REFERENCES "users"("id"),
   "policy_type"    text        NOT NULL,
@@ -18,9 +19,9 @@ CREATE TABLE "policy_consents" (
 );
 
 -- Look up all consents for a given user (subject access requests, export)
-CREATE INDEX "policy_consents_user_id_idx"
+CREATE INDEX IF NOT EXISTS "policy_consents_user_id_idx"
   ON "policy_consents" ("user_id");
 
 -- Look up which users accepted a specific version (compliance audits)
-CREATE INDEX "policy_consents_policy_idx"
+CREATE INDEX IF NOT EXISTS "policy_consents_policy_idx"
   ON "policy_consents" ("policy_type", "policy_version");

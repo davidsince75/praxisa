@@ -88,8 +88,12 @@ export function filesPlugin(
 
         return reply.status(201).send({ file });
       } catch (err: unknown) {
+        // DrizzleQueryError embeds the full parameter list (the entire PDF
+        // buffer) in its message — log the underlying driver error instead.
+        const cause =
+          err instanceof Error && err.cause instanceof Error ? err.cause : err;
         request.log.error(
-          { err, filename, size: buffer.length },
+          { err: cause, filename, size: buffer.length },
           "File upload insert failed",
         );
         return reply

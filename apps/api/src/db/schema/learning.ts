@@ -9,6 +9,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { users } from "./users.js";
+import { uploadedFiles } from "./files.js";
 
 // ── Enums ──────────────────────────────────────────────────────────────────────
 
@@ -57,6 +58,9 @@ export const courses = pgTable("courses", {
   status: courseStatusEnum("status").notNull().default("draft"),
   language: text("language").notNull().default("fr"),
   thumbnailUrl: text("thumbnail_url"),
+  coursePdfId: uuid("course_pdf_id").references(() => uploadedFiles.id, {
+    onDelete: "set null",
+  }),
   totalDurationMinutes: integer("total_duration_minutes"),
 
   publishedAt: timestamp("published_at", { withTimezone: true }),

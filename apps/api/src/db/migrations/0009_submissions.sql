@@ -1,8 +1,12 @@
 -- Migration 0009: submissions table
+-- Idempotency guards added 2026-06-10 (journal drift repair — see migrate.ts).
 --> statement-breakpoint
-CREATE TYPE "submission_status" AS ENUM('submitted', 'grading', 'graded');
+DO $$ BEGIN
+  CREATE TYPE "submission_status" AS ENUM('submitted', 'grading', 'graded');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 --> statement-breakpoint
-CREATE TABLE "submissions" (
+CREATE TABLE IF NOT EXISTS "submissions" (
   "id"           UUID              NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   "exercise_id"  UUID              NOT NULL REFERENCES "exercises"("id"),
   "enrolment_id" UUID              NOT NULL REFERENCES "enrolments"("id"),
@@ -18,10 +22,10 @@ CREATE TABLE "submissions" (
   "updated_at"   TIMESTAMPTZ       NOT NULL DEFAULT now()
 );
 --> statement-breakpoint
-CREATE INDEX "idx_submissions_exercise_id"  ON "submissions"("exercise_id");
+CREATE INDEX IF NOT EXISTS "idx_submissions_exercise_id"  ON "submissions"("exercise_id");
 --> statement-breakpoint
-CREATE INDEX "idx_submissions_enrolment_id" ON "submissions"("enrolment_id");
+CREATE INDEX IF NOT EXISTS "idx_submissions_enrolment_id" ON "submissions"("enrolment_id");
 --> statement-breakpoint
-CREATE INDEX "idx_submissions_student_id"   ON "submissions"("student_id");
+CREATE INDEX IF NOT EXISTS "idx_submissions_student_id"   ON "submissions"("student_id");
 --> statement-breakpoint
-CREATE INDEX "idx_submissions_status"       ON "submissions"("status");
+CREATE INDEX IF NOT EXISTS "idx_submissions_status"       ON "submissions"("status");

@@ -1,6 +1,6 @@
 # ── Stage 1: install + build ──────────────────────────────────────────────────
 FROM node:20-alpine AS build
-RUN npm install -g pnpm@9 --quiet
+RUN npm install -g pnpm@10 --quiet
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./

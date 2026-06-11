@@ -5,8 +5,9 @@
 --     integrity violations (e.g. after a GDPR erasure zeroes the users row).
 --   - No updated_at: rows are never modified after insert.
 --   - source_ip stores a /24 subnet string for pseudonymisation.
+-- Idempotency guards added 2026-06-10 (journal drift repair — see migrate.ts).
 
-CREATE TABLE "audit_events" (
+CREATE TABLE IF NOT EXISTS "audit_events" (
   "id"                  uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   "event_at"            timestamptz NOT NULL,
   "actor_user_id"       text        NOT NULL,
@@ -22,13 +23,13 @@ CREATE TABLE "audit_events" (
 );
 
 -- Time-range queries (most common access pattern for compliance reports)
-CREATE INDEX "audit_events_event_at_idx"
+CREATE INDEX IF NOT EXISTS "audit_events_event_at_idx"
   ON "audit_events" ("event_at" DESC);
 
 -- Per-actor queries (DSR subject access requests)
-CREATE INDEX "audit_events_actor_user_id_idx"
+CREATE INDEX IF NOT EXISTS "audit_events_actor_user_id_idx"
   ON "audit_events" ("actor_user_id");
 
 -- Per-entity queries (e.g. "all events for this batch")
-CREATE INDEX "audit_events_entity_idx"
+CREATE INDEX IF NOT EXISTS "audit_events_entity_idx"
   ON "audit_events" ("entity_type", "entity_id");
