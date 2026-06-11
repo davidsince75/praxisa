@@ -649,6 +649,7 @@ export function TeacherCourseBuilderPage({
       />
       <AICourseStructureDialog
         courseId={id}
+        coursePdfId={course?.coursePdfId ?? null}
         open={aiStructureOpen}
         onOpenChange={setAiStructureOpen}
         onSuccess={refresh}

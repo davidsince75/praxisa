@@ -53,6 +53,23 @@ export interface AiIngestResponse {
   chunksStored: number;
 }
 
+// ── Document ingest + drafting ────────────────────────────────────────────────
+
+export const aiDocumentParamsSchema = z.object({
+  fileId: z.string().uuid(),
+});
+
+export type AiDocumentParams = z.infer<typeof aiDocumentParamsSchema>;
+
+export const aiDraftLessonBodySchema = z.object({
+  fileId: z.string().uuid(),
+  lessonTitle: z.string().min(3).max(200),
+  pageStart: z.number().int().min(1).optional(),
+  pageEnd: z.number().int().min(1).optional(),
+});
+
+export type AiDraftLessonBody = z.infer<typeof aiDraftLessonBodySchema>;
+
 // ── Tier 3: Grading suggestion ────────────────────────────────────────────────
 
 export const aiGradeSuggestBodySchema = z.object({

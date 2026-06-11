@@ -103,8 +103,10 @@ from `@/lib/api.js` — import sites never reference `lib/types` directly.
 
 - camelCase column refs in sql templates; `.returning()` after `.insert()` when the row is needed.
 - Migrations are hand-written SQL in `apps/api/src/db/migrations/`.
-- **Next migration is 0027** (journal idx 27). Add the entry to
+- **Next migration is 0028** (journal idx 28). Add the entry to
   `apps/api/src/db/migrations/meta/_journal.json`, incrementing `when` by 86400000.
+  `when` values MUST stay strictly increasing — `journal.test.ts` enforces this
+  (an out-of-order value silently skips all later migrations; see migrate.ts repair).
 - NEVER add startup DDL self-heals in `apps/api/src/index.ts` — write a real
   migration (the old `user_profiles` self-heal was removed; 0026 owns that DDL).
 
@@ -161,12 +163,14 @@ Shipped: Auth (JWT RS256 + argon2id) · Users CRUD + profiles (user_profiles
 table) · GDPR/DSR + audit log + policy consents · Courses/Modules/Lessons/
 Exercises · Enrolments (incl. provisional) + Progress · Quizzes + attempts ·
 Submissions/Grading · AI (RAG learner chat, teacher ingest, draft generator,
-course structuring, MCQ generation — Mistral) · Campaigns (Brevo) · Messaging ·
+course structuring, MCQ generation, course-PDF document ingest: per-page
+extraction (unpdf) → map-reduce outline → file-scoped pgvector embeddings,
+async with status polling — Mistral) · Campaigns (Brevo) · Messaging ·
 Notifications · Ratings · Certificates · Forums · Documents/Notes · Tags ·
 Settings · Gmail integration · Payments (GoCardless) · Data import/migration ·
 PDF upload (binary, bytea in PG).
 
-**Tests**: 278 unit tests across 18 files (run `npx vitest run` inside `apps/api`
+**Tests**: 310 unit tests across 22 files (run `npx vitest run` inside `apps/api`
 — pure unit tests, no DB needed locally). Manual checklist: `docs/test-checklist.md`.
 
 **CI** (`.github/workflows/ci.yml`): static (tsc/eslint/prettier) · security

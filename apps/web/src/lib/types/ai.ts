@@ -37,10 +37,37 @@ export interface AiAdminDraftResponse {
 export interface AIModuleSuggestion {
   title: string;
   description: string;
+  /** Page range of the source PDF covered by the module (fileId mode only). */
+  pageStart?: number;
+  pageEnd?: number;
 }
 
 export interface AICourseStructureResponse {
   modules: AIModuleSuggestion[];
+}
+
+// ── AI: Document ingest (course PDF preparation) ─────────────────────────────
+
+export type DocumentIngestState = "none" | "processing" | "ready" | "failed";
+
+export interface DocumentIngestStatusResponse {
+  status: DocumentIngestState;
+  stage?: string | null;
+  error?: string | null;
+  pageCount?: number | null;
+  chunkCount?: number | null;
+  updatedAt?: string;
+}
+
+export interface AIDraftLessonSource {
+  pageStart: number;
+  pageEnd: number;
+  excerpt: string;
+}
+
+export interface AIDraftLessonResponse {
+  content: string;
+  sources: AIDraftLessonSource[];
 }
 
 // ── AI: MCQ Generation ────────────────────────────────────────────────────────

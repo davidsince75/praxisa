@@ -53,6 +53,67 @@ export async function retrieveChunks(
     }));
 }
 
+// ── Document retrieval (file-scoped, page-aware) ──────────────────────────────
+
+export interface DocumentQueryChunk {
+  chunkIndex: number;
+  pageStart: number;
+  pageEnd: number;
+  chunkText: string;
+  similarity: number;
+}
+
+/**
+ * Retrieve the chunks of one ingested document most similar to the query,
+ * optionally constrained to a page range (overlap semantics). No similarity
+ * threshold: the file scope already bounds the domain, and lesson drafting
+ * favours recall over precision.
+ */
+export async function retrieveDocumentChunks(
+  db: Db,
+  fileId: string,
+  query: string,
+  mistralApiKey: string,
+  opts: { pageStart?: number; pageEnd?: number; topK?: number } = {},
+): Promise<DocumentQueryChunk[]> {
+  const topK = opts.topK ?? 6;
+  const [queryEmbedding] = await embedTexts([query], mistralApiKey);
+  if (queryEmbedding === undefined) return [];
+
+  const embeddingLiteral = `'[${queryEmbedding.join(",")}]'::vector`;
+  const pageFilter =
+    opts.pageStart !== undefined && opts.pageEnd !== undefined
+      ? sql` AND page_start <= ${opts.pageEnd} AND page_end >= ${opts.pageStart}`
+      : sql``;
+
+  const result = await db.execute<{
+    chunk_index: number;
+    page_start: number;
+    page_end: number;
+    chunk_text: string;
+    similarity: number;
+  }>(sql`
+    SELECT
+      chunk_index,
+      page_start,
+      page_end,
+      chunk_text,
+      1 - (embedding <=> ${sql.raw(embeddingLiteral)}) AS similarity
+    FROM document_embeddings
+    WHERE file_id = ${fileId}${pageFilter}
+    ORDER BY embedding <=> ${sql.raw(embeddingLiteral)}
+    LIMIT ${sql.raw(String(topK))}
+  `);
+
+  return result.rows.map((r) => ({
+    chunkIndex: Number(r.chunk_index),
+    pageStart: Number(r.page_start),
+    pageEnd: Number(r.page_end),
+    chunkText: r.chunk_text,
+    similarity: Number(r.similarity),
+  }));
+}
+
 // ── Generation ─────────────────────────────────────────────────────────────────
 
 const SYSTEM_PROMPT = `You are a helpful learning assistant for Praxisa, a French professional 
