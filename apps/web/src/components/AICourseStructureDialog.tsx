@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api.js";
 import type {
   AICourseStructureResponse,
-  DocumentIngestStatusResponse,
+  CourseDocumentItem,
+  CourseDocumentsResponse,
 } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
@@ -20,7 +21,6 @@ import { Sparkles, BookOpen, FileText, Loader2 } from "lucide-react";
 
 interface AICourseStructureDialogProps {
   courseId: string;
-  coursePdfId?: string | null;
   open: boolean;
   onOpenChange: (v: boolean) => void;
   onSuccess: () => void;
@@ -34,13 +34,12 @@ const STAGE_LABELS: Record<string, string> = {
 
 export function AICourseStructureDialog({
   courseId,
-  coursePdfId,
   open,
   onOpenChange,
   onSuccess,
 }: AICourseStructureDialogProps) {
-  const hasPdf = coursePdfId !== null && coursePdfId !== undefined;
   const [source, setSource] = useState<"pdf" | "description">("description");
+  const [selectedFileId, setSelectedFileId] = useState<string>("");
   const [description, setDescription] = useState("");
   const [moduleCount, setModuleCount] = useState("5");
   const [suggestions, setSuggestions] = useState<
@@ -51,32 +50,53 @@ export function AICourseStructureDialog({
   const [preparing, setPreparing] = useState(false);
   const [error, setError] = useState("");
 
-  // Default to the course PDF as source whenever the dialog opens with one.
-  useEffect(() => {
-    if (open) {
-      setSource(hasPdf ? "pdf" : "description");
-    }
-  }, [open, hasPdf]);
-
-  const ingestQuery = useQuery<DocumentIngestStatusResponse>({
-    queryKey: ["document-ingest", coursePdfId],
+  const documentsQuery = useQuery<CourseDocumentsResponse>({
+    queryKey: ["course-documents", courseId],
     queryFn: () =>
-      api.get<DocumentIngestStatusResponse>(
-        `/ai/documents/${coursePdfId ?? ""}/ingest`,
-      ),
-    enabled: open && hasPdf,
+      api.get<CourseDocumentsResponse>(`/courses/${courseId}/documents`),
+    enabled: open,
     refetchInterval: (query) =>
-      query.state.data?.status === "processing" ? 2500 : false,
+      (query.state.data?.documents ?? []).some(
+        (d) => d.ingest.status === "processing",
+      )
+        ? 2500
+        : false,
   });
-  const ingest = ingestQuery.data;
+  const documents = documentsQuery.data?.documents ?? [];
+  const hasDocuments = documents.length > 0;
+  const selectedDoc: CourseDocumentItem | undefined = documents.find(
+    (d) => d.fileId === selectedFileId,
+  );
+
+  // Initialize defaults once per dialog opening (not on every status poll —
+  // that would override a manual switch to the description source): PDF mode
+  // when documents exist, preselecting the first ready document.
+  const initializedRef = useRef(false);
+  useEffect(() => {
+    if (!open) {
+      initializedRef.current = false;
+      return;
+    }
+    if (initializedRef.current || documentsQuery.isLoading) return;
+    initializedRef.current = true;
+    if (hasDocuments) {
+      setSource("pdf");
+      const ready = documents.find((d) => d.ingest.status === "ready");
+      setSelectedFileId(
+        ready !== undefined ? ready.fileId : documents[0].fileId,
+      );
+    } else {
+      setSource("description");
+    }
+  }, [open, hasDocuments, documents, documentsQuery.isLoading]);
 
   async function handlePrepare(): Promise<void> {
-    if (!hasPdf) return;
+    if (selectedDoc === undefined) return;
     setPreparing(true);
     setError("");
     try {
-      await api.post(`/ai/documents/${coursePdfId}/ingest`, {});
-      await ingestQuery.refetch();
+      await api.post(`/ai/documents/${selectedDoc.fileId}/ingest`, {});
+      await documentsQuery.refetch();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Erreur de préparation");
     } finally {
@@ -85,14 +105,14 @@ export function AICourseStructureDialog({
   }
 
   async function handleGenerate(): Promise<void> {
-    const usePdf = source === "pdf" && hasPdf;
+    const usePdf = source === "pdf" && selectedDoc !== undefined;
     if (!usePdf && description.trim().length < 10) return;
     setLoading(true);
     setError("");
     setSuggestions(null);
     try {
       const body = usePdf
-        ? { fileId: coursePdfId, moduleCount: Number(moduleCount) }
+        ? { fileId: selectedDoc.fileId, moduleCount: Number(moduleCount) }
         : { description: description.trim(), moduleCount: Number(moduleCount) };
       const res = await api.post<AICourseStructureResponse>(
         "/ai/course-structure",
@@ -139,8 +159,8 @@ export function AICourseStructureDialog({
 
   const generateDisabled =
     loading ||
-    (source === "pdf" && hasPdf
-      ? ingest?.status !== "ready"
+    (source === "pdf"
+      ? selectedDoc?.ingest.status !== "ready"
       : description.trim().length < 10);
 
   return (
@@ -155,7 +175,7 @@ export function AICourseStructureDialog({
 
         {suggestions === null ? (
           <div className="space-y-4 py-2">
-            {hasPdf && (
+            {hasDocuments && (
               <fieldset className="space-y-1">
                 <legend className="text-sm font-medium mb-1">Source</legend>
                 <div className="flex flex-wrap gap-4">
@@ -170,7 +190,7 @@ export function AICourseStructureDialog({
                       }}
                       className="h-4 w-4 accent-teal-600"
                     />
-                    PDF du cours
+                    Document du cours
                   </label>
                   <label className="flex items-center gap-2 text-sm py-1.5 cursor-pointer">
                     <input
@@ -189,53 +209,84 @@ export function AICourseStructureDialog({
               </fieldset>
             )}
 
-            {source === "pdf" && hasPdf ? (
-              <div className="rounded-md border border-border p-3 space-y-2">
-                <div className="flex items-center gap-2 text-sm">
-                  <FileText size={14} className="text-teal-600" />
-                  {ingest === undefined ? (
-                    <span className="text-meta">Vérification du document…</span>
-                  ) : ingest.status === "ready" ? (
-                    <span>
-                      Document indexé — {String(ingest.pageCount ?? "?")} pages,{" "}
-                      {String(ingest.chunkCount ?? "?")} extraits.
-                    </span>
-                  ) : ingest.status === "processing" ? (
-                    <span className="flex items-center gap-2 text-meta">
-                      <Loader2 size={13} className="animate-spin" />
-                      {STAGE_LABELS[ingest.stage ?? ""] ??
-                        "Préparation en cours…"}
-                    </span>
-                  ) : ingest.status === "failed" ? (
-                    <span className="text-destructive">
-                      Échec de la préparation
-                      {ingest.error !== null && ingest.error !== undefined
-                        ? ` : ${ingest.error}`
-                        : ""}
-                    </span>
-                  ) : (
-                    <span className="text-meta">
-                      Le document doit d&apos;abord être préparé (analyse du
-                      plan et indexation).
-                    </span>
+            {source === "pdf" && hasDocuments ? (
+              <div className="space-y-2">
+                <div className="space-y-1">
+                  <Label htmlFor="ai-document">Document source</Label>
+                  <select
+                    id="ai-document"
+                    className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm"
+                    value={selectedFileId}
+                    onChange={(e) => {
+                      setSelectedFileId(e.target.value);
+                    }}
+                  >
+                    {documents.map((doc) => (
+                      <option key={doc.id} value={doc.fileId}>
+                        {doc.title}
+                        {doc.ingest.status === "ready"
+                          ? " — indexé"
+                          : doc.ingest.status === "processing"
+                            ? " — préparation en cours"
+                            : doc.ingest.status === "failed"
+                              ? " — échec"
+                              : " — non préparé"}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="rounded-md border border-border p-3 space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FileText size={14} className="text-teal-600" />
+                    {selectedDoc === undefined ? (
+                      <span className="text-meta">
+                        Sélectionnez un document.
+                      </span>
+                    ) : selectedDoc.ingest.status === "ready" ? (
+                      <span>
+                        Document indexé —{" "}
+                        {String(selectedDoc.ingest.pageCount ?? "?")} pages,{" "}
+                        {String(selectedDoc.ingest.chunkCount ?? "?")} extraits.
+                      </span>
+                    ) : selectedDoc.ingest.status === "processing" ? (
+                      <span className="flex items-center gap-2 text-meta">
+                        <Loader2 size={13} className="animate-spin" />
+                        {STAGE_LABELS[selectedDoc.ingest.stage ?? ""] ??
+                          "Préparation en cours…"}
+                      </span>
+                    ) : selectedDoc.ingest.status === "failed" ? (
+                      <span className="text-destructive">
+                        Échec de la préparation
+                        {typeof selectedDoc.ingest.error === "string"
+                          ? ` : ${selectedDoc.ingest.error}`
+                          : ""}
+                      </span>
+                    ) : (
+                      <span className="text-meta">
+                        Ce document doit d&apos;abord être préparé (analyse du
+                        plan et indexation).
+                      </span>
+                    )}
+                  </div>
+                  {(selectedDoc?.ingest.status === "none" ||
+                    selectedDoc?.ingest.status === "failed") && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        void handlePrepare();
+                      }}
+                      disabled={preparing}
+                    >
+                      {preparing
+                        ? "Lancement…"
+                        : selectedDoc.ingest.status === "failed"
+                          ? "Relancer la préparation"
+                          : "Préparer le document"}
+                    </Button>
                   )}
                 </div>
-                {(ingest?.status === "none" || ingest?.status === "failed") && (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      void handlePrepare();
-                    }}
-                    disabled={preparing}
-                  >
-                    {preparing
-                      ? "Lancement…"
-                      : ingest.status === "failed"
-                        ? "Relancer la préparation"
-                        : "Préparer le document"}
-                  </Button>
-                )}
               </div>
             ) : (
               <div className="space-y-1">
@@ -266,7 +317,9 @@ export function AICourseStructureDialog({
                 className="w-24"
               />
             </div>
-            {error && <p className="text-xs text-destructive">{error}</p>}
+            {error.length > 0 && (
+              <p className="text-xs text-destructive">{error}</p>
+            )}
           </div>
         ) : (
           <div className="space-y-3 py-2 max-h-96 overflow-y-auto">
@@ -297,7 +350,9 @@ export function AICourseStructureDialog({
                 </div>
               </div>
             ))}
-            {error && <p className="text-xs text-destructive">{error}</p>}
+            {error.length > 0 && (
+              <p className="text-xs text-destructive">{error}</p>
+            )}
           </div>
         )}
 

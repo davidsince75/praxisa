@@ -6,6 +6,7 @@ import { enrolmentsRoutes } from "./enrolments.routes.js";
 import { progressRoutes } from "./progress.routes.js";
 import { instructorRoutes } from "./instructor.routes.js";
 import { quizRoutes } from "./quiz.routes.js";
+import { documentsRoutes } from "./documents.routes.js";
 
 /**
  * Learning domain plugin — aggregates the route groups. Each group is a plain
@@ -24,5 +25,6 @@ export const learningPlugin = (
   progressRoutes(fastify);
   instructorRoutes(fastify);
   quizRoutes(fastify);
+  documentsRoutes(fastify);
   done();
 };

@@ -32,6 +32,7 @@ import { Label } from "@/components/ui/label.js";
 import { Card, CardContent } from "@/components/ui/card.js";
 import { PdfUpload } from "@/components/PdfUpload.js";
 import { AICourseStructureDialog } from "@/components/AICourseStructureDialog.js";
+import { CourseDocumentsCard } from "@/components/CourseDocumentsCard.js";
 import {
   Dialog,
   DialogContent,
@@ -614,6 +615,9 @@ export function TeacherCourseBuilderPage({
         </div>
       )}
 
+      {/* Reference documents for AI (structure + content generation) */}
+      {course !== undefined && <CourseDocumentsCard courseId={id} />}
+
       {/* Tree */}
       {isLoading ? (
         <p className="text-meta text-sm">Chargement…</p>
@@ -649,7 +653,6 @@ export function TeacherCourseBuilderPage({
       />
       <AICourseStructureDialog
         courseId={id}
-        coursePdfId={course?.coursePdfId ?? null}
         open={aiStructureOpen}
         onOpenChange={setAiStructureOpen}
         onSuccess={refresh}

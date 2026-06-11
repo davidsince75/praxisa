@@ -77,6 +77,37 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Turn an API error payload into a readable string. Several routes return
+ * zod's flatten() output ({ formErrors, fieldErrors }) as `error` — rendering
+ * that object directly produced "[object Object]" in dialogs.
+ */
+function toErrorMessage(value: unknown, fallback: string): string {
+  if (typeof value === "string" && value.length > 0) return value;
+  if (typeof value === "object" && value !== null) {
+    const flat = value as {
+      formErrors?: unknown;
+      fieldErrors?: unknown;
+    };
+    const parts: string[] = [];
+    if (Array.isArray(flat.formErrors)) {
+      parts.push(...flat.formErrors.filter((e) => typeof e === "string"));
+    }
+    if (typeof flat.fieldErrors === "object" && flat.fieldErrors !== null) {
+      for (const [field, errors] of Object.entries(flat.fieldErrors)) {
+        if (Array.isArray(errors)) {
+          const messages = errors.filter((e) => typeof e === "string");
+          if (messages.length > 0) {
+            parts.push(`${field} : ${messages.join(", ")}`);
+          }
+        }
+      }
+    }
+    if (parts.length > 0) return parts.join(" — ");
+  }
+  return fallback;
+}
+
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const token = getToken();
   const headers: Record<string, string> = {
@@ -91,10 +122,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     const body = (await res
       .json()
       .catch(() => ({ message: res.statusText }))) as {
-      message?: string;
-      error?: string;
+      message?: unknown;
+      error?: unknown;
     };
-    const message = body.message ?? body.error ?? res.statusText;
+    const message = toErrorMessage(body.message ?? body.error, res.statusText);
     if (res.status === 401) {
       clearAuth();
       window.location.href = "/login";

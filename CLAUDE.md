@@ -103,7 +103,7 @@ from `@/lib/api.js` — import sites never reference `lib/types` directly.
 
 - camelCase column refs in sql templates; `.returning()` after `.insert()` when the row is needed.
 - Migrations are hand-written SQL in `apps/api/src/db/migrations/`.
-- **Next migration is 0028** (journal idx 28). Add the entry to
+- **Next migration is 0029** (journal idx 29). Add the entry to
   `apps/api/src/db/migrations/meta/_journal.json`, incrementing `when` by 86400000.
   `when` values MUST stay strictly increasing — `journal.test.ts` enforces this
   (an out-of-order value silently skips all later migrations; see migrate.ts repair).
@@ -163,9 +163,11 @@ Shipped: Auth (JWT RS256 + argon2id) · Users CRUD + profiles (user_profiles
 table) · GDPR/DSR + audit log + policy consents · Courses/Modules/Lessons/
 Exercises · Enrolments (incl. provisional) + Progress · Quizzes + attempts ·
 Submissions/Grading · AI (RAG learner chat, teacher ingest, draft generator,
-course structuring, MCQ generation, course-PDF document ingest: per-page
-extraction (unpdf) → map-reduce outline → file-scoped pgvector embeddings,
-async with status polling — Mistral) · Campaigns (Brevo) · Messaging ·
+course structuring, MCQ generation, course-document ingest: multiple reference
+PDFs per course (course_documents), per-page extraction (unpdf) → map-reduce
+outline → file-scoped pgvector embeddings, async with status polling; the
+Structure IA dialog picks among prepared documents — Mistral) ·
+Campaigns (Brevo) · Messaging ·
 Notifications · Ratings · Certificates · Forums · Documents/Notes · Tags ·
 Settings · Gmail integration · Payments (GoCardless) · Data import/migration ·
 PDF upload (binary, bytea in PG).
@@ -182,7 +184,8 @@ build (all workspaces) — wait for "all green" before starting new work.
 `learning/` is split into route files registered by `index.ts` (the aggregator):
 `courses.routes.ts`, `modules.routes.ts`, `lessons.routes.ts` (incl. exercise
 authoring), `enrolments.routes.ts`, `progress.routes.ts`, `instructor.routes.ts`,
-`quiz.routes.ts`, plus `service.ts` (helpers incl. `canManageCourse`) and `types.ts`
+`quiz.routes.ts`, `documents.routes.ts` (course reference PDFs), plus
+`service.ts` (helpers incl. `canManageCourse`) and `types.ts`
 (zod schemas). Other modules: auth, users, gdpr, audit, analytics, certificates,
 messaging, submissions, campaigns, notifications, ratings, import, documents,
 forums, settings, tags, gmail, payments, files, ai, comms, migration.

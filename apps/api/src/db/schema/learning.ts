@@ -76,6 +76,30 @@ export const courses = pgTable("courses", {
 export type Course = typeof courses.$inferSelect;
 export type NewCourse = typeof courses.$inferInsert;
 
+// ── Course documents ───────────────────────────────────────────────────────────
+// Multiple reference PDFs per course, used by the AI features (structure
+// generation, lesson drafting). Unlinking keeps the uploaded_files row.
+
+export const courseDocuments = pgTable(
+  "course_documents",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    courseId: uuid("course_id")
+      .notNull()
+      .references(() => courses.id, { onDelete: "cascade" }),
+    fileId: uuid("file_id")
+      .notNull()
+      .references(() => uploadedFiles.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [unique().on(table.courseId, table.fileId)],
+);
+
+export type CourseDocument = typeof courseDocuments.$inferSelect;
+
 // ── Course modules ─────────────────────────────────────────────────────────────
 
 export const courseModules = pgTable("course_modules", {

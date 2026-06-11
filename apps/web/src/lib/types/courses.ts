@@ -2,6 +2,7 @@
 // Split out of lib/api.ts; consumed via re-export from @/lib/api.
 
 import type { QuizQuestion } from "./learner.js";
+import type { DocumentIngestState } from "./ai.js";
 
 export interface Course {
   id: string;
@@ -23,6 +24,30 @@ export interface Course {
 
 export interface CourseListResponse {
   courses: Course[];
+}
+
+// ── Course reference documents (AI source PDFs) ───────────────────────────────
+
+export interface CourseDocumentIngest {
+  status: DocumentIngestState;
+  stage?: string | null;
+  error?: string | null;
+  pageCount?: number | null;
+  chunkCount?: number | null;
+}
+
+export interface CourseDocumentItem {
+  id: string;
+  fileId: string;
+  title: string;
+  filename: string;
+  size: number;
+  createdAt: string;
+  ingest: CourseDocumentIngest;
+}
+
+export interface CourseDocumentsResponse {
+  documents: CourseDocumentItem[];
 }
 
 export interface SarExport {
