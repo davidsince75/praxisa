@@ -72,6 +72,43 @@ const config: Config = {
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
       },
+      fontFamily: {
+        // Display éditorial — polices système uniquement (CSP: font-src 'self')
+        display: ["Georgia", "Cambria", '"Times New Roman"', "Times", "serif"],
+      },
+      keyframes: {
+        "fade-up": {
+          from: { opacity: "0", transform: "translateY(18px)" },
+          to: { opacity: "1", transform: "translateY(0)" },
+        },
+        "word-in": {
+          from: {
+            opacity: "0",
+            filter: "blur(6px)",
+            transform: "translateY(0.18em)",
+          },
+          to: { opacity: "1", filter: "blur(0)", transform: "translateY(0)" },
+        },
+        marquee: {
+          from: { transform: "translateX(0)" },
+          to: { transform: "translateX(-50%)" },
+        },
+        blink: {
+          "0%, 90%, 96%, 100%": { transform: "scaleY(0)" },
+          "93%": { transform: "scaleY(1)" },
+        },
+        eeg: {
+          from: { strokeDashoffset: "300" },
+          to: { strokeDashoffset: "0" },
+        },
+      },
+      animation: {
+        "fade-up": "fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both",
+        "word-in": "word-in 0.6s ease-out both",
+        marquee: "marquee 48s linear infinite",
+        blink: "blink 7s ease-in-out infinite",
+        eeg: "eeg 1.8s ease-out 0.5s both",
+      },
     },
   },
   plugins: [],
