@@ -74,8 +74,8 @@ export function extractJsonObject(raw: string): unknown {
 
 export function stripCodeFences(raw: string): string {
   const out = raw.trim();
-  const fence = out.match(/^```(?:html)?\s*\n([\s\S]*?)\n?```\s*$/i);
-  if (fence !== null && fence[1] !== undefined) return fence[1].trim();
+  const inner = out.match(/^```(?:html)?\s*\n([\s\S]*?)\n?```\s*$/i)?.[1];
+  if (inner !== undefined) return inner.trim();
   return out;
 }
 
