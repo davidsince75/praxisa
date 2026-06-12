@@ -66,16 +66,21 @@ export function TeacherCoursesPage() {
       ) : (
         <div className="grid gap-4">
           {myCourses.map((course) => (
-            <Card key={course.id}>
+            // min-w-0 : sans lui, le titre nowrap impose sa largeur
+            // min-content à la piste de grille et la page déborde
+            <Card key={course.id} className="min-w-0">
               <CardContent className="p-0">
-                <div className="flex items-start justify-between px-6 py-5">
-                  <div className="flex items-start gap-4 flex-1 min-w-0">
+                <div className="flex flex-wrap items-start justify-between gap-y-3 px-6 py-5">
+                  <div className="flex min-w-56 items-start gap-4 flex-1">
                     <div className="w-10 h-10 rounded bg-teal/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                       <BookOpen size={18} className="text-teal" />
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-semibold text-dark truncate">
+                        <h2
+                          className="font-semibold text-dark truncate"
+                          title={course.title}
+                        >
                           {course.title}
                         </h2>
                         <Badge variant={statusVariant(course.status)}>
@@ -97,7 +102,7 @@ export function TeacherCoursesPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                  <div className="ml-auto flex flex-shrink-0 items-center gap-2 pl-4">
                     {course.status === "draft" && (
                       <Button
                         size="sm"

@@ -4,7 +4,10 @@ function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={cn(
-        "bg-card text-card-foreground border border-rule",
+        // min-w-0 : neutre en flux normal, mais en item de grille/flex il
+        // empêche un texte nowrap (truncate) d'imposer sa largeur
+        // min-content à la piste et de faire déborder la page
+        "min-w-0 bg-card text-card-foreground border border-rule",
         className,
       )}
       {...props}
