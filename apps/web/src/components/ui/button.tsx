@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils.js";
 // global *:focus-visible outline in index.css. Default/icon sizes are 44 px
 // touch targets (WCAG 2.5.5) — "sm" is a documented deviation for dense tables.
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-sm font-semibold uppercase tracking-widest transition-colors disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap text-sm font-semibold uppercase tracking-widest transition-colors duration-200 active:translate-y-px disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {

@@ -11,7 +11,7 @@ import {
 import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/lib/utils.js";
-import { EyeWordmark } from "@/pages/login/EyeWordmark.js";
+import { EyeWordmark } from "@/components/brand/EyeWordmark.js";
 import { LoginCard } from "@/pages/login/LoginCard.js";
 import { RorschachShadow } from "@/pages/login/RorschachShadow.js";
 import { useCycleWords, useReveal } from "@/pages/login/shared.js";

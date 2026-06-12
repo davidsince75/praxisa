@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils.js";
-import { usePrefersReducedMotion } from "@/pages/login/shared.js";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion.js";
 
 interface EyeWordmarkProps {
   /** « ink » sur fond clair, « paper » sur fond sombre. */

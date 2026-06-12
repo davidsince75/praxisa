@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
+import { EyeWordmark } from "@/components/brand/EyeWordmark.js";
 import { NotificationBell } from "@/components/layout/NotificationBell.js";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 
@@ -45,19 +46,19 @@ const FORMATEUR_PATHS = ["/teacher"];
 
 function linkClass(isActive: boolean): string {
   return cn(
-    "flex items-center gap-3 px-3 py-2.5 text-xs font-semibold uppercase tracking-widest transition-colors",
+    "flex items-center gap-3 border-l-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-widest transition-all duration-200",
     isActive
-      ? "text-teal-light bg-white/5"
-      : "text-white/50 hover:text-white/80 hover:bg-white/5",
+      ? "border-teal-light bg-white/5 text-teal-light"
+      : "border-transparent text-white/50 hover:translate-x-0.5 hover:bg-white/5 hover:text-white/80",
   );
 }
 
 function subLinkClass(isActive: boolean): string {
   return cn(
-    "flex items-center gap-2.5 pl-8 pr-3 py-2 text-xs font-semibold uppercase tracking-widest transition-colors",
+    "flex items-center gap-2.5 border-l-2 pl-8 pr-3 py-2 text-xs font-semibold uppercase tracking-widest transition-all duration-200",
     isActive
-      ? "text-teal-light bg-white/5"
-      : "text-white/40 hover:text-white/70 hover:bg-white/5",
+      ? "border-teal-light bg-white/5 text-teal-light"
+      : "border-transparent text-white/40 hover:translate-x-0.5 hover:bg-white/5 hover:text-white/70",
   );
 }
 
@@ -72,7 +73,7 @@ function GroupToggle({ label, icon: Icon, open, onToggle }: GroupToggleProps) {
   return (
     <button
       onClick={onToggle}
-      className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+      className="flex w-full items-center gap-3 border-l-2 border-transparent px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 transition-all duration-200 hover:translate-x-0.5 hover:bg-white/5 hover:text-white/80"
     >
       <Icon size={15} />
       <span className="flex-1 text-left">{label}</span>
@@ -112,9 +113,7 @@ export function Sidebar() {
     <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
       {/* Logo */}
       <div className="h-14 flex items-center px-6 border-b border-white/10 shrink-0">
-        <span className="text-white font-semibold tracking-tight">
-          <span className="text-teal-light">Psycho</span>study
-        </span>
+        <EyeWordmark tone="paper" className="text-xl text-white" />
         <span className="ml-2 text-xs font-semibold uppercase tracking-widest text-white/60">
           Admin
         </span>
@@ -358,10 +357,10 @@ export function Sidebar() {
         </div>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 hover:text-white/80 hover:bg-white/5 transition-colors"
+          className="flex w-full items-center gap-3 border-l-2 border-transparent px-3 py-2.5 text-xs font-semibold uppercase tracking-widest text-white/50 transition-all duration-200 hover:translate-x-0.5 hover:bg-white/5 hover:text-white/80"
         >
           <LogOut size={15} />
-          Sign out
+          Déconnexion
         </button>
       </div>
     </aside>

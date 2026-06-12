@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils.js";
-import { usePrefersReducedMotion } from "@/pages/login/shared.js";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion.js";
 
 interface RorschachShadowProps {
   className?: string;
