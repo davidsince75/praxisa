@@ -20,6 +20,9 @@ const configSchema = z.object({
   }),
   appBaseUrl: z.string().url().default("http://localhost:5173"),
   mistralApiKey: z.string().min(1).optional(),
+  // Optional: enables real YouTube search for AI resource suggestions.
+  // Without it, video suggestions degrade to YouTube search links.
+  youtubeApiKey: z.string().min(1).optional(),
   google: z
     .object({
       clientId: z.string().min(1),
@@ -64,6 +67,7 @@ export function loadConfig(): AppConfig {
     },
     appBaseUrl: process.env["APP_BASE_URL"],
     mistralApiKey: process.env["MISTRAL_API_KEY"],
+    youtubeApiKey: process.env["YOUTUBE_API_KEY"],
     google:
       process.env["GOOGLE_CLIENT_ID"] && process.env["GOOGLE_CLIENT_SECRET"]
         ? {

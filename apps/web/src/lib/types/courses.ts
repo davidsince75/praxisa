@@ -83,8 +83,10 @@ export type LessonContentType = "text" | "video" | "pdf" | "audio" | "quiz";
 export interface LessonExercise {
   id: string;
   title: string;
+  description: string | null;
   type: string;
   position: number;
+  maxScore: number | null;
   dueAt: string | null;
 }
 

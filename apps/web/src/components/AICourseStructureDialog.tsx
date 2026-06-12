@@ -111,9 +111,13 @@ export function AICourseStructureDialog({
     setError("");
     setSuggestions(null);
     try {
+      const rawCount = Number(moduleCount);
+      const count = Number.isFinite(rawCount)
+        ? Math.min(99, Math.max(2, Math.round(rawCount)))
+        : 5;
       const body = usePdf
-        ? { fileId: selectedDoc.fileId, moduleCount: Number(moduleCount) }
-        : { description: description.trim(), moduleCount: Number(moduleCount) };
+        ? { fileId: selectedDoc.fileId, moduleCount: count }
+        : { description: description.trim(), moduleCount: count };
       const res = await api.post<AICourseStructureResponse>(
         "/ai/course-structure",
         body,
@@ -131,10 +135,12 @@ export function AICourseStructureDialog({
     setCreating(true);
     setError("");
     try {
-      for (const mod of suggestions) {
+      // Explicit positions keep large structures (up to 99 modules) ordered.
+      for (const [index, mod] of suggestions.entries()) {
         await api.post("/courses/" + courseId + "/modules", {
           title: mod.title,
           description: mod.description,
+          position: index,
         });
       }
       onSuccess();
@@ -304,18 +310,22 @@ export function AICourseStructureDialog({
             )}
 
             <div className="space-y-1">
-              <Label htmlFor="ai-count">Nombre de modules</Label>
+              <Label htmlFor="ai-count">Nombre de modules (2 à 99)</Label>
               <Input
                 id="ai-count"
                 type="number"
                 min={2}
-                max={12}
+                max={99}
                 value={moduleCount}
                 onChange={(e) => {
                   setModuleCount(e.target.value);
                 }}
                 className="w-24"
               />
+              <p className="text-xs text-meta">
+                Au-delà d&apos;une vingtaine de modules, la génération et la
+                création peuvent prendre une à deux minutes.
+              </p>
             </div>
             {error.length > 0 && (
               <p className="text-xs text-destructive">{error}</p>

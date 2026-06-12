@@ -192,8 +192,10 @@ export function coursesRoutes(fastify: FastifyInstance): void {
         {
           id: string;
           title: string;
+          description: string | null;
           type: string;
           position: number;
+          maxScore: number | null;
           dueAt: Date | null;
         }[]
       > = {};
@@ -202,8 +204,10 @@ export function coursesRoutes(fastify: FastifyInstance): void {
           .select({
             id: exercises.id,
             title: exercises.title,
+            description: exercises.description,
             type: exercises.type,
             position: exercises.position,
+            maxScore: exercises.maxScore,
             dueAt: exercises.dueAt,
           })
           .from(exercises)

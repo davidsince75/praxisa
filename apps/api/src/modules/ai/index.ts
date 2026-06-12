@@ -317,7 +317,7 @@ export const aiPlugin = (
         .object({
           description: z.string().min(10).max(5000).optional(),
           fileId: z.string().uuid().optional(),
-          moduleCount: z.number().int().min(2).max(12).default(5),
+          moduleCount: z.number().int().min(2).max(99).default(5),
         })
         .refine((b) => b.description !== undefined || b.fileId !== undefined, {
           message: "description ou fileId requis",

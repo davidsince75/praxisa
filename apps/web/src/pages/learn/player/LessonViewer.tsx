@@ -216,6 +216,7 @@ export function LessonViewer({
             enrolmentId={enrolmentId}
             exerciseTitle={ex.title}
             exerciseType={ex.type}
+            exerciseDescription={ex.description}
             dueAt={ex.dueAt}
           />
         ))}

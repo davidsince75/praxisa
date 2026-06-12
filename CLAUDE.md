@@ -163,17 +163,33 @@ Shipped: Auth (JWT RS256 + argon2id) · Users CRUD + profiles (user_profiles
 table) · GDPR/DSR + audit log + policy consents · Courses/Modules/Lessons/
 Exercises · Enrolments (incl. provisional) + Progress · Quizzes + attempts ·
 Submissions/Grading · AI (RAG learner chat, teacher ingest, draft generator,
-course structuring, MCQ generation, course-document ingest: multiple reference
-PDFs per course (course_documents), per-page extraction (unpdf) → map-reduce
-outline → file-scoped pgvector embeddings, async with status polling; the
-Structure IA dialog picks among prepared documents — Mistral) ·
+course structuring up to 99 modules, MCQ generation, course-document ingest:
+multiple reference PDFs per course (course_documents), per-page extraction
+(unpdf) → map-reduce outline → file-scoped pgvector embeddings, async with
+status polling; the Structure IA dialog picks among prepared documents;
+lesson authoring assistant (`ai/authoring.routes.ts` + web
+`AILessonAssistant.tsx` in the lesson editor): generate-lesson-content
+(HTML, grounded on an ingested document or free), generate-homework
+(assignment/reflection subjects → created as exercises, shown to students
+in SubmissionForm), quiz tab reuses generate-mcq + bulk question create,
+suggest-resources (model proposes queries/citations only; the server
+resolves them to REAL links via Wikipédia FR + Openverse free-licence
+images + YouTube Data API when optional `YOUTUBE_API_KEY` is set, search
+links otherwise — never trust model URLs); generated HTML is sanitised
+server-side (`authoring.service.ts`) — Mistral) ·
 Campaigns (Brevo) · Messaging ·
 Notifications · Ratings · Certificates · Forums · Documents/Notes · Tags ·
 Settings · Gmail integration · Payments (GoCardless) · Data import/migration ·
 PDF upload (binary, bytea in PG).
 
-**Tests**: 310 unit tests across 22 files (run `npx vitest run` inside `apps/api`
+**Tests**: 353 unit tests across 24 files (run `npx vitest run` inside `apps/api`
 — pure unit tests, no DB needed locally). Manual checklist: `docs/test-checklist.md`.
+
+**Gotcha fixed 2026-06-12**: `lessons.contentBody` is now part of the
+create/update lesson zod schemas — before that, zod silently stripped it and
+lesson content edited in the editor was never persisted (only seeded content
+displayed). nginx `proxy_read_timeout` is 180s for `/v1/` to cover long AI
+generations.
 
 **CI** (`.github/workflows/ci.yml`): static (tsc/eslint/prettier) · security
 (pnpm audit + trufflehog) · tests (PG+Redis services) · migration validation ·

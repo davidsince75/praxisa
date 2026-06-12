@@ -58,6 +58,7 @@ export function lessonsRoutes(fastify: FastifyInstance): void {
           position: body.position,
           contentType: body.contentType,
           contentUrl: body.contentUrl ?? null,
+          contentBody: body.contentBody ?? null,
           durationMinutes: body.durationMinutes ?? null,
           isFreePreview: body.isFreePreview,
         })

@@ -22,21 +22,22 @@ Railway pulls them at deploy time via the Doppler → Railway integration.
 
 ## API service (`apps/api`)
 
-| Env var                  | Doppler secret           | Notes                                                     |
-| ------------------------ | ------------------------ | --------------------------------------------------------- |
-| `NODE_ENV`               | `NODE_ENV`               | Set to `production`                                       |
-| `PORT`                   | —                        | Railway injects `PORT` automatically                      |
-| `LOG_LEVEL`              | `LOG_LEVEL`              | `warn` for production (reduce noise, keep errors)         |
-| `DATABASE_URL`           | `DATABASE_URL`           | Railway Postgres plugin injects this automatically        |
-| `REDIS_URL`              | `REDIS_URL`              | Railway Redis plugin injects this automatically           |
-| `CORS_ORIGINS`           | `CORS_ORIGINS`           | `https://app.praxisa.fr` (no trailing slash, no wildcard) |
-| `APP_BASE_URL`           | `APP_BASE_URL`           | `https://app.praxisa.fr`                                  |
-| `JWT_SIGNING_KEY`        | `JWT_SIGNING_KEY`        | **New key pair — never reuse staging keys in production** |
-| `JWT_SIGNING_KEY_PUBLIC` | `JWT_SIGNING_KEY_PUBLIC` | Base64-encoded RSA public key (PEM, SPKI)                 |
-| `BREVO_API_KEY`          | `BREVO_API_KEY`          | Production Brevo API key (separate from staging)          |
-| `BREVO_SENDER_EMAIL`     | `BREVO_SENDER_EMAIL`     | `noreply@praxisa.fr`                                      |
-| `BREVO_SENDER_NAME`      | `BREVO_SENDER_NAME`      | `Praxisa`                                                 |
-| `MISTRAL_API_KEY`        | `MISTRAL_API_KEY`        | Optional — AI features disabled if absent                 |
+| Env var                  | Doppler secret           | Notes                                                                                                                                                                                     |
+| ------------------------ | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`               | `NODE_ENV`               | Set to `production`                                                                                                                                                                       |
+| `PORT`                   | —                        | Railway injects `PORT` automatically                                                                                                                                                      |
+| `LOG_LEVEL`              | `LOG_LEVEL`              | `warn` for production (reduce noise, keep errors)                                                                                                                                         |
+| `DATABASE_URL`           | `DATABASE_URL`           | Railway Postgres plugin injects this automatically                                                                                                                                        |
+| `REDIS_URL`              | `REDIS_URL`              | Railway Redis plugin injects this automatically                                                                                                                                           |
+| `CORS_ORIGINS`           | `CORS_ORIGINS`           | `https://app.praxisa.fr` (no trailing slash, no wildcard)                                                                                                                                 |
+| `APP_BASE_URL`           | `APP_BASE_URL`           | `https://app.praxisa.fr`                                                                                                                                                                  |
+| `JWT_SIGNING_KEY`        | `JWT_SIGNING_KEY`        | **New key pair — never reuse staging keys in production**                                                                                                                                 |
+| `JWT_SIGNING_KEY_PUBLIC` | `JWT_SIGNING_KEY_PUBLIC` | Base64-encoded RSA public key (PEM, SPKI)                                                                                                                                                 |
+| `BREVO_API_KEY`          | `BREVO_API_KEY`          | Production Brevo API key (separate from staging)                                                                                                                                          |
+| `BREVO_SENDER_EMAIL`     | `BREVO_SENDER_EMAIL`     | `noreply@praxisa.fr`                                                                                                                                                                      |
+| `BREVO_SENDER_NAME`      | `BREVO_SENDER_NAME`      | `Praxisa`                                                                                                                                                                                 |
+| `MISTRAL_API_KEY`        | `MISTRAL_API_KEY`        | Optional — AI features disabled if absent                                                                                                                                                 |
+| `YOUTUBE_API_KEY`        | `YOUTUBE_API_KEY`        | Optional — YouTube Data API v3 key; enables real video search in AI resource suggestions (free quota ≈ 100 searches/day). Without it, video suggestions fall back to YouTube search links |
 
 ### Generating production JWT keys
 

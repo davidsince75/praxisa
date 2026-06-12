@@ -16,6 +16,7 @@ import { learningPlugin } from "./modules/learning/index.js";
 import { gdprPlugin } from "./modules/gdpr/index.js";
 import { migrationPlugin } from "./modules/migration/index.js";
 import { aiPlugin } from "./modules/ai/index.js";
+import { aiAuthoringPlugin } from "./modules/ai/authoring.routes.js";
 import { auditPlugin } from "./modules/audit/index.js";
 import { usersPlugin } from "./modules/users/index.js";
 import { analyticsPlugin } from "./modules/analytics/index.js";
@@ -122,6 +123,15 @@ await app.register(aiPlugin, {
   prefix: "/v1",
   ...(config.mistralApiKey !== undefined
     ? { mistralApiKey: config.mistralApiKey }
+    : {}),
+});
+await app.register(aiAuthoringPlugin, {
+  prefix: "/v1",
+  ...(config.mistralApiKey !== undefined
+    ? { mistralApiKey: config.mistralApiKey }
+    : {}),
+  ...(config.youtubeApiKey !== undefined
+    ? { youtubeApiKey: config.youtubeApiKey }
     : {}),
 });
 await app.register(gmailPlugin, {

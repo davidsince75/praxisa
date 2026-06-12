@@ -13,6 +13,8 @@ interface SubmissionFormProps {
   enrolmentId: string;
   exerciseTitle: string;
   exerciseType: string;
+  /** Full homework subject (consigne) shown above the answer field. */
+  exerciseDescription?: string | null;
   dueAt: string | null;
 }
 
@@ -21,6 +23,7 @@ export function SubmissionForm({
   enrolmentId,
   exerciseTitle,
   exerciseType,
+  exerciseDescription = null,
   dueAt,
 }: SubmissionFormProps) {
   const queryClient = useQueryClient();
@@ -84,6 +87,17 @@ export function SubmissionForm({
           </span>
         )}
       </div>
+
+      {exerciseDescription !== null && exerciseDescription.length > 0 && (
+        <div className="bg-cream/40 border border-rule rounded-lg px-4 py-3">
+          <p className="text-xs font-semibold uppercase tracking-wider text-meta mb-1">
+            Sujet
+          </p>
+          <p className="text-sm text-dark whitespace-pre-wrap">
+            {exerciseDescription}
+          </p>
+        </div>
+      )}
 
       {saved !== null && saved.status === "graded" && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 space-y-1">

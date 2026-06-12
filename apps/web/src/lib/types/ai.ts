@@ -70,6 +70,73 @@ export interface AIDraftLessonResponse {
   sources: AIDraftLessonSource[];
 }
 
+// ── AI: Lesson authoring assistant ────────────────────────────────────────────
+
+export interface AIGenerateLessonContentResponse {
+  html: string;
+  sources: AIDraftLessonSource[];
+}
+
+export interface AIHomeworkSuggestion {
+  title: string;
+  description: string;
+  type: "assignment" | "reflection";
+  maxScore: number;
+}
+
+export interface AIGenerateHomeworkResponse {
+  homework: AIHomeworkSuggestion;
+}
+
+// External resources — every URL is resolved server-side against a real
+// public API (Wikipédia, Openverse, YouTube); none comes from the model.
+
+export interface AIResourceArticle {
+  title: string;
+  url: string;
+  description: string | null;
+  source: "wikipedia";
+}
+
+export interface AIResourceReference {
+  title: string;
+  author?: string;
+  year?: string;
+  note?: string;
+}
+
+export interface AIResourceVideo {
+  videoId: string;
+  title: string;
+  channel: string;
+  url: string;
+  embedUrl: string;
+  thumbnailUrl: string | null;
+}
+
+export interface AIResourceVideoSearch {
+  query: string;
+  url: string;
+}
+
+export interface AIResourceImage {
+  title: string;
+  imageUrl: string;
+  thumbnailUrl: string | null;
+  pageUrl: string | null;
+  license: string;
+  licenseUrl: string | null;
+  creator: string | null;
+}
+
+export interface AISuggestResourcesResponse {
+  articles: AIResourceArticle[];
+  references: AIResourceReference[];
+  videos: AIResourceVideo[];
+  videoSearches: AIResourceVideoSearch[];
+  images: AIResourceImage[];
+}
+
 // ── AI: MCQ Generation ────────────────────────────────────────────────────────
 
 export interface AIMCQOption {
