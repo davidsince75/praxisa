@@ -107,7 +107,7 @@ function buildResourcesHtml(sel: ResourceSelection): string {
     parts.push("<h3>Illustrations</h3>");
     for (const img of sel.images) {
       parts.push(
-        `<figure style="margin:16px 0;"><img src="${escAttr(img.imageUrl)}" alt="${escAttr(img.title)}" style="max-width:100%;height:auto;border-radius:6px;" /><figcaption style="font-size:0.75rem;color:#64748b;margin-top:4px;">« ${escText(img.title)} »` +
+        `<figure style="margin:16px 0;"><img src="${escAttr(img.imageUrl)}" alt="${escAttr(img.title)}" style="max-width:100%;height:auto;border-radius:6px;" /><figcaption style="font-size:0.75rem;color:#6B6862;margin-top:4px;">« ${escText(img.title)} »` +
           (img.creator !== null ? `, par ${escText(img.creator)}` : "") +
           ` — licence ${escText(img.license)}` +
           (img.pageUrl !== null
@@ -159,7 +159,7 @@ function SourceSelect({
       <Label htmlFor={`${idPrefix}-source`}>Source</Label>
       <select
         id={`${idPrefix}-source`}
-        className="w-full h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full h-11 border border-input bg-background px-3 text-sm text-mid transition-colors duration-200 hover:border-mid focus:border-teal"
         value={value}
         onChange={(e) => {
           onChange(e.target.value);
@@ -173,7 +173,7 @@ function SourceSelect({
         ))}
       </select>
       {documents.length === 0 && (
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-meta">
           {hasPendingDocuments
             ? "Un document est en cours de préparation — il apparaîtra ici une fois indexé."
             : "Astuce : ajoutez et préparez un document de référence (carte « Documents de référence » du cours) pour un contenu fidèle à votre support."}
@@ -511,14 +511,14 @@ export function AILessonAssistant({
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles size={18} className="text-blue-600" />
+            <Sparkles size={18} className="text-teal" />
             Assistant IA — {lessonTitle}
           </DialogTitle>
         </DialogHeader>
 
         {/* Tabs */}
         <div
-          className="flex flex-wrap gap-1 border-b border-slate-200 px-1"
+          className="flex flex-wrap gap-1 border-b border-rule px-1"
           role="tablist"
           aria-label="Fonctions de l'assistant IA"
         >
@@ -535,8 +535,8 @@ export function AILessonAssistant({
                 }}
                 className={
                   active
-                    ? "flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold text-blue-700 border-b-2 border-blue-600 -mb-px"
-                    : "flex items-center gap-1.5 px-3 py-2.5 text-sm text-slate-500 hover:text-slate-800 border-b-2 border-transparent -mb-px transition-colors"
+                    ? "flex items-center gap-1.5 px-3 py-2.5 text-sm font-semibold text-teal border-b-2 border-teal -mb-px"
+                    : "flex items-center gap-1.5 px-3 py-2.5 text-sm text-meta hover:text-dark border-b-2 border-transparent -mb-px transition-colors"
                 }
               >
                 <Icon size={14} />
@@ -565,7 +565,7 @@ export function AILessonAssistant({
                     </Label>
                     <textarea
                       id="ai-content-instructions"
-                      className="w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full border border-input bg-background px-3 py-2 text-sm resize-none h-20 transition-colors duration-200 hover:border-mid focus:border-teal"
                       placeholder="Angle, niveau, points à insister…"
                       value={instructions}
                       onChange={(e) => {
@@ -573,7 +573,7 @@ export function AILessonAssistant({
                       }}
                     />
                   </div>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-meta">
                     {sourceFileId.length > 0
                       ? "Le contenu sera rédigé uniquement à partir du document sélectionné, avec citation des pages."
                       : "Sans document, le contenu est rédigé à partir des connaissances générales du modèle — à relire attentivement."}
@@ -582,11 +582,11 @@ export function AILessonAssistant({
               ) : (
                 <>
                   <div
-                    className="prose prose-sm max-w-none border border-slate-200 rounded-md p-4 bg-white"
+                    className="prose prose-sm max-w-none border border-rule rounded-md p-4 bg-background"
                     dangerouslySetInnerHTML={{ __html: contentResult.html }}
                   />
                   {contentResult.sources.length > 0 && (
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-meta">
                       Sources :{" "}
                       {contentResult.sources
                         .map(
@@ -599,7 +599,7 @@ export function AILessonAssistant({
                 </>
               )}
               {contentError.length > 0 && (
-                <p className="text-xs text-red-600">{contentError}</p>
+                <p className="text-xs text-destructive">{contentError}</p>
               )}
               <div className="flex flex-wrap gap-2">
                 {contentResult === null ? (
@@ -653,7 +653,7 @@ export function AILessonAssistant({
 
           {/* ── Devoir ──────────────────────────────────────────────────── */}
           {tab === "homework" && !lessonExists && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-meta">
               Les devoirs sont rattachés à une leçon existante — enregistrez
               d&apos;abord la leçon, puis rouvrez l&apos;assistant. Les onglets
               « Contenu » et « Ressources » sont utilisables dès maintenant.
@@ -676,7 +676,7 @@ export function AILessonAssistant({
                     </Label>
                     <select
                       id="ai-homework-type"
-                      className="w-full h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full h-11 border border-input bg-background px-3 text-sm text-mid transition-colors duration-200 hover:border-mid focus:border-teal"
                       value={homeworkType}
                       onChange={(e) => {
                         setHomeworkType(
@@ -690,14 +690,14 @@ export function AILessonAssistant({
                   </div>
                 </>
               ) : (
-                <div className="border border-slate-200 rounded-md p-4 bg-white space-y-2">
-                  <p className="text-sm font-semibold text-slate-800">
+                <div className="border border-rule rounded-md p-4 bg-background space-y-2">
+                  <p className="text-sm font-semibold text-dark">
                     {homework.title}
                   </p>
-                  <p className="text-sm text-slate-700 whitespace-pre-wrap">
+                  <p className="text-sm text-mid whitespace-pre-wrap">
                     {homework.description}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-meta">
                     Noté sur {String(homework.maxScore)} ·{" "}
                     {homework.type === "assignment"
                       ? "Devoir à rendre"
@@ -706,10 +706,10 @@ export function AILessonAssistant({
                 </div>
               )}
               {homeworkError.length > 0 && (
-                <p className="text-xs text-red-600">{homeworkError}</p>
+                <p className="text-xs text-destructive">{homeworkError}</p>
               )}
               {homeworkSuccess.length > 0 && (
-                <p className="text-xs text-teal-700">{homeworkSuccess}</p>
+                <p className="text-xs text-teal">{homeworkSuccess}</p>
               )}
               <div className="flex flex-wrap gap-2">
                 {homework === null ? (
@@ -755,7 +755,7 @@ export function AILessonAssistant({
 
           {/* ── Quiz ────────────────────────────────────────────────────── */}
           {tab === "quiz" && !lessonExists && (
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-meta">
               Les quiz sont rattachés à une leçon existante — enregistrez
               d&apos;abord la leçon, puis rouvrez l&apos;assistant. Les onglets
               « Contenu » et « Ressources » sont utilisables dès maintenant.
@@ -779,7 +779,7 @@ export function AILessonAssistant({
                     <Label htmlFor="ai-quiz-count">Nombre de questions</Label>
                     <select
                       id="ai-quiz-count"
-                      className="w-28 h-11 rounded-md border border-slate-200 bg-white px-3 text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-28 h-11 border border-input bg-background px-3 text-sm text-mid transition-colors duration-200 hover:border-mid focus:border-teal"
                       value={quizCount}
                       onChange={(e) => {
                         setQuizCount(e.target.value);
@@ -798,9 +798,9 @@ export function AILessonAssistant({
                   {quizQuestions.map((q, i) => (
                     <div
                       key={i}
-                      className="border border-slate-200 rounded-md p-3 bg-white"
+                      className="border border-rule rounded-md p-3 bg-background"
                     >
-                      <p className="text-sm font-semibold text-slate-800">
+                      <p className="text-sm font-semibold text-dark">
                         {String(i + 1)}. {q.questionText}
                       </p>
                       <div className="mt-1 space-y-0.5">
@@ -809,8 +809,8 @@ export function AILessonAssistant({
                             key={opt.id}
                             className={
                               opt.id === q.correctOptionId
-                                ? "text-xs text-teal-700 font-semibold"
-                                : "text-xs text-slate-500"
+                                ? "text-xs text-teal font-semibold"
+                                : "text-xs text-meta"
                             }
                           >
                             {opt.id === q.correctOptionId ? "✓ " : "· "}
@@ -819,7 +819,7 @@ export function AILessonAssistant({
                         ))}
                       </div>
                       {q.explanation.length > 0 && (
-                        <p className="text-xs text-slate-400 italic mt-1">
+                        <p className="text-xs text-meta italic mt-1">
                           {q.explanation}
                         </p>
                       )}
@@ -828,10 +828,10 @@ export function AILessonAssistant({
                 </div>
               )}
               {quizError.length > 0 && (
-                <p className="text-xs text-red-600">{quizError}</p>
+                <p className="text-xs text-destructive">{quizError}</p>
               )}
               {quizSuccess.length > 0 && (
-                <p className="text-xs text-teal-700">{quizSuccess}</p>
+                <p className="text-xs text-teal">{quizSuccess}</p>
               )}
               <div className="flex flex-wrap gap-2">
                 {quizQuestions === null ? (
@@ -881,7 +881,7 @@ export function AILessonAssistant({
           {tab === "resources" && (
             <div className="space-y-4">
               {resources === null ? (
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-meta">
                   L&apos;assistant propose des lectures, vidéos et images libres
                   pour prolonger la leçon. Chaque lien est vérifié auprès de
                   sources réelles (Wikipédia, Openverse, YouTube) — aucune URL
@@ -891,7 +891,7 @@ export function AILessonAssistant({
                 <div className="space-y-4">
                   {resources.articles.length > 0 && (
                     <fieldset className="space-y-1.5">
-                      <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                      <legend className="text-xs font-semibold uppercase tracking-wider text-meta mb-1">
                         Articles Wikipédia
                       </legend>
                       {resources.articles.map((a, i) => (
@@ -901,7 +901,7 @@ export function AILessonAssistant({
                         >
                           <input
                             type="checkbox"
-                            className="mt-0.5 h-4 w-4 accent-blue-600"
+                            className="mt-0.5 h-4 w-4 accent-teal"
                             checked={checkedArticles.has(i)}
                             onChange={() => {
                               toggleIndex(
@@ -912,9 +912,9 @@ export function AILessonAssistant({
                             }}
                           />
                           <span className="flex-1">
-                            <span className="text-slate-800">{a.title}</span>
+                            <span className="text-dark">{a.title}</span>
                             {a.description !== null && (
-                              <span className="text-slate-500">
+                              <span className="text-meta">
                                 {" "}
                                 — {a.description}
                               </span>
@@ -923,7 +923,7 @@ export function AILessonAssistant({
                               href={a.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-700"
+                              className="inline-flex items-center gap-0.5 text-teal hover:text-teal-dark"
                               aria-label={`Ouvrir l'article « ${a.title} » dans un nouvel onglet`}
                             >
                               <ExternalLink size={11} />
@@ -936,7 +936,7 @@ export function AILessonAssistant({
 
                   {resources.references.length > 0 && (
                     <fieldset className="space-y-1.5">
-                      <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                      <legend className="text-xs font-semibold uppercase tracking-wider text-meta mb-1">
                         Ouvrages de référence (à vérifier)
                       </legend>
                       {resources.references.map((r, i) => (
@@ -946,7 +946,7 @@ export function AILessonAssistant({
                         >
                           <input
                             type="checkbox"
-                            className="mt-0.5 h-4 w-4 accent-blue-600"
+                            className="mt-0.5 h-4 w-4 accent-teal"
                             checked={checkedReferences.has(i)}
                             onChange={() => {
                               toggleIndex(
@@ -956,15 +956,12 @@ export function AILessonAssistant({
                               );
                             }}
                           />
-                          <span className="flex-1 text-slate-700">
+                          <span className="flex-1 text-mid">
                             <em>{r.title}</em>
                             {r.author !== undefined && `, ${r.author}`}
                             {r.year !== undefined && ` (${r.year})`}
                             {r.note !== undefined && (
-                              <span className="text-slate-500">
-                                {" "}
-                                — {r.note}
-                              </span>
+                              <span className="text-meta"> — {r.note}</span>
                             )}
                           </span>
                         </label>
@@ -975,7 +972,7 @@ export function AILessonAssistant({
                   {(resources.videos.length > 0 ||
                     resources.videoSearches.length > 0) && (
                     <fieldset className="space-y-1.5">
-                      <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                      <legend className="text-xs font-semibold uppercase tracking-wider text-meta mb-1">
                         Vidéos (YouTube)
                       </legend>
                       {resources.videos.map((v, i) => (
@@ -985,7 +982,7 @@ export function AILessonAssistant({
                         >
                           <input
                             type="checkbox"
-                            className="mt-0.5 h-4 w-4 accent-blue-600"
+                            className="mt-0.5 h-4 w-4 accent-teal"
                             checked={checkedVideos.has(i)}
                             onChange={() => {
                               toggleIndex(checkedVideos, setCheckedVideos, i);
@@ -995,22 +992,19 @@ export function AILessonAssistant({
                             <img
                               src={v.thumbnailUrl}
                               alt=""
-                              className="h-12 w-20 object-cover rounded border border-slate-200 flex-shrink-0"
+                              className="h-12 w-20 object-cover rounded border border-rule flex-shrink-0"
                             />
                           )}
                           <span className="flex-1">
-                            <span className="text-slate-800">{v.title}</span>
+                            <span className="text-dark">{v.title}</span>
                             {v.channel.length > 0 && (
-                              <span className="text-slate-500">
-                                {" "}
-                                — {v.channel}
-                              </span>
+                              <span className="text-meta"> — {v.channel}</span>
                             )}{" "}
                             <a
                               href={v.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-700"
+                              className="inline-flex items-center gap-0.5 text-teal hover:text-teal-dark"
                               aria-label={`Ouvrir la vidéo « ${v.title} » dans un nouvel onglet`}
                             >
                               <ExternalLink size={11} />
@@ -1025,7 +1019,7 @@ export function AILessonAssistant({
                         >
                           <input
                             type="checkbox"
-                            className="mt-0.5 h-4 w-4 accent-blue-600"
+                            className="mt-0.5 h-4 w-4 accent-teal"
                             checked={checkedSearches.has(i)}
                             onChange={() => {
                               toggleIndex(
@@ -1035,13 +1029,13 @@ export function AILessonAssistant({
                               );
                             }}
                           />
-                          <span className="flex-1 text-slate-700">
+                          <span className="flex-1 text-mid">
                             Lien de recherche : «&nbsp;{s.query}&nbsp;»{" "}
                             <a
                               href={s.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-700"
+                              className="inline-flex items-center gap-0.5 text-teal hover:text-teal-dark"
                               aria-label={`Ouvrir la recherche YouTube « ${s.query} » dans un nouvel onglet`}
                             >
                               <ExternalLink size={11} />
@@ -1050,7 +1044,7 @@ export function AILessonAssistant({
                         </label>
                       ))}
                       {resources.videos.length === 0 && (
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-meta">
                           Recherche YouTube non configurée côté serveur — des
                           liens de recherche sont proposés à la place de vidéos
                           précises.
@@ -1061,7 +1055,7 @@ export function AILessonAssistant({
 
                   {resources.images.length > 0 && (
                     <fieldset className="space-y-1.5">
-                      <legend className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-1">
+                      <legend className="text-xs font-semibold uppercase tracking-wider text-meta mb-1">
                         Images libres de droits
                       </legend>
                       {resources.images.map((img, i) => (
@@ -1071,7 +1065,7 @@ export function AILessonAssistant({
                         >
                           <input
                             type="checkbox"
-                            className="mt-0.5 h-4 w-4 accent-blue-600"
+                            className="mt-0.5 h-4 w-4 accent-teal"
                             checked={checkedImages.has(i)}
                             onChange={() => {
                               toggleIndex(checkedImages, setCheckedImages, i);
@@ -1080,11 +1074,11 @@ export function AILessonAssistant({
                           <img
                             src={img.thumbnailUrl ?? img.imageUrl}
                             alt=""
-                            className="h-14 w-20 object-cover rounded border border-slate-200 flex-shrink-0"
+                            className="h-14 w-20 object-cover rounded border border-rule flex-shrink-0"
                           />
                           <span className="flex-1">
-                            <span className="text-slate-800">{img.title}</span>
-                            <span className="text-slate-500">
+                            <span className="text-dark">{img.title}</span>
+                            <span className="text-meta">
                               {img.creator !== null && ` — ${img.creator}`} ·
                               licence {img.license}
                             </span>{" "}
@@ -1093,7 +1087,7 @@ export function AILessonAssistant({
                                 href={img.pageUrl}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-0.5 text-blue-600 hover:text-blue-700"
+                                className="inline-flex items-center gap-0.5 text-teal hover:text-teal-dark"
                                 aria-label={`Ouvrir la page source de l'image « ${img.title} » dans un nouvel onglet`}
                               >
                                 <ExternalLink size={11} />
@@ -1110,7 +1104,7 @@ export function AILessonAssistant({
                     resources.videos.length === 0 &&
                     resources.videoSearches.length === 0 &&
                     resources.images.length === 0 && (
-                      <p className="text-xs text-slate-400">
+                      <p className="text-xs text-meta">
                         Aucune ressource trouvée pour ce sujet — réessayez avec
                         un titre de leçon plus précis.
                       </p>
@@ -1118,7 +1112,7 @@ export function AILessonAssistant({
                 </div>
               )}
               {resourcesError.length > 0 && (
-                <p className="text-xs text-red-600">{resourcesError}</p>
+                <p className="text-xs text-destructive">{resourcesError}</p>
               )}
               <div className="flex flex-wrap gap-2">
                 {resources === null ? (
