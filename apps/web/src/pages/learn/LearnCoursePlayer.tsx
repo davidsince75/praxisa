@@ -9,6 +9,7 @@ import type {
   LessonItem,
 } from "@/lib/api.js";
 import { useAuth } from "@/hooks/useAuth.js";
+import { useRestrictionStatus } from "@/hooks/useRestrictionStatus.js";
 import { Button } from "@/components/ui/button.js";
 import type { ProgressStatus } from "./player/shared.js";
 import { CourseRatingCard } from "./player/CourseRatingCard.js";
@@ -23,7 +24,11 @@ export function LearnCoursePlayerPage() {
   const id = enrolmentId ?? "";
   const queryClient = useQueryClient();
   const { user: authUser } = useAuth();
-  const userRestricted = authUser?.isRestricted === true;
+  // Live restriction from /auth/me (reflects admin toggles without re-login);
+  // fall back to the cached login-time value while it loads.
+  const liveRestricted = useRestrictionStatus();
+  const cachedRestricted = authUser?.isRestricted === true;
+  const userRestricted = liveRestricted ?? cachedRestricted;
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null);
   const [activeLessonId, setActiveLessonId] = useState<string | null>(null);
 

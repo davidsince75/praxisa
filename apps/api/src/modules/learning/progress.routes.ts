@@ -1,21 +1,21 @@
 import type { FastifyInstance } from "fastify";
-import { asc, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
 import {
-  courseModules,
   courses,
   enrolments,
   lessonProgress,
-  lessons,
   users,
 } from "../../db/schema/index.js";
 import { upsertProgressSchema } from "./types.js";
 import {
   computeCompletion,
   findActiveEnrolment,
+  isLessonWithinModuleLimit,
   isProvisionalEnrolment,
   maybeClearExpiredProvisional,
   readProvisionalUntil,
+  TRIAL_MODULE_LIMIT,
   upsertLessonProgress,
 } from "./service.js";
 
@@ -94,32 +94,34 @@ export function progressRoutes(fastify: FastifyInstance): void {
         });
       }
 
-      // Provisional: restrict to first 3 modules only
-      if (isProvisionalEnrolment(enrolment)) {
-        const PROVISIONAL_MODULE_LIMIT = 3;
-
-        const lessonRow = await fastify.db
-          .select({ moduleId: lessons.moduleId })
-          .from(lessons)
-          .where(eq(lessons.id, lessonId))
+      // First-3-modules cap. Applies to a 14-day trial (provisional) enrolment
+      // AND to any account an admin has flagged as restricted. Enforced here so
+      // the cap holds even if a client bypasses the UI module lock.
+      let moduleCapped = isProvisionalEnrolment(enrolment);
+      let capError =
+        "Accès limité aux 3 premiers modules pendant la période d'essai";
+      if (!moduleCapped && role !== "admin") {
+        const studentRows = await fastify.db
+          .select({ isRestricted: users.isRestricted })
+          .from(users)
+          .where(eq(users.id, rawEnrolment.studentId))
           .limit(1);
+        if (studentRows[0]?.isRestricted === true) {
+          moduleCapped = true;
+          capError =
+            "Votre compte est en accès restreint. Accès limité aux 3 premiers modules.";
+        }
+      }
 
-        if (lessonRow[0] !== undefined) {
-          const allowedModules = await fastify.db
-            .select({ id: courseModules.id })
-            .from(courseModules)
-            .where(eq(courseModules.courseId, enrolment.courseId))
-            .orderBy(asc(courseModules.position))
-            .limit(PROVISIONAL_MODULE_LIMIT);
-
-          const allowedIds = new Set(allowedModules.map((m) => m.id));
-
-          if (!allowedIds.has(lessonRow[0].moduleId)) {
-            return reply.status(403).send({
-              error:
-                "Accès limité aux 3 premiers modules pendant la période d'essai",
-            });
-          }
+      if (moduleCapped) {
+        const allowed = await isLessonWithinModuleLimit(
+          fastify.db,
+          enrolment.courseId,
+          lessonId,
+          TRIAL_MODULE_LIMIT,
+        );
+        if (!allowed) {
+          return reply.status(403).send({ error: capError });
         }
       }
 

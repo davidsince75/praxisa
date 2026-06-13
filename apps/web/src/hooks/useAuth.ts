@@ -6,7 +6,11 @@ import {
   getToken,
   isTokenExpired,
 } from "@/lib/api.js";
-import type { LoginResponse } from "@/lib/api.js";
+import type {
+  LoginResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from "@/lib/api.js";
 import { queryClient } from "@/lib/query.js";
 
 export interface AuthUser {
@@ -52,6 +56,16 @@ export function useAuth() {
     [],
   );
 
+  const register = useCallback(
+    async (input: RegisterRequest): Promise<void> => {
+      const res = await api.post<RegisterResponse>("/auth/register", input);
+      setToken(res.token);
+      localStorage.setItem("psychostudy_user", JSON.stringify(res.user));
+      setUser(res.user);
+    },
+    [],
+  );
+
   const logout = useCallback((): void => {
     clearAuth();
     setUser(null);
@@ -65,6 +79,7 @@ export function useAuth() {
     isInstructor: user?.role === "instructor",
     isStudent: user?.role === "student",
     login,
+    register,
     logout,
   };
 }

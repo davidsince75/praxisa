@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { computeCompletion } from "./service.js";
+import {
+  allowedModuleIds,
+  computeCompletion,
+  isProvisionalEnrolment,
+  TRIAL_MODULE_LIMIT,
+} from "./service.js";
 import {
   createCourseSchema,
   createEnrolmentSchema,
@@ -38,6 +43,47 @@ describe("computeCompletion", () => {
       { status: "not_started" },
     ];
     expect(computeCompletion(p)).toBe(33);
+  });
+});
+
+// ── Trial / restricted module cap ───────────────────────────────────────────────
+
+describe("allowedModuleIds", () => {
+  const mods = [{ id: "m1" }, { id: "m2" }, { id: "m3" }, { id: "m4" }];
+
+  it("returns the first N module ids by their given order", () => {
+    const allowed = allowedModuleIds(mods, TRIAL_MODULE_LIMIT);
+    expect([...allowed]).toEqual(["m1", "m2", "m3"]);
+  });
+
+  it("excludes modules beyond the limit", () => {
+    const allowed = allowedModuleIds(mods, TRIAL_MODULE_LIMIT);
+    expect(allowed.has("m4")).toBe(false);
+  });
+
+  it("returns every id when the course has fewer modules than the limit", () => {
+    const allowed = allowedModuleIds([{ id: "only" }], TRIAL_MODULE_LIMIT);
+    expect([...allowed]).toEqual(["only"]);
+  });
+
+  it("returns an empty set for a zero limit", () => {
+    expect(allowedModuleIds(mods, 0).size).toBe(0);
+  });
+});
+
+describe("isProvisionalEnrolment", () => {
+  it("is true when provisionalUntil is in the future", () => {
+    const future = new Date(Date.now() + 60_000);
+    expect(isProvisionalEnrolment({ provisionalUntil: future })).toBe(true);
+  });
+
+  it("is false when provisionalUntil has elapsed", () => {
+    const past = new Date(Date.now() - 60_000);
+    expect(isProvisionalEnrolment({ provisionalUntil: past })).toBe(false);
+  });
+
+  it("is false when provisionalUntil is null (confirmed enrolment)", () => {
+    expect(isProvisionalEnrolment({ provisionalUntil: null })).toBe(false);
   });
 });
 

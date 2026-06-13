@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate } from "react-router-dom";
 import {
   ArrowDown,
@@ -12,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth.js";
 import { Button } from "@/components/ui/button.js";
 import { cn } from "@/lib/utils.js";
 import { EyeWordmark } from "@/components/brand/EyeWordmark.js";
-import { LoginCard } from "@/pages/login/LoginCard.js";
+import { LoginCard, type AuthMode } from "@/pages/login/LoginCard.js";
 import { RorschachShadow } from "@/pages/login/RorschachShadow.js";
 import { useCycleWords, useReveal } from "@/pages/login/shared.js";
 
@@ -100,7 +101,8 @@ const CHIFFRES = [
 ] as const;
 
 export function LoginPage() {
-  const { login, isAuthenticated, user } = useAuth();
+  const { login, register, isAuthenticated, user } = useAuth();
+  const [authMode, setAuthMode] = useState<AuthMode>("login");
   const faculte = useCycleWords(FACULTES, 3600);
   const methodeHead = useReveal<HTMLDivElement>();
   const methodeGrid = useReveal<HTMLDivElement>();
@@ -128,7 +130,7 @@ export function LoginPage() {
           <EyeWordmark className="text-2xl text-dark" />
           <nav
             aria-label="Navigation principale"
-            className="flex items-center gap-8"
+            className="flex items-center gap-4 sm:gap-6"
           >
             <a
               href="#programme"
@@ -136,13 +138,35 @@ export function LoginPage() {
             >
               La méthode
             </a>
-            <Button
-              asChild
-              variant="outline"
-              className="border-dark/30 bg-transparent text-dark transition-colors duration-300 hover:bg-dark hover:text-cream"
-            >
-              <a href="#connexion">Se connecter</a>
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                asChild
+                variant="outline"
+                className="border-dark/30 bg-transparent text-dark transition-colors duration-300 hover:bg-dark hover:text-cream"
+              >
+                <a
+                  href="#connexion"
+                  onClick={() => {
+                    setAuthMode("login");
+                  }}
+                >
+                  Se connecter
+                </a>
+              </Button>
+              <Button
+                asChild
+                className="bg-dark text-cream transition-colors duration-300 hover:bg-teal"
+              >
+                <a
+                  href="#connexion"
+                  onClick={() => {
+                    setAuthMode("register");
+                  }}
+                >
+                  S'inscrire
+                </a>
+              </Button>
+            </div>
           </nav>
         </div>
       </header>
@@ -192,7 +216,12 @@ export function LoginPage() {
                   size="lg"
                   className="group bg-dark text-cream transition-colors duration-300 hover:bg-teal"
                 >
-                  <a href="#connexion">
+                  <a
+                    href="#connexion"
+                    onClick={() => {
+                      setAuthMode("register");
+                    }}
+                  >
                     Commencer la séance
                     <ArrowRight
                       className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
@@ -236,7 +265,10 @@ export function LoginPage() {
               />
 
               <LoginCard
+                mode={authMode}
+                onModeChange={setAuthMode}
                 onLogin={login}
+                onRegister={register}
                 className="relative z-10 mx-auto w-full max-w-md"
               />
 

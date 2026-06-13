@@ -15,6 +15,31 @@ export interface LoginResponse {
   };
 }
 
+// Self-registration returns the same shape as login (token + auto-login user).
+export type RegisterResponse = LoginResponse;
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}
+
+// GET /auth/me — the live source of truth for the current user's account
+// flags. Unlike the login-time localStorage snapshot, this reflects admin
+// changes (e.g. toggling access restriction) without requiring re-login.
+export interface AuthMeResponse {
+  user: {
+    id: string;
+    email: string;
+    role: string;
+    firstName: string;
+    lastName: string;
+    emailVerified: boolean;
+    isRestricted: boolean;
+  };
+}
+
 export interface DsrRequest {
   id: string;
   userId: string;

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { api } from "@/lib/api.js";
 import { useAuth } from "@/hooks/useAuth.js";
+import { useRestrictionStatus } from "@/hooks/useRestrictionStatus.js";
 import type {
   CourseListResponse,
   MyEnrolmentsResponse,
@@ -89,7 +90,11 @@ export function LearnCatalogPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { user: authUser } = useAuth();
-  const isRestricted = authUser?.isRestricted === true;
+  // Live restriction from /auth/me (reflects admin toggles without re-login);
+  // fall back to the cached login-time value while it loads.
+  const liveRestricted = useRestrictionStatus();
+  const cachedRestricted = authUser?.isRestricted === true;
+  const isRestricted = liveRestricted ?? cachedRestricted;
 
   const { data: coursesData, isLoading } = useQuery({
     queryKey: ["courses"],

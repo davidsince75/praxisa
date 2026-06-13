@@ -1,4 +1,4 @@
-import { and, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNull, sql } from "drizzle-orm";
 import type { Db } from "../../db/index.js";
 import {
   courseModules,
@@ -160,6 +160,53 @@ export async function maybeClearExpiredProvisional(
     return { ...enrolment, provisionalUntil: null };
   }
   return enrolment;
+}
+
+// ── Trial / restricted access helpers ───────────────────────────────────────────
+// Both a 14-day provisional trial and an admin-set account restriction cap a
+// learner to the first N modules of a course. Enforced server-side so the cap
+// is real and not merely a client-side lock.
+
+export const TRIAL_MODULE_LIMIT = 3;
+
+/**
+ * Given a course's modules ordered by position and a limit, return the set of
+ * module ids that are accessible. Pure — unit tested.
+ */
+export function allowedModuleIds(
+  modulesByPosition: { id: string }[],
+  limit: number,
+): Set<string> {
+  return new Set(modulesByPosition.slice(0, limit).map((m) => m.id));
+}
+
+/**
+ * Whether a lesson falls within the first `limit` modules of its course.
+ * Returns true (fail-open) when the lesson or its module can't be resolved —
+ * the caller's other guards handle genuinely missing rows.
+ */
+export async function isLessonWithinModuleLimit(
+  db: Db,
+  courseId: string,
+  lessonId: string,
+  limit: number,
+): Promise<boolean> {
+  const lessonRow = await db
+    .select({ moduleId: lessons.moduleId })
+    .from(lessons)
+    .where(eq(lessons.id, lessonId))
+    .limit(1);
+  const moduleId = lessonRow[0]?.moduleId;
+  if (moduleId === undefined) return true;
+
+  const mods = await db
+    .select({ id: courseModules.id })
+    .from(courseModules)
+    .where(eq(courseModules.courseId, courseId))
+    .orderBy(asc(courseModules.position))
+    .limit(limit);
+
+  return allowedModuleIds(mods, limit).has(moduleId);
 }
 
 // ── Progress helpers ───────────────────────────────────────────────────────────

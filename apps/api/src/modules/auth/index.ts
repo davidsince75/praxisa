@@ -68,6 +68,10 @@ export const authPlugin = (
           // Self-registration is always a student account — staff roles are
           // granted only through the admin users API.
           role: "student",
+          // Prospects who sign up themselves start with restricted (trial)
+          // access — 1 formation, first 3 modules. An admin lifts the
+          // restriction from the users UI to grant full access.
+          isRestricted: true,
         })
         .returning();
 
@@ -112,6 +116,7 @@ export const authPlugin = (
           role: user.role,
           firstName: user.firstName,
           lastName: user.lastName,
+          isRestricted: user.isRestricted,
         },
       });
     },

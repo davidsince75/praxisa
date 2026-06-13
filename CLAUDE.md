@@ -117,6 +117,11 @@ from `@/lib/api.js` — import sites never reference `lib/types` directly.
 - **`POST /v1/auth/register` is student-only.** The schema has no `role` field;
   the route hardcodes `role: "student"`. Accepting a client role was a
   privilege-escalation hole. Staff accounts are created via the admin users API.
+  Self-registered students start `isRestricted: true` (trial access — 1 course,
+  first 3 modules); an admin lifts it from the users UI. The 3-module cap is
+  enforced server-side in `progress.routes.ts` (not just the client lock), and
+  the learner UI reads the live flag from `GET /auth/me` (`useRestrictionStatus`)
+  so an admin toggle applies without the student re-logging in.
 - **Per-route rate limits** on login (10/min), register, forgot-password,
   resend-verification (5/15 min), reset-password (10/15 min) — Redis-backed.
 - **Password-reset tokens are single-use**: each carries a `jti`; consuming one

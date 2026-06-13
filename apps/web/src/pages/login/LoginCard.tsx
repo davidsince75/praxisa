@@ -4,38 +4,72 @@ import { Button } from "@/components/ui/button.js";
 import { Input } from "@/components/ui/input.js";
 import { Label } from "@/components/ui/label.js";
 import { cn } from "@/lib/utils.js";
+import type { RegisterRequest } from "@/lib/api.js";
+
+export type AuthMode = "login" | "register";
 
 interface LoginCardProps {
+  mode: AuthMode;
+  onModeChange: (mode: AuthMode) => void;
   onLogin: (email: string, password: string) => Promise<void>;
+  onRegister: (input: RegisterRequest) => Promise<void>;
   className?: string;
 }
 
 const FIELD_CLASSES =
   "border-white/35 bg-white/[0.06] text-white placeholder:text-white/55 transition-colors duration-300 hover:border-white/60 focus:border-teal-light";
 
+// Mirrors the server-side registerBodySchema minimum.
+const PASSWORD_MIN = 12;
+
 /**
  * La « figure » sur le « fond » (clin d'œil à la Gestalt) : carte sombre
- * posée sur le papier crème, ombre décalée sable, tracé EEG qui se
- * dessine à l'ouverture.
+ * posée sur le papier crème. Sert d'entrée unique pour la connexion et
+ * l'inscription des prospects (compte étudiant en accès d'essai).
  */
-export function LoginCard({ onLogin, className }: LoginCardProps) {
+export function LoginCard({
+  mode,
+  onModeChange,
+  onLogin,
+  onRegister,
+  className,
+}: LoginCardProps) {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  const isRegister = mode === "register";
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     setLoading(true);
     try {
-      await onLogin(email, password);
+      if (isRegister) {
+        await onRegister({ email, password, firstName, lastName });
+      } else {
+        await onLogin(email, password);
+      }
       // La redirection est gérée par <Navigate> dans la page parente.
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Identifiants incorrects");
+      setError(
+        err instanceof Error
+          ? err.message
+          : isRegister
+            ? "Inscription impossible"
+            : "Identifiants incorrects",
+      );
       setLoading(false);
     }
+  }
+
+  function switchMode(next: AuthMode) {
+    setError(null);
+    onModeChange(next);
   }
 
   return (
@@ -69,18 +103,93 @@ export function LoginCard({ onLogin, className }: LoginCardProps) {
         id="connexion-titre"
         className="mt-5 font-display text-2xl tracking-tight text-white sm:text-3xl"
       >
-        Ouvrir la session
+        {isRegister ? "Créer un compte" : "Ouvrir la session"}
       </h2>
       <p className="mt-2 text-sm text-white/75">
-        Apprenants, formateurs et administration — chacun sa porte, la même clé.
+        {isRegister
+          ? "Commencez votre formation en psychologie — accès d'essai immédiat à votre première formation."
+          : "Apprenants, formateurs et administration — chacun sa porte, la même clé."}
       </p>
+
+      {/* Bascule connexion / inscription */}
+      <div
+        role="group"
+        aria-label="Connexion ou inscription"
+        className="mt-6 grid grid-cols-2 gap-1 rounded-md border border-white/15 bg-white/[0.04] p-1"
+      >
+        <button
+          type="button"
+          aria-pressed={!isRegister}
+          onClick={() => {
+            switchMode("login");
+          }}
+          className={cn(
+            "h-11 rounded text-sm font-semibold transition-colors",
+            !isRegister
+              ? "bg-white/10 text-white"
+              : "text-white/60 hover:text-white",
+          )}
+        >
+          Connexion
+        </button>
+        <button
+          type="button"
+          aria-pressed={isRegister}
+          onClick={() => {
+            switchMode("register");
+          }}
+          className={cn(
+            "h-11 rounded text-sm font-semibold transition-colors",
+            isRegister
+              ? "bg-white/10 text-white"
+              : "text-white/60 hover:text-white",
+          )}
+        >
+          Inscription
+        </button>
+      </div>
 
       <form
         onSubmit={(event) => {
           void handleSubmit(event);
         }}
-        className="mt-8 space-y-5"
+        className="mt-6 space-y-5"
       >
+        {isRegister && (
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="firstName" className="text-white/90">
+                Prénom
+              </Label>
+              <Input
+                id="firstName"
+                autoComplete="given-name"
+                required
+                value={firstName}
+                onChange={(event) => {
+                  setFirstName(event.target.value);
+                }}
+                className={FIELD_CLASSES}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName" className="text-white/90">
+                Nom
+              </Label>
+              <Input
+                id="lastName"
+                autoComplete="family-name"
+                required
+                value={lastName}
+                onChange={(event) => {
+                  setLastName(event.target.value);
+                }}
+                className={FIELD_CLASSES}
+              />
+            </div>
+          </div>
+        )}
+
         <div className="space-y-2">
           <Label htmlFor="email" className="text-white/90">
             Email
@@ -107,8 +216,9 @@ export function LoginCard({ onLogin, className }: LoginCardProps) {
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
+              autoComplete={isRegister ? "new-password" : "current-password"}
               required
+              minLength={isRegister ? PASSWORD_MIN : undefined}
               value={password}
               onChange={(event) => {
                 setPassword(event.target.value);
@@ -134,6 +244,11 @@ export function LoginCard({ onLogin, className }: LoginCardProps) {
               )}
             </button>
           </div>
+          {isRegister && (
+            <p className="text-xs text-white/55">
+              Au moins {PASSWORD_MIN} caractères.
+            </p>
+          )}
         </div>
 
         {error !== null && (
@@ -153,11 +268,11 @@ export function LoginCard({ onLogin, className }: LoginCardProps) {
                 className="mr-2 h-4 w-4 animate-spin"
                 aria-hidden="true"
               />
-              Connexion…
+              {isRegister ? "Création…" : "Connexion…"}
             </>
           ) : (
             <>
-              Se connecter
+              {isRegister ? "Créer mon compte" : "Se connecter"}
               <ArrowRight
                 className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1"
                 aria-hidden="true"
@@ -168,8 +283,34 @@ export function LoginCard({ onLogin, className }: LoginCardProps) {
       </form>
 
       <p className="mt-6 text-xs leading-relaxed text-white/70">
-        Pas encore de compte&nbsp;? Testez votre formation pendant 30
-        jours&nbsp;— inscriptions permanentes auprès de votre établissement.
+        {isRegister ? (
+          <>
+            Déjà inscrit&nbsp;?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                switchMode("login");
+              }}
+              className="font-semibold text-teal-light underline-offset-2 hover:underline"
+            >
+              Se connecter
+            </button>
+          </>
+        ) : (
+          <>
+            Pas encore de compte&nbsp;?{" "}
+            <button
+              type="button"
+              onClick={() => {
+                switchMode("register");
+              }}
+              className="font-semibold text-teal-light underline-offset-2 hover:underline"
+            >
+              Créer un compte
+            </button>{" "}
+            — testez votre formation pendant 30 jours.
+          </>
+        )}
       </p>
     </section>
   );
