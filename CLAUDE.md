@@ -103,7 +103,7 @@ from `@/lib/api.js` — import sites never reference `lib/types` directly.
 
 - camelCase column refs in sql templates; `.returning()` after `.insert()` when the row is needed.
 - Migrations are hand-written SQL in `apps/api/src/db/migrations/`.
-- **Next migration is 0029** (journal idx 29). Add the entry to
+- **Next migration is 0030** (journal idx 30). Add the entry to
   `apps/api/src/db/migrations/meta/_journal.json`, incrementing `when` by 86400000.
   `when` values MUST stay strictly increasing — `journal.test.ts` enforces this
   (an out-of-order value silently skips all later migrations; see migrate.ts repair).
@@ -182,8 +182,12 @@ Notifications · Ratings · Certificates · Forums · Documents/Notes · Tags ·
 Settings · Gmail integration · Payments (GoCardless) · Data import/migration ·
 PDF upload (binary, bytea in PG).
 
-**Tests**: 353 unit tests across 24 files (run `npx vitest run` inside `apps/api`
-— pure unit tests, no DB needed locally). Manual checklist: `docs/test-checklist.md`.
+**Tests**: 215 unit tests across 15 files (run `pnpm test:unit` inside `apps/api`
+— pure unit tests, no DB needed locally; that script globs `src/**/*.test.ts`).
+NB: a bare `npx vitest run` after a `tsc` build also picks up the compiled
+`dist/**/*.test.js` copies (vitest's default `include`), inflating the count and
+failing on `dist/db/journal.test.js` — run `pnpm test:unit` or clean `dist/`.
+Manual checklist: `docs/test-checklist.md`.
 
 **Gotcha fixed 2026-06-12**: `lessons.contentBody` is now part of the
 create/update lesson zod schemas — before that, zod silently stripped it and

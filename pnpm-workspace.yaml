@@ -4,6 +4,19 @@ packages:
 # Force-patch transitive vulnerabilities (GHSA-w7jw-789q-3m8p: shell-quote via gel)
 overrides:
   shell-quote: ">=1.8.4"
+# Accepted, non-actionable advisory:
+# - GHSA-gv7w-rqvm-qjhr (esbuild <0.28.1): "missing binary integrity
+#   verification in Deno enables RCE via NPM_CONFIG_REGISTRY". esbuild is a
+#   BUILD-TIME-ONLY dependency here (pulled transitively by drizzle-kit, tsx and
+#   vite) — it is never present in any shipped artifact (the API ships tsc
+#   output, the web ships static Vite output), and this project uses pnpm/Node,
+#   not Deno, so the attack vector does not exist. The patched line (0.28.1) is
+#   incompatible with Vite 6 (its esbuild ^0.25 pin; forcing 0.28.1 breaks the
+#   production transpile pass), so we cannot bump without a Vite major upgrade.
+#   Revisit / remove this ignore once Vite supports esbuild >=0.28.1.
+auditConfig:
+  ignoreGhsas:
+    - GHSA-gv7w-rqvm-qjhr
 allowBuilds:
   "@node-rs/argon2": true
   es5-ext: true
