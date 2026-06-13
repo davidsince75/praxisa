@@ -17,7 +17,14 @@ export const COURSE_STATUSES = ["draft", "published", "archived"] as const;
 export type CourseStatus = (typeof COURSE_STATUSES)[number];
 export const courseStatusEnum = pgEnum("course_status", COURSE_STATUSES);
 
-export const CONTENT_TYPES = ["video", "text", "pdf", "audio", "live"] as const;
+export const CONTENT_TYPES = [
+  "video",
+  "text",
+  "pdf",
+  "audio",
+  "live",
+  "quiz",
+] as const;
 export type ContentType = (typeof CONTENT_TYPES)[number];
 export const contentTypeEnum = pgEnum("content_type", CONTENT_TYPES);
 

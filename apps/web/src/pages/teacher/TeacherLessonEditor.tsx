@@ -450,18 +450,16 @@ export function TeacherLessonEditorPage({
           placeholder="Titre de la lecon..."
           className="flex-1 text-lg font-semibold border-none bg-transparent text-slate-800 placeholder:text-slate-300 focus:outline-none"
         />
-        {!isNew && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => {
-              setAiOpen(true);
-            }}
-          >
-            <Sparkles size={13} className="mr-1.5 text-blue-600" />
-            Assistant IA
-          </Button>
-        )}
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => {
+            setAiOpen(true);
+          }}
+        >
+          <Sparkles size={13} className="mr-1.5 text-blue-600" />
+          Assistant IA
+        </Button>
         <Button
           size="sm"
           disabled={saving || title.trim().length === 0}
@@ -880,23 +878,23 @@ export function TeacherLessonEditorPage({
         </div>
       </div>
 
-      {/* AI assistant — inserts into the editor; saving stays manual */}
-      {!isNew && (
-        <AILessonAssistant
-          courseId={courseId}
-          moduleId={moduleId}
-          lessonId={lessonId}
-          lessonTitle={title.trim().length > 0 ? title.trim() : "Leçon"}
-          open={aiOpen}
-          onOpenChange={setAiOpen}
-          onInsertHtml={(html, mode) => {
-            const el = editorRef.current;
-            if (el === null) return;
-            el.innerHTML = mode === "replace" ? html : el.innerHTML + html;
-          }}
-          onEntitiesCreated={refresh}
-        />
-      )}
+      {/* AI assistant — available on new lessons too (content + resources);
+          homework/quiz tabs unlock once the lesson is saved (lessonId !== null,
+          they attach exercises to a lesson row). */}
+      <AILessonAssistant
+        courseId={courseId}
+        moduleId={moduleId}
+        lessonId={isNew ? null : lessonId}
+        lessonTitle={title.trim().length > 0 ? title.trim() : "Leçon"}
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        onInsertHtml={(html, mode) => {
+          const el = editorRef.current;
+          if (el === null) return;
+          el.innerHTML = mode === "replace" ? html : el.innerHTML + html;
+        }}
+        onEntitiesCreated={refresh}
+      />
     </div>
   );
 }

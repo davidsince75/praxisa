@@ -1,0 +1,11 @@
+-- Migration 0029: add 'quiz' to the content_type enum
+-- The teacher lesson editor offers "Quiz" as a lesson content type and the
+-- learner player (LessonViewer) renders a quiz lesson, but the enum lacked the
+-- value so the API rejected createLesson/updateLesson with a 400 zod error.
+--
+-- ADD VALUE IF NOT EXISTS is idempotent (PostgreSQL 10+). It is allowed inside
+-- the migrator's transaction on PostgreSQL 12+ provided the new value is not
+-- USED in the same transaction (it is not — no rows are written here). It must
+-- stay a plain statement: ALTER TYPE ... ADD VALUE cannot run inside a DO/PL
+-- block.
+ALTER TYPE content_type ADD VALUE IF NOT EXISTS 'quiz';

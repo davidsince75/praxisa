@@ -188,7 +188,8 @@ function SourceSelect({
 interface AILessonAssistantProps {
   courseId: string;
   moduleId: string;
-  lessonId: string;
+  /** null while the lesson is not saved yet — exercise tabs need a lesson row. */
+  lessonId: string | null;
   lessonTitle: string;
   open: boolean;
   onOpenChange: (v: boolean) => void;
@@ -310,7 +311,8 @@ export function AILessonAssistant({
     setSourceFileId(fileId);
   }
 
-  const exercisesPath = `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}/exercises`;
+  const lessonExists = lessonId !== null;
+  const exercisesPath = `/courses/${courseId}/modules/${moduleId}/lessons/${lessonId ?? ""}/exercises`;
 
   // ── Actions ──────────────────────────────────────────────────────────────
 
@@ -366,7 +368,7 @@ export function AILessonAssistant({
   }
 
   async function handleCreateHomework(): Promise<void> {
-    if (homework === null) return;
+    if (homework === null || !lessonExists) return;
     setHomeworkCreating(true);
     setHomeworkError("");
     try {
@@ -408,7 +410,8 @@ export function AILessonAssistant({
   }
 
   async function handleCreateQuiz(): Promise<void> {
-    if (quizQuestions === null || quizQuestions.length === 0) return;
+    if (quizQuestions === null || quizQuestions.length === 0 || !lessonExists)
+      return;
     setQuizCreating(true);
     setQuizError("");
     try {
@@ -649,7 +652,14 @@ export function AILessonAssistant({
           )}
 
           {/* ── Devoir ──────────────────────────────────────────────────── */}
-          {tab === "homework" && (
+          {tab === "homework" && !lessonExists && (
+            <p className="text-xs text-slate-400">
+              Les devoirs sont rattachés à une leçon existante — enregistrez
+              d&apos;abord la leçon, puis rouvrez l&apos;assistant. Les onglets
+              « Contenu » et « Ressources » sont utilisables dès maintenant.
+            </p>
+          )}
+          {tab === "homework" && lessonExists && (
             <div className="space-y-4">
               {homework === null ? (
                 <>
@@ -744,7 +754,14 @@ export function AILessonAssistant({
           )}
 
           {/* ── Quiz ────────────────────────────────────────────────────── */}
-          {tab === "quiz" && (
+          {tab === "quiz" && !lessonExists && (
+            <p className="text-xs text-slate-400">
+              Les quiz sont rattachés à une leçon existante — enregistrez
+              d&apos;abord la leçon, puis rouvrez l&apos;assistant. Les onglets
+              « Contenu » et « Ressources » sont utilisables dès maintenant.
+            </p>
+          )}
+          {tab === "quiz" && lessonExists && (
             <div className="space-y-4">
               {quizQuestions === null ? (
                 <>
