@@ -174,16 +174,18 @@ export function AICourseStructureDialog({
       <DialogContent className="max-w-xl">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Sparkles size={18} className="text-teal-600" />
+            <Sparkles size={18} className="text-teal" />
             Structurer le cours avec l&apos;IA
           </DialogTitle>
         </DialogHeader>
 
         {suggestions === null ? (
-          <div className="space-y-4 py-2">
+          <div className="px-6 py-4 space-y-4">
             {hasDocuments && (
               <fieldset className="space-y-1">
-                <legend className="text-sm font-medium mb-1">Source</legend>
+                <legend className="text-sm font-semibold uppercase tracking-wider text-meta mb-1">
+                  Source
+                </legend>
                 <div className="flex flex-wrap gap-4">
                   <label className="flex items-center gap-2 text-sm py-1.5 cursor-pointer">
                     <input
@@ -194,7 +196,7 @@ export function AICourseStructureDialog({
                       onChange={() => {
                         setSource("pdf");
                       }}
-                      className="h-4 w-4 accent-teal-600"
+                      className="h-4 w-4 accent-teal"
                     />
                     Document du cours
                   </label>
@@ -207,7 +209,7 @@ export function AICourseStructureDialog({
                       onChange={() => {
                         setSource("description");
                       }}
-                      className="h-4 w-4 accent-teal-600"
+                      className="h-4 w-4 accent-teal"
                     />
                     Description manuelle
                   </label>
@@ -221,7 +223,7 @@ export function AICourseStructureDialog({
                   <Label htmlFor="ai-document">Document source</Label>
                   <select
                     id="ai-document"
-                    className="w-full h-11 rounded-md border border-border bg-background px-3 text-sm"
+                    className="w-full h-11 border border-input bg-background px-3 text-sm transition-colors duration-200 hover:border-mid focus:border-teal"
                     value={selectedFileId}
                     onChange={(e) => {
                       setSelectedFileId(e.target.value);
@@ -244,7 +246,7 @@ export function AICourseStructureDialog({
 
                 <div className="rounded-md border border-border p-3 space-y-2">
                   <div className="flex items-center gap-2 text-sm">
-                    <FileText size={14} className="text-teal-600" />
+                    <FileText size={14} className="text-teal" />
                     {selectedDoc === undefined ? (
                       <span className="text-meta">
                         Sélectionnez un document.
@@ -299,7 +301,7 @@ export function AICourseStructureDialog({
                 <Label htmlFor="ai-desc">Description du cours</Label>
                 <textarea
                   id="ai-desc"
-                  className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm resize-none h-28 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  className="w-full border border-input bg-background px-3 py-2 text-sm resize-none h-28 transition-colors duration-200 hover:border-mid focus:border-teal"
                   placeholder="Décrivez le contenu, les objectifs et le public cible..."
                   value={description}
                   onChange={(e) => {
@@ -332,7 +334,7 @@ export function AICourseStructureDialog({
             )}
           </div>
         ) : (
-          <div className="space-y-3 py-2 max-h-96 overflow-y-auto">
+          <div className="px-6 py-4 space-y-3 max-h-96 overflow-y-auto">
             <p className="text-xs text-meta mb-2">
               {suggestions.length} modules suggérés — vérifiez et créez-les en
               un clic.
@@ -343,7 +345,7 @@ export function AICourseStructureDialog({
                 className="flex gap-3 rounded-md border border-border p-3"
               >
                 <div className="mt-0.5">
-                  <BookOpen size={14} className="text-teal-600" />
+                  <BookOpen size={14} className="text-teal" />
                 </div>
                 <div>
                   <p className="text-xs font-semibold">
@@ -366,11 +368,11 @@ export function AICourseStructureDialog({
           </div>
         )}
 
-        <DialogFooter className="gap-2">
+        <DialogFooter>
           {suggestions === null ? (
             <>
               <DialogClose asChild>
-                <Button variant="ghost" size="sm">
+                <Button variant="outline" size="sm">
                   Annuler
                 </Button>
               </DialogClose>
@@ -380,7 +382,6 @@ export function AICourseStructureDialog({
                   void handleGenerate();
                 }}
                 disabled={generateDisabled}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
               >
                 {loading ? "Génération..." : "Générer la structure"}
               </Button>
@@ -388,7 +389,7 @@ export function AICourseStructureDialog({
           ) : (
             <>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   setSuggestions(null);
@@ -403,7 +404,6 @@ export function AICourseStructureDialog({
                   void handleCreate();
                 }}
                 disabled={creating}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
               >
                 {creating
                   ? "Création..."
