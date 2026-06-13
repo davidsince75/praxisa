@@ -125,7 +125,7 @@ async function insertLesson(data: {
   title: string;
   description?: string;
   position: number;
-  contentType: "video" | "text" | "pdf" | "audio" | "live";
+  contentType: "video" | "text" | "pdf" | "audio" | "live" | "quiz";
   contentUrl?: string;
   contentBody?: string;
   durationMinutes?: number;

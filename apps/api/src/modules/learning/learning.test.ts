@@ -104,6 +104,14 @@ describe("createLessonSchema", () => {
     });
     expect(r.success).toBe(false);
   });
+
+  it("accepts quiz as a content type", () => {
+    const r = createLessonSchema.safeParse({
+      title: "Lesson 1",
+      contentType: "quiz",
+    });
+    expect(r.success && r.data.contentType).toBe("quiz");
+  });
 });
 
 describe("createExerciseSchema", () => {

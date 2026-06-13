@@ -1,0 +1,96 @@
+﻿{
+  "advisories": {
+    "1120679": {
+      "findings": [
+        {
+          "version": "0.25.12",
+          "paths": [
+            "apps__api>@vitest/coverage-v8>vitest>@vitest/mocker>vite>esbuild",
+            "apps__api>@vitest/coverage-v8>vitest>vite>esbuild",
+            "apps__api>vitest>@vitest/mocker>vite>esbuild",
+            "apps__api>vitest>vite>esbuild",
+            "apps__web>@vitejs/plugin-react>vite>esbuild",
+            "apps__web>vite>esbuild",
+            "apps__workers>vitest>@vitest/mocker>vite>esbuild",
+            "apps__workers>vitest>vite>esbuild",
+            "packages__audit-sdk>vitest>@vitest/mocker>vite>esbuild",
+            "packages__audit-sdk>vitest>vite>esbuild",
+            "packages__policy-engine>@vitest/coverage-v8>vitest>@vitest/mocker>vite>esbuild",
+            "packages__policy-engine>@vitest/coverage-v8>vitest>vite>esbuild",
+            "packages__policy-engine>vitest>@vitest/mocker>vite>esbuild",
+            "packages__policy-engine>vitest>vite>esbuild"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        },
+        {
+          "version": "0.28.0",
+          "paths": [
+            "apps__api>@vitest/coverage-v8>vitest>@vitest/mocker>vite>tsx>esbuild",
+            "apps__api>@vitest/coverage-v8>vitest>vite>tsx>esbuild",
+            "apps__api>tsx>esbuild",
+            "apps__api>vitest>@vitest/mocker>vite>tsx>esbuild",
+            "apps__api>vitest>vite>tsx>esbuild",
+            "apps__web>@vitejs/plugin-react>vite>tsx>esbuild",
+            "apps__web>tailwindcss>postcss-load-config>tsx>esbuild",
+            "apps__web>vite>tsx>esbuild",
+            "apps__workers>tsx>esbuild",
+            "apps__workers>vitest>@vitest/mocker>vite>tsx>esbuild",
+            "apps__workers>vitest>vite>tsx>esbuild",
+            "packages__audit-sdk>vitest>@vitest/mocker>vite>tsx>esbuild",
+            "packages__audit-sdk>vitest>vite>tsx>esbuild",
+            "packages__policy-engine>@vitest/coverage-v8>vitest>@vitest/mocker>vite>tsx>esbuild",
+            "packages__policy-engine>@vitest/coverage-v8>vitest>vite>tsx>esbuild",
+            "packages__policy-engine>vitest>@vitest/mocker>vite>tsx>esbuild",
+            "packages__policy-engine>vitest>vite>tsx>esbuild"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        },
+        {
+          "version": "0.18.20",
+          "paths": [
+            "apps__api>drizzle-kit>@esbuild-kit/esm-loader>@esbuild-kit/core-utils>esbuild"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        },
+        {
+          "version": "0.19.12",
+          "paths": [
+            "apps__api>drizzle-kit>esbuild",
+            "apps__api>drizzle-kit>esbuild-register>esbuild"
+          ],
+          "dev": true,
+          "optional": false,
+          "bundled": false
+        }
+      ],
+      "id": 1120679,
+      "title": "esbuild: Missing binary integrity verification in Deno module enables remote code execution via NPM_CONFIG_REGISTRY",
+      "module_name": "esbuild",
+      "vulnerable_versions": ">=0.17.0 <0.28.1",
+      "patched_versions": ">=0.28.1",
+      "severity": "high",
+      "cwe": "CWE-426, CWE-494",
+      "github_advisory_id": "GHSA-gv7w-rqvm-qjhr",
+      "url": "https://github.com/advisories/GHSA-gv7w-rqvm-qjhr"
+    }
+  },
+  "metadata": {
+    "vulnerabilities": {
+      "info": 0,
+      "low": 1,
+      "moderate": 3,
+      "high": 1,
+      "critical": 0
+    },
+    "dependencies": 283,
+    "devDependencies": 509,
+    "optionalDependencies": 171,
+    "totalDependencies": 821
+  }
+}

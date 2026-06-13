@@ -204,6 +204,13 @@
       "when": 1749859200000,
       "tag": "0028_course_documents",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1749945600000,
+      "tag": "0029_lesson_content_type_quiz",
+      "breakpoints": true
     }
   ]
 }
