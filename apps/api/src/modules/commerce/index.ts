@@ -1,16 +1,11 @@
 import type { FastifyInstance } from "fastify";
 import { and, desc, eq, isNotNull } from "drizzle-orm";
-import { GoCardlessClient, Environments } from "gocardless-nodejs";
 import { emitEvent } from "@praxisa/audit-sdk";
 import { courses, enrolments, orders } from "../../db/schema/index.js";
 import { createOrderSchema } from "./types.js";
 import { pricingOptions } from "./service.js";
-
-interface GoCardlessConfig {
-  accessToken: string;
-  environment: "sandbox" | "live";
-  webhookSecret?: string | undefined;
-}
+import { makeGoCardlessClient, type GoCardlessConfig } from "./gocardless.js";
+import { registerGoCardlessWebhook } from "./webhook.routes.js";
 
 interface CommercePluginOptions {
   config?: {
@@ -26,16 +21,13 @@ export function commercePlugin(
 ): void {
   const gcConfig = opts.config?.gocardless;
   const appBaseUrl = opts.config?.appBaseUrl ?? "";
+  const client = makeGoCardlessClient(gcConfig);
 
-  function getClient() {
-    if (!gcConfig) return null;
-    return new GoCardlessClient(
-      gcConfig.accessToken,
-      gcConfig.environment === "live"
-        ? Environments.Live
-        : Environments.Sandbox,
-    );
-  }
+  // Webhook: signature-verified, idempotent — flips a purchase into access.
+  registerGoCardlessWebhook(fastify, {
+    client,
+    webhookSecret: gcConfig?.webhookSecret,
+  });
 
   // ── GET /courses/:courseId/pricing ──────────────────────────────────────────
   // Public: price + the purchasable plan breakdown (full / x3 / x10).
@@ -99,8 +91,7 @@ export function commercePlugin(
       }
       const { courseId, plan } = parse.data;
 
-      const client = getClient();
-      if (!client) {
+      if (client === null) {
         return reply.status(501).send({ error: "Paiement non configuré" });
       }
 

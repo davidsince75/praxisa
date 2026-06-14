@@ -1,4 +1,4 @@
-import type { OrderPlan } from "../../db/schema/index.js";
+import type { OrderPaymentStatus, OrderPlan } from "../../db/schema/index.js";
 
 // Plans a learner can buy themselves. `comp` (admin-granted, no charge) is
 // intentionally excluded from self-serve checkout.
@@ -56,4 +56,77 @@ export function pricingOptions(totalCents: number): PlanOption[] {
       totalCents,
     };
   });
+}
+
+// ── Webhook / settlement decision logic (pure) ──────────────────────────────────
+
+/**
+ * Build the GoCardless `createWithSchedule` request body for an instalment plan.
+ * Monthly instalments whose amounts sum exactly to the total. Pure — the route
+ * passes the result straight to the SDK.
+ */
+export function instalmentScheduleRequest(args: {
+  orderId: string;
+  totalCents: number;
+  instalmentCount: number;
+  currency: string;
+  mandateId: string;
+  name: string;
+}) {
+  const scheduleCents = buildInstalmentPlan(
+    args.totalCents,
+    args.instalmentCount,
+  );
+  return {
+    currency: args.currency,
+    total_amount: String(args.totalCents),
+    name: args.name,
+    instalments: {
+      amounts: scheduleCents.map((c) => String(c)),
+      interval: 1,
+      interval_unit: "monthly" as const,
+    },
+    links: { mandate: args.mandateId },
+    metadata: { order_id: args.orderId },
+  };
+}
+
+interface PaymentLike {
+  status: OrderPaymentStatus;
+}
+
+export function summarisePayments(payments: PaymentLike[]): {
+  confirmed: number;
+  failed: number;
+  chargedBack: number;
+  total: number;
+} {
+  let confirmed = 0;
+  let failed = 0;
+  let chargedBack = 0;
+  for (const p of payments) {
+    if (p.status === "confirmed") confirmed += 1;
+    else if (p.status === "failed") failed += 1;
+    else if (p.status === "charged_back") chargedBack += 1;
+  }
+  return { confirmed, failed, chargedBack, total: payments.length };
+}
+
+/** An order is settled once every expected instalment has confirmed. */
+export function isOrderFullyPaid(
+  payments: PaymentLike[],
+  expectedCount: number,
+): boolean {
+  return (
+    expectedCount > 0 && summarisePayments(payments).confirmed >= expectedCount
+  );
+}
+
+/**
+ * Whether to pull access. A clawed-back payment, or two failures with nothing
+ * yet collected, means we revoke and chase payment (dunning).
+ */
+export function shouldRevokeAccess(payments: PaymentLike[]): boolean {
+  const s = summarisePayments(payments);
+  return s.chargedBack > 0 || (s.failed >= 2 && s.confirmed === 0);
 }

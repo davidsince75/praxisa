@@ -36,6 +36,14 @@ import { paymentsPlugin } from "./modules/payments/index.js";
 import { commercePlugin } from "./modules/commerce/index.js";
 import { filesPlugin } from "./modules/files/index.js";
 
+declare module "fastify" {
+  interface FastifyRequest {
+    // Raw request body, stashed by the JSON content-type parser — needed to
+    // verify GoCardless webhook signatures (HMAC over the exact bytes).
+    rawBody?: string;
+  }
+}
+
 const config = loadConfig();
 const logger = createLogger(config.logLevel);
 
@@ -56,7 +64,10 @@ await app.register(redisPlugin, { redisUrl: config.redisUrl });
 app.addContentTypeParser(
   "application/json",
   { parseAs: "string" },
-  function (_req, body, done) {
+  function (req, body, done) {
+    if (typeof body === "string") {
+      req.rawBody = body;
+    }
     if (typeof body === "string" && body.trim() === "") {
       done(null, undefined);
       return;
