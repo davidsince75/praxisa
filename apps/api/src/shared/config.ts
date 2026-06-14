@@ -34,6 +34,9 @@ const configSchema = z.object({
     .object({
       accessToken: z.string().min(1),
       environment: z.enum(["sandbox", "live"]).default("sandbox"),
+      // Verifies inbound GoCardless webhooks (HMAC-SHA256). Optional so the app
+      // still boots without it; the webhook route rejects calls when it is unset.
+      webhookSecret: z.string().min(1).optional(),
     })
     .optional(),
 });
@@ -86,6 +89,7 @@ export function loadConfig(): AppConfig {
               | "sandbox"
               | "live"
               | undefined) ?? "sandbox",
+          webhookSecret: process.env["GOCARDLESS_WEBHOOK_SECRET"],
         }
       : undefined,
   });

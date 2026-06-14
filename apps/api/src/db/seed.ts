@@ -82,6 +82,7 @@ async function upsertCourse(data: {
   description: string;
   instructorId: string;
   thumbnailUrl: string;
+  priceCents?: number;
 }) {
   const existing = await db
     .select({ id: courses.id })
@@ -340,6 +341,7 @@ async function seed() {
     instructorId: clairembeaudId,
     thumbnailUrl:
       "https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=800",
+    priceCents: 180000,
   });
 
   // Module 1 — U1: Structures de la personnalité

@@ -70,6 +70,10 @@ export const courses = pgTable("courses", {
   }),
   totalDurationMinutes: integer("total_duration_minutes"),
 
+  // Pricing. null price_cents = not for sale (free / admin-enrolled only).
+  priceCents: integer("price_cents"),
+  currency: text("currency").notNull().default("EUR"),
+
   publishedAt: timestamp("published_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
@@ -200,6 +204,10 @@ export const enrolments = pgTable(
       .defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
+    // Set when a paid (or comp) order grants full access to this enrolment.
+    // null = trial/restricted access (first 3 modules). The FK to orders is
+    // declared in SQL only (migration 0030) to avoid a schema import cycle.
+    paidOrderId: uuid("paid_order_id"),
     // provisionalUntil is intentionally NOT in the Drizzle schema so it is never
     // auto-included in INSERT statements. It is read/written via raw SQL only.
     // Column is created by migration 0020. Once deployed everywhere, it can be

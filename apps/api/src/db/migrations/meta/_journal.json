@@ -211,6 +211,13 @@
       "when": 1749945600000,
       "tag": "0029_lesson_content_type_quiz",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1750032000000,
+      "tag": "0030_commerce",
+      "breakpoints": true
     }
   ]
 }
