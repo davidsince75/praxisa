@@ -33,6 +33,7 @@ import { settingsPlugin } from "./modules/settings/index.js";
 import { tagsPlugin } from "./modules/tags/index.js";
 import { gmailPlugin } from "./modules/gmail/index.js";
 import { paymentsPlugin } from "./modules/payments/index.js";
+import { commercePlugin } from "./modules/commerce/index.js";
 import { filesPlugin } from "./modules/files/index.js";
 
 const config = loadConfig();
@@ -153,6 +154,15 @@ await app.register(paymentsPlugin, {
         },
       }
     : {}),
+});
+await app.register(commercePlugin, {
+  prefix: "/v1",
+  config: {
+    appBaseUrl: config.appBaseUrl,
+    ...(config.gocardless !== undefined
+      ? { gocardless: config.gocardless }
+      : {}),
+  },
 });
 await app.register(filesPlugin, { prefix: "/v1" });
 
