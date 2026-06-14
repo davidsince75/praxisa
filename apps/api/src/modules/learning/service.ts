@@ -209,6 +209,16 @@ export async function isLessonWithinModuleLimit(
   return allowedModuleIds(mods, limit).has(moduleId);
 }
 
+/**
+ * A paid (or admin-comped) order grants full access to a course, lifting the
+ * first-3-modules trial/restriction cap for that enrolment. Pure — unit tested.
+ */
+export function enrolmentHasFullAccess(enrolment: {
+  paidOrderId: string | null;
+}): boolean {
+  return enrolment.paidOrderId !== null;
+}
+
 // ── Progress helpers ───────────────────────────────────────────────────────────
 
 /**

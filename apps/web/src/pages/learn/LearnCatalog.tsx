@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   BookOpen,
   Globe,
@@ -21,6 +21,7 @@ import type {
 } from "@/lib/api.js";
 import { Button } from "@/components/ui/button.js";
 import { Card, CardContent } from "@/components/ui/card.js";
+import { formatPrice } from "@/lib/utils.js";
 
 // ── Inline rating widget for completed courses ──────────────────────────────────
 
@@ -89,6 +90,8 @@ function InlineRating({ courseId }: { courseId: string }) {
 export function LearnCatalogPage() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const purchaseStatus = searchParams.get("purchase");
   const { user: authUser } = useAuth();
   // Live restriction from /auth/me (reflects admin toggles without re-login);
   // fall back to the cached login-time value while it loads.
@@ -155,6 +158,26 @@ export function LearnCatalogPage() {
         </p>
       </div>
 
+      {purchaseStatus === "success" && (
+        <div className="flex items-start gap-3 rounded-lg border border-olive/30 bg-olive/5 px-4 py-3">
+          <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-olive" />
+          <div>
+            <p className="text-sm font-semibold text-dark">
+              Paiement enregistré
+            </p>
+            <p className="mt-0.5 text-xs text-meta">
+              Votre mandat a été confirmé. L'accès complet s'active dès le
+              premier prélèvement (sous quelques jours).
+            </p>
+          </div>
+        </div>
+      )}
+      {purchaseStatus === "cancelled" && (
+        <div className="rounded-lg border border-rule bg-cream-mid/40 px-4 py-3 text-sm text-meta">
+          Paiement annulé. Vous pouvez réessayer à tout moment.
+        </div>
+      )}
+
       {isRestricted && (
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
           <ShieldAlert size={18} className="text-amber-600 mt-0.5 shrink-0" />
@@ -201,6 +224,11 @@ export function LearnCatalogPage() {
                     {course.description !== null && (
                       <p className="text-sm text-meta mt-1.5 line-clamp-3">
                         {course.description}
+                      </p>
+                    )}
+                    {course.priceCents !== null && (
+                      <p className="mt-2 text-sm font-semibold text-dark">
+                        {formatPrice(course.priceCents, course.currency)}
                       </p>
                     )}
                   </div>
@@ -282,8 +310,23 @@ export function LearnCatalogPage() {
                       >
                         {enrollMutation.isPending
                           ? "Inscription…"
-                          : "S'inscrire"}
+                          : course.priceCents !== null
+                            ? "Essai gratuit"
+                            : "S'inscrire"}
                       </Button>
+                      {course.priceCents !== null && (
+                        <Button
+                          asChild
+                          variant="outline"
+                          size="sm"
+                          className="w-full"
+                        >
+                          <Link to={`/learn/courses/${course.id}/buy`}>
+                            Acheter —{" "}
+                            {formatPrice(course.priceCents, course.currency)}
+                          </Link>
+                        </Button>
+                      )}
                       {enrollError !== null && (
                         <p className="text-xs text-rose mt-1">{enrollError}</p>
                       )}

@@ -17,6 +17,8 @@ export interface Course {
   language: string;
   thumbnailUrl: string | null;
   coursePdfId: string | null;
+  priceCents: number | null;
+  currency: string;
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;

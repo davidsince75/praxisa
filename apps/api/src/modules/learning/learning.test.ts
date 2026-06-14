@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   allowedModuleIds,
   computeCompletion,
+  enrolmentHasFullAccess,
   isProvisionalEnrolment,
   TRIAL_MODULE_LIMIT,
 } from "./service.js";
@@ -84,6 +85,16 @@ describe("isProvisionalEnrolment", () => {
 
   it("is false when provisionalUntil is null (confirmed enrolment)", () => {
     expect(isProvisionalEnrolment({ provisionalUntil: null })).toBe(false);
+  });
+});
+
+describe("enrolmentHasFullAccess", () => {
+  it("is true when a paid order is attached", () => {
+    expect(enrolmentHasFullAccess({ paidOrderId: "order-1" })).toBe(true);
+  });
+
+  it("is false for an unpaid (trial/restricted) enrolment", () => {
+    expect(enrolmentHasFullAccess({ paidOrderId: null })).toBe(false);
   });
 });
 

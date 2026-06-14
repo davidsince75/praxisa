@@ -22,3 +22,13 @@ export function formatDateShort(iso: string): string {
     year: "numeric",
   }).format(new Date(iso));
 }
+
+/** Format a minor-unit amount (cents) as a localized price, e.g. 180000 → "1 800 €". */
+export function formatPrice(cents: number, currency = "EUR"): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
+}

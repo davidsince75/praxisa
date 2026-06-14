@@ -10,6 +10,7 @@ import {
 import { createEnrolmentSchema } from "./types.js";
 import {
   computeCompletion,
+  enrolmentHasFullAccess,
   findActiveCourse,
   findActiveEnrolment,
   findExistingEnrolment,
@@ -251,6 +252,7 @@ export function enrolmentsRoutes(fastify: FastifyInstance): void {
         completionPct: computeCompletion(progress),
         isProvisional: provisional,
         provisionalUntil: enrolment.provisionalUntil,
+        hasFullAccess: enrolmentHasFullAccess(raw),
       });
     },
   );
@@ -360,6 +362,7 @@ export function enrolmentsRoutes(fastify: FastifyInstance): void {
           enrolledAt: enrolments.createdAt,
           completedAt: enrolments.completedAt,
           expiresAt: enrolments.expiresAt,
+          paidOrderId: enrolments.paidOrderId,
           courseId: courses.id,
           courseTitle: courses.title,
           courseSlug: courses.slug,
@@ -390,6 +393,9 @@ export function enrolmentsRoutes(fastify: FastifyInstance): void {
             ...row,
             provisionalUntil: cleared.provisionalUntil,
             isProvisional: isProvisionalEnrolment(cleared),
+            hasFullAccess: enrolmentHasFullAccess({
+              paidOrderId: row.paidOrderId,
+            }),
             completionPct: computeCompletion(progress),
           };
         }),

@@ -138,7 +138,9 @@ export function LearnCoursePlayerPage() {
   const completionPct = enrolmentData?.completionPct ?? 0;
   const courseName = courseData?.course.title ?? "Chargement…";
   const isProvisional = enrolmentData?.isProvisional === true;
-  const shouldLockModules = isProvisional || userRestricted;
+  const hasFullAccess = enrolmentData?.hasFullAccess === true;
+  const courseId = enrolmentData?.enrolment.courseId;
+  const shouldLockModules = (isProvisional || userRestricted) && !hasFullAccess;
 
   // Compute locked modules for provisional/restricted access (first 3 unlocked)
   const PROVISIONAL_MODULE_LIMIT = 3;
@@ -210,18 +212,22 @@ export function LearnCoursePlayerPage() {
             <p className="text-meta text-sm">Chargement…</p>
           ) : (
             <>
-              {userRestricted && !isProvisional && (
+              {userRestricted && !isProvisional && !hasFullAccess && (
                 <div className="mb-6 rounded-lg border border-amber-200 bg-amber-50 px-5 py-4">
                   <p className="text-sm font-medium text-amber-800">
-                    Compte en accès restreint — Accès aux 3 premiers modules
-                    uniquement.
+                    Accès aux 3 premiers modules. Débloquez l'intégralité de la
+                    formation.
                   </p>
-                  <p className="text-xs text-amber-700 mt-1">
-                    Contactez l'administrateur pour obtenir l'accès complet.
-                  </p>
+                  {courseId !== undefined && (
+                    <Button asChild size="sm" className="mt-3">
+                      <Link to={`/learn/courses/${courseId}/buy`}>
+                        Passer à l'accès complet
+                      </Link>
+                    </Button>
+                  )}
                 </div>
               )}
-              {isProvisional && (
+              {isProvisional && !hasFullAccess && (
                 <div className="mb-6 rounded-lg border border-olive/30 bg-olive/5 px-5 py-4">
                   <p className="text-sm font-medium text-dark">
                     Période d&apos;essai — Accès aux 3 premiers modules.

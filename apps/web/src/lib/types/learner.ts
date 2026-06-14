@@ -11,6 +11,7 @@ export interface MyEnrolment {
   expiresAt: string | null;
   provisionalUntil: string | null;
   isProvisional: boolean;
+  hasFullAccess: boolean;
   courseId: string;
   courseTitle: string;
   courseSlug: string;
@@ -44,6 +45,7 @@ export interface EnrolmentDetail {
   completionPct: number;
   isProvisional: boolean;
   provisionalUntil: string | null;
+  hasFullAccess: boolean;
 }
 
 // ── Learner: quiz ──────────────────────────────────────────────────────────────

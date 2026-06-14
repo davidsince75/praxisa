@@ -15,6 +15,7 @@ import { TeacherCourseDetailPage } from "@/pages/teacher/TeacherCourseDetail.js"
 import { TeacherCourseBuilderPage } from "@/pages/teacher/TeacherCourseBuilder.js";
 import { TeacherLessonEditorPage } from "@/pages/teacher/TeacherLessonEditor.js";
 import { LearnCatalogPage } from "@/pages/learn/LearnCatalog.js";
+import { LearnBuyCoursePage } from "@/pages/learn/LearnBuyCourse.js";
 import { LearnMyCoursesPage } from "@/pages/learn/LearnMyCourses.js";
 import { LearnCoursePlayerPage } from "@/pages/learn/LearnCoursePlayer.js";
 import { LearnCertificatePage } from "@/pages/learn/LearnCertificate.js";
@@ -181,6 +182,10 @@ export function App() {
                 />
                 <Route path="/dashboard" element={<LearnDashboardPage />} />
                 <Route path="/catalog" element={<LearnCatalogPage />} />
+                <Route
+                  path="/courses/:courseId/buy"
+                  element={<LearnBuyCoursePage />}
+                />
                 <Route path="/courses" element={<LearnMyCoursesPage />} />
                 <Route
                   path="/courses/:enrolmentId"

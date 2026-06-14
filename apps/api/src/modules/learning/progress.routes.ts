@@ -10,6 +10,7 @@ import {
 import { upsertProgressSchema } from "./types.js";
 import {
   computeCompletion,
+  enrolmentHasFullAccess,
   findActiveEnrolment,
   isLessonWithinModuleLimit,
   isProvisionalEnrolment,
@@ -94,13 +95,15 @@ export function progressRoutes(fastify: FastifyInstance): void {
         });
       }
 
-      // First-3-modules cap. Applies to a 14-day trial (provisional) enrolment
-      // AND to any account an admin has flagged as restricted. Enforced here so
-      // the cap holds even if a client bypasses the UI module lock.
-      let moduleCapped = isProvisionalEnrolment(enrolment);
+      // First-3-modules cap. A paid (or comped) order lifts it entirely;
+      // otherwise it applies to a 14-day trial (provisional) enrolment AND to
+      // any account an admin has flagged as restricted. Enforced here so the
+      // cap holds even if a client bypasses the UI module lock.
+      const hasFullAccess = enrolmentHasFullAccess(rawEnrolment);
+      let moduleCapped = !hasFullAccess && isProvisionalEnrolment(enrolment);
       let capError =
         "Accès limité aux 3 premiers modules pendant la période d'essai";
-      if (!moduleCapped && role !== "admin") {
+      if (!hasFullAccess && !moduleCapped && role !== "admin") {
         const studentRows = await fastify.db
           .select({ isRestricted: users.isRestricted })
           .from(users)
