@@ -125,11 +125,9 @@ export function commercePlugin(
         course.status !== "published" ||
         course.priceCents === null
       ) {
-        return reply
-          .status(404)
-          .send({
-            error: "Formation introuvable ou non disponible à la vente",
-          });
+        return reply.status(404).send({
+          error: "Formation introuvable ou non disponible à la vente",
+        });
       }
 
       // Already paid for this course?
