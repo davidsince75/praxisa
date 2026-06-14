@@ -25,3 +25,36 @@ export interface CreateOrderResponse {
   currency: string;
   authorisationUrl: string;
 }
+
+// ── Admin orders dashboard ───────────────────────────────────────────────────
+
+export type OrderStatus =
+  | "pending"
+  | "authorised"
+  | "active"
+  | "paid"
+  | "failed"
+  | "cancelled"
+  | "refunded";
+
+export interface AdminOrder {
+  id: string;
+  studentId: string;
+  courseId: string;
+  amountCents: number;
+  currency: string;
+  plan: PurchasablePlan | "comp";
+  status: OrderStatus;
+  createdAt: string;
+  paidAt: string | null;
+  studentFirstName: string | null;
+  studentLastName: string | null;
+  studentEmail: string | null;
+  courseTitle: string | null;
+  paymentsConfirmed: number;
+  paymentsTotal: number;
+}
+
+export interface AdminOrdersResponse {
+  orders: AdminOrder[];
+}

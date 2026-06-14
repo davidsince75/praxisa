@@ -7,3 +7,11 @@ export const createOrderSchema = z.object({
 });
 
 export type CreateOrderBody = z.infer<typeof createOrderSchema>;
+
+// Admin grants full access with no charge (employer/OPCO-funded, bank transfer).
+export const compOrderSchema = z.object({
+  studentId: z.string().uuid(),
+  courseId: z.string().uuid(),
+});
+
+export type CompOrderBody = z.infer<typeof compOrderSchema>;

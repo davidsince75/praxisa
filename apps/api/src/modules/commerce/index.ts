@@ -1,9 +1,16 @@
 import type { FastifyInstance } from "fastify";
-import { and, desc, eq, isNotNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { emitEvent } from "@praxisa/audit-sdk";
-import { courses, enrolments, orders } from "../../db/schema/index.js";
-import { createOrderSchema } from "./types.js";
+import {
+  courses,
+  enrolments,
+  orderPayments,
+  orders,
+  users,
+} from "../../db/schema/index.js";
+import { compOrderSchema, createOrderSchema } from "./types.js";
 import { pricingOptions } from "./service.js";
+import { grantPaidAccess, revokePaidAccess } from "./entitlement.js";
 import { makeGoCardlessClient, type GoCardlessConfig } from "./gocardless.js";
 import { registerGoCardlessWebhook } from "./webhook.routes.js";
 
@@ -235,7 +242,7 @@ export function commercePlugin(
     },
   );
 
-  // ── GET /orders (admin) ─────────────────────────────────────────────────────
+  // ── GET /orders (admin) — enriched with student, course, instalment progress ─
   fastify.get(
     "/orders",
     { preHandler: [fastify.authenticate] },
@@ -244,11 +251,183 @@ export function commercePlugin(
       if (role !== "admin") {
         return reply.status(403).send({ error: "Accès interdit" });
       }
+
       const rows = await fastify.db
+        .select({
+          id: orders.id,
+          studentId: orders.studentId,
+          courseId: orders.courseId,
+          amountCents: orders.amountCents,
+          currency: orders.currency,
+          plan: orders.plan,
+          status: orders.status,
+          createdAt: orders.createdAt,
+          paidAt: orders.paidAt,
+          studentFirstName: users.firstName,
+          studentLastName: users.lastName,
+          studentEmail: users.email,
+          courseTitle: courses.title,
+        })
+        .from(orders)
+        .leftJoin(users, eq(users.id, orders.studentId))
+        .leftJoin(courses, eq(courses.id, orders.courseId))
+        .orderBy(desc(orders.createdAt));
+
+      const ids = rows.map((r) => r.id);
+      const progress = new Map<string, { confirmed: number; total: number }>();
+      if (ids.length > 0) {
+        const payRows = await fastify.db
+          .select({
+            orderId: orderPayments.orderId,
+            confirmed: sql<number>`count(*) filter (where ${orderPayments.status} = 'confirmed')::int`,
+            total: sql<number>`count(*)::int`,
+          })
+          .from(orderPayments)
+          .where(inArray(orderPayments.orderId, ids))
+          .groupBy(orderPayments.orderId);
+        for (const p of payRows) {
+          progress.set(p.orderId, { confirmed: p.confirmed, total: p.total });
+        }
+      }
+
+      const enriched = rows.map((r) => ({
+        ...r,
+        paymentsConfirmed: progress.get(r.id)?.confirmed ?? 0,
+        paymentsTotal: progress.get(r.id)?.total ?? 0,
+      }));
+
+      return reply.send({ orders: enriched });
+    },
+  );
+
+  // ── POST /orders/comp (admin) — grant full access with no charge ─────────────
+  fastify.post(
+    "/orders/comp",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      const parse = compOrderSchema.safeParse(request.body);
+      if (!parse.success) {
+        return reply.status(400).send({ error: parse.error.flatten() });
+      }
+      const { studentId, courseId } = parse.data;
+
+      const courseRows = await fastify.db
+        .select({ id: courses.id, currency: courses.currency })
+        .from(courses)
+        .where(and(eq(courses.id, courseId), isNull(courses.deletedAt)))
+        .limit(1);
+      const course = courseRows[0];
+      if (course === undefined) {
+        return reply.status(404).send({ error: "Formation introuvable" });
+      }
+
+      const studentRows = await fastify.db
+        .select({ id: users.id })
+        .from(users)
+        .where(and(eq(users.id, studentId), eq(users.role, "student")))
+        .limit(1);
+      if (studentRows[0] === undefined) {
+        return reply.status(404).send({ error: "Apprenant introuvable" });
+      }
+
+      const inserted = await fastify.db
+        .insert(orders)
+        .values({
+          studentId,
+          courseId,
+          amountCents: 0,
+          currency: course.currency,
+          plan: "comp",
+          status: "paid",
+          paidAt: new Date(),
+        })
+        .returning({ id: orders.id });
+      const order = inserted[0];
+      if (order === undefined) {
+        throw new Error("Comp order insert returned no rows");
+      }
+
+      await grantPaidAccess(fastify.db, {
+        studentId,
+        courseId,
+        orderId: order.id,
+      });
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "commerce.order.comp_granted",
+        entityType: "order",
+        entityId: order.id,
+        dataClassification: "pii:pseudonymous",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.status(201).send({ orderId: order.id });
+    },
+  );
+
+  // ── POST /orders/:orderId/refund (admin) ─────────────────────────────────────
+  // Cancels any remaining instalments and revokes access. Money already
+  // collected is returned out-of-band (bank), not via the API.
+  fastify.post(
+    "/orders/:orderId/refund",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      if (role !== "admin") {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+      const { orderId } = request.params as { orderId: string };
+
+      const orderRows = await fastify.db
         .select()
         .from(orders)
-        .orderBy(desc(orders.createdAt));
-      return reply.send({ orders: rows });
+        .where(eq(orders.id, orderId))
+        .limit(1);
+      const order = orderRows[0];
+      if (order === undefined) {
+        return reply.status(404).send({ error: "Commande introuvable" });
+      }
+      if (order.status === "refunded" || order.status === "cancelled") {
+        return reply
+          .status(409)
+          .send({ error: "Cette commande est déjà clôturée." });
+      }
+
+      if (client !== null && order.gcInstalmentScheduleId !== null) {
+        try {
+          await client.instalmentSchedules.cancel(order.gcInstalmentScheduleId);
+        } catch (err: unknown) {
+          request.log.error(
+            { err, orderId },
+            "Failed to cancel GoCardless instalment schedule on refund",
+          );
+        }
+      }
+
+      await fastify.db
+        .update(orders)
+        .set({ status: "refunded", updatedAt: new Date() })
+        .where(eq(orders.id, orderId));
+      await revokePaidAccess(fastify.db, orderId);
+
+      await emitEvent({
+        actorUserId: sub,
+        eventType: "commerce.order.refunded",
+        entityType: "order",
+        entityId: orderId,
+        dataClassification: "pii:pseudonymous",
+        requestId: request.id,
+        sourceIp: request.ip,
+      });
+
+      return reply.send({ ok: true });
     },
   );
 

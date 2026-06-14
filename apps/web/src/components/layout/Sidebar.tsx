@@ -25,6 +25,7 @@ import {
   Megaphone,
   TrendingUp,
   Lock,
+  Receipt,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
 import { useAuth } from "@/hooks/useAuth.js";
@@ -37,6 +38,7 @@ const PLATEFORME_PATHS = [
   "/courses",
   "/email",
   "/payments",
+  "/orders",
   "/import",
 ];
 const COMMUNICATION_PATHS = ["/messages", "/campaigns", "/forums"];
@@ -169,6 +171,13 @@ export function Sidebar() {
               >
                 <CreditCard size={13} />
                 <span>Paiements</span>
+              </NavLink>
+              <NavLink
+                to="/orders"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Receipt size={13} />
+                <span>Commandes</span>
               </NavLink>
               <NavLink
                 to="/import"

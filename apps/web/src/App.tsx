@@ -36,6 +36,7 @@ import { AdminAIDraftPage } from "@/pages/ai/AdminAIDraft.js";
 import { AdminCampaignsPage } from "@/pages/campaigns/AdminCampaigns.js";
 import { AdminEmailPage } from "@/pages/AdminEmail.js";
 import { AdminPaymentsPage } from "@/pages/AdminPayments.js";
+import { AdminOrdersPage } from "@/pages/AdminOrders.js";
 import { DataImportPage } from "@/pages/import/DataImport.js";
 import { SettingsPage } from "@/pages/settings/SettingsPage.js";
 import { LearnDocumentsPage } from "@/pages/learn/LearnDocuments.js";
@@ -105,6 +106,7 @@ export function App() {
                 <Route path="/campaigns" element={<AdminCampaignsPage />} />
                 <Route path="/email" element={<AdminEmailPage />} />
                 <Route path="/payments" element={<AdminPaymentsPage />} />
+                <Route path="/orders" element={<AdminOrdersPage />} />
                 <Route path="/import" element={<DataImportPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/forums" element={<ForumsPage basePath="" />} />
