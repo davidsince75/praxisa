@@ -330,6 +330,9 @@ export function registerGoCardlessWebhook(
 
       let events: Event[];
       try {
+        // The SDK types Event with an `any`-typed `metadata` (JsonMap), so this
+        // correctly-typed result still trips no-unsafe-assignment.
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         events = parseGoCardlessWebhook(
           rawBody,
           webhookSecret,
