@@ -10,6 +10,10 @@ import {
   courseCompletionText,
   campaignEmailHtml,
   campaignEmailText,
+  orderConfirmationHtml,
+  orderConfirmationText,
+  dunningHtml,
+  dunningText,
 } from "./templates.js";
 
 export interface CommsConfig {
@@ -113,5 +117,74 @@ export async function sendCampaignEmail(
     htmlContent: campaignEmailHtml(subject, body),
     textContent: campaignEmailText(body),
     tags: ["campaign"],
+  });
+}
+
+// ── Order confirmation (purchase) ───────────────────────────────────────────────
+
+export interface OrderConfirmationArgs {
+  courseTitle: string;
+  planLabel: string;
+  amount: string;
+  invoiceNumber: string;
+  invoiceId: string;
+}
+
+export async function sendOrderConfirmation(
+  config: CommsConfig,
+  to: { email: string; firstName: string },
+  args: OrderConfirmationArgs,
+): Promise<void> {
+  const courseUrl = `${config.appBaseUrl}/learn/courses`;
+  const invoiceUrl = `${config.appBaseUrl}/learn/invoices/${args.invoiceId}`;
+  await sendBrevoEmail(config.brevoApiKey, {
+    sender: { email: config.senderEmail, name: config.senderName },
+    to: [{ email: to.email, name: to.firstName }],
+    subject: `Paiement confirmé : ${args.courseTitle} — Psychostudy`,
+    htmlContent: orderConfirmationHtml({
+      firstName: to.firstName,
+      courseName: args.courseTitle,
+      planLabel: args.planLabel,
+      amount: args.amount,
+      invoiceNumber: args.invoiceNumber,
+      invoiceUrl,
+      courseUrl,
+    }),
+    textContent: orderConfirmationText({
+      firstName: to.firstName,
+      courseName: args.courseTitle,
+      planLabel: args.planLabel,
+      amount: args.amount,
+      invoiceNumber: args.invoiceNumber,
+      invoiceUrl,
+      courseUrl,
+    }),
+    tags: ["order-confirmation"],
+  });
+}
+
+// ── Dunning (failed Direct Debit) ───────────────────────────────────────────────
+
+export async function sendDunningNotice(
+  config: CommsConfig,
+  to: { email: string; firstName: string },
+  args: { courseTitle: string },
+): Promise<void> {
+  const courseUrl = `${config.appBaseUrl}/learn/courses`;
+  await sendBrevoEmail(config.brevoApiKey, {
+    sender: { email: config.senderEmail, name: config.senderName },
+    to: [{ email: to.email, name: to.firstName }],
+    subject: `Échec de prélèvement : ${args.courseTitle} — Psychostudy`,
+    htmlContent: dunningHtml({
+      firstName: to.firstName,
+      courseName: args.courseTitle,
+      courseUrl,
+    }),
+    textContent: dunningText({
+      firstName: to.firstName,
+      courseName: args.courseTitle,
+      courseUrl,
+    }),
+    tags: ["dunning"],
   });
 }

@@ -14,6 +14,7 @@ import {
   MessageSquare,
   MessageCircle,
   Settings,
+  Receipt,
   LogOut,
 } from "lucide-react";
 import { cn } from "@/lib/utils.js";
@@ -25,6 +26,7 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages.js";
 const FORMATION_PATHS = [
   "/learn/catalog",
   "/learn/courses",
+  "/learn/billing",
   "/learn/notes",
   "/learn/progress",
   "/learn/ai",
@@ -71,7 +73,7 @@ export function LearnSidebar() {
   }
 
   return (
-    <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50">
+    <aside className="fixed inset-y-0 left-0 w-56 bg-dark flex flex-col z-50 print:hidden">
       {/* Brand */}
       <div className="h-14 flex items-center px-6 border-b border-white/10 shrink-0">
         <EyeWordmark tone="paper" className="text-xl text-white" />
@@ -134,6 +136,14 @@ export function LearnSidebar() {
               >
                 <BookOpen size={13} />
                 <span>Mes formations</span>
+              </NavLink>
+
+              <NavLink
+                to="/learn/billing"
+                className={({ isActive }) => subLinkClass(isActive)}
+              >
+                <Receipt size={13} />
+                <span>Facturation</span>
               </NavLink>
 
               <NavLink

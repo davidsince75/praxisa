@@ -174,3 +174,85 @@ export function campaignEmailHtml(subject: string, body: string): string {
 export function campaignEmailText(body: string): string {
   return text([body]);
 }
+
+// ── Order confirmation (purchase) ────────────────────────────────────────────────
+
+interface OrderConfirmationArgs {
+  firstName: string;
+  courseName: string;
+  planLabel: string;
+  amount: string;
+  invoiceNumber: string;
+  invoiceUrl: string;
+  courseUrl: string;
+}
+
+export function orderConfirmationHtml(args: OrderConfirmationArgs): string {
+  return base(
+    "Paiement confirmé",
+    `<p style="color:#374151;font-size:16px">Bonjour ${args.firstName},</p>
+     <p style="color:#374151;font-size:16px">
+       Merci&nbsp;! Votre paiement pour la formation
+       <strong>&laquo;&nbsp;${args.courseName}&nbsp;&raquo;</strong>
+       (${args.planLabel}, ${args.amount}) est confirmé et votre accès complet
+       est activé.
+     </p>
+     <a href="${args.courseUrl}"
+        style="display:inline-block;background:#4f46e5;color:#fff;
+               text-decoration:none;padding:12px 24px;border-radius:6px;
+               font-size:16px;margin:16px 0">
+       Accéder à la formation
+     </a>
+     <p style="color:#6b7280;font-size:14px">
+       Votre facture ${args.invoiceNumber}&nbsp;:
+       <a href="${args.invoiceUrl}" style="color:#4f46e5">la consulter</a>.
+     </p>`,
+  );
+}
+
+export function orderConfirmationText(args: OrderConfirmationArgs): string {
+  return text([
+    `Bonjour ${args.firstName},`,
+    `Votre paiement pour "${args.courseName}" (${args.planLabel}, ${args.amount}) est confirmé. Votre accès complet est activé.`,
+    `Accéder à la formation : ${args.courseUrl}`,
+    `Facture ${args.invoiceNumber} : ${args.invoiceUrl}`,
+  ]);
+}
+
+// ── Dunning (failed Direct Debit) ────────────────────────────────────────────────
+
+interface DunningArgs {
+  firstName: string;
+  courseName: string;
+  courseUrl: string;
+}
+
+export function dunningHtml(args: DunningArgs): string {
+  return base(
+    "Échec de prélèvement",
+    `<p style="color:#374151;font-size:16px">Bonjour ${args.firstName},</p>
+     <p style="color:#374151;font-size:16px">
+       Un prélèvement pour la formation
+       <strong>&laquo;&nbsp;${args.courseName}&nbsp;&raquo;</strong>
+       a échoué. Merci de vérifier la provision de votre compte&nbsp;;
+       l'échéance sera représentée automatiquement.
+     </p>
+     <a href="${args.courseUrl}"
+        style="display:inline-block;background:#4f46e5;color:#fff;
+               text-decoration:none;padding:12px 24px;border-radius:6px;
+               font-size:16px;margin:16px 0">
+       Voir mes formations
+     </a>
+     <p style="color:#6b7280;font-size:14px">
+       En cas d'échecs répétés, votre accès complet pourra être suspendu.
+     </p>`,
+  );
+}
+
+export function dunningText(args: DunningArgs): string {
+  return text([
+    `Bonjour ${args.firstName},`,
+    `Un prélèvement pour "${args.courseName}" a échoué. Vérifiez la provision de votre compte ; l'échéance sera représentée automatiquement.`,
+    `En cas d'échecs répétés, votre accès complet pourra être suspendu.`,
+  ]);
+}

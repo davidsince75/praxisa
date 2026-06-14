@@ -1,4 +1,4 @@
-import type { FastifyInstance } from "fastify";
+import type { FastifyBaseLogger, FastifyInstance } from "fastify";
 import { eq } from "drizzle-orm";
 import { parse as parseGoCardlessWebhook } from "gocardless-nodejs";
 import type { Event, EventLinks, GoCardlessClient } from "gocardless-nodejs";
@@ -6,9 +6,11 @@ import { emitEvent } from "@praxisa/audit-sdk";
 import type { Db } from "../../db/index.js";
 import type { OrderPaymentStatus } from "../../db/schema/index.js";
 import {
+  courses,
   orderPayments,
   orders,
   processedWebhookEvents,
+  users,
 } from "../../db/schema/index.js";
 import { grantPaidAccess, revokePaidAccess } from "./entitlement.js";
 import {
@@ -18,12 +20,57 @@ import {
   planInstalmentCount,
   shouldRevokeAccess,
 } from "./service.js";
+import { issueInvoice } from "./invoice.js";
+import type { CommsService } from "../comms/index.js";
 
 interface HandlerCtx {
   db: Db;
   client: GoCardlessClient;
+  comms: CommsService;
+  log: FastifyBaseLogger;
   requestId: string;
   sourceIp: string;
+}
+
+const PLAN_EMAIL_LABEL: Record<string, string> = {
+  full: "paiement comptant",
+  x3: "3 mensualités",
+  x10: "10 mensualités",
+  comp: "accès offert",
+};
+
+function formatAmount(cents: number, currency: string): string {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(cents / 100);
+}
+
+/** Load the buyer's email/name and the course title for transactional emails. */
+async function loadOrderContact(
+  db: Db,
+  order: { studentId: string; courseId: string },
+): Promise<{ email: string; firstName: string; courseTitle: string } | null> {
+  const studentRows = await db
+    .select({ email: users.email, firstName: users.firstName })
+    .from(users)
+    .where(eq(users.id, order.studentId))
+    .limit(1);
+  const courseRows = await db
+    .select({ title: courses.title })
+    .from(courses)
+    .where(eq(courses.id, order.courseId))
+    .limit(1);
+  const student = studentRows[0];
+  const course = courseRows[0];
+  if (student === undefined || course === undefined) return null;
+  return {
+    email: student.email,
+    firstName: student.firstName,
+    courseTitle: course.title,
+  };
 }
 
 /** Map a GoCardless payment action to our order-payment status (null = ignore). */
@@ -219,6 +266,33 @@ async function onBillingRequestFulfilled(
     requestId: ctx.requestId,
     sourceIp: ctx.sourceIp,
   });
+
+  // Issue the numbered invoice and email the buyer their confirmation +
+  // invoice link (fire-and-forget — never block webhook processing on email).
+  const invoice = await issueInvoice(ctx.db, {
+    orderId: order.id,
+    totalCents: order.amountCents,
+  });
+  const contact = await loadOrderContact(ctx.db, order);
+  if (contact !== null) {
+    ctx.comms
+      .sendOrderConfirmation(
+        { email: contact.email, firstName: contact.firstName },
+        {
+          courseTitle: contact.courseTitle,
+          planLabel: PLAN_EMAIL_LABEL[order.plan] ?? order.plan,
+          amount: formatAmount(order.amountCents, order.currency),
+          invoiceNumber: invoice.number,
+          invoiceId: invoice.id,
+        },
+      )
+      .catch((err: unknown) => {
+        ctx.log.error(
+          { err, orderId: order.id },
+          "Order confirmation email failed",
+        );
+      });
+  }
 }
 
 /** A payment confirmed / failed / charged back — update its row and reconcile the order. */
@@ -267,6 +341,29 @@ async function onPaymentEvent(
   }
 
   await reconcileOrder(ctx, orderId);
+
+  // Notify the buyer of a failed Direct Debit (fire-and-forget).
+  if (status === "failed") {
+    const ord = await ctx.db
+      .select({ studentId: orders.studentId, courseId: orders.courseId })
+      .from(orders)
+      .where(eq(orders.id, orderId))
+      .limit(1);
+    const o = ord[0];
+    if (o !== undefined) {
+      const contact = await loadOrderContact(ctx.db, o);
+      if (contact !== null) {
+        ctx.comms
+          .sendDunningNotice(
+            { email: contact.email, firstName: contact.firstName },
+            { courseTitle: contact.courseTitle },
+          )
+          .catch((err: unknown) => {
+            ctx.log.error({ err, orderId }, "Dunning email failed");
+          });
+      }
+    }
+  }
 }
 
 async function handleEvent(ctx: HandlerCtx, event: Event): Promise<void> {
@@ -346,6 +443,8 @@ export function registerGoCardlessWebhook(
       const ctx: HandlerCtx = {
         db: fastify.db,
         client,
+        comms: fastify.comms,
+        log: request.log,
         requestId: request.id,
         sourceIp: request.ip,
       };

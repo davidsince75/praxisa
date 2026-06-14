@@ -58,3 +58,52 @@ export interface AdminOrder {
 export interface AdminOrdersResponse {
   orders: AdminOrder[];
 }
+
+// ── Student billing + invoices ───────────────────────────────────────────────
+
+export interface MyOrder {
+  id: string;
+  courseId: string;
+  amountCents: number;
+  currency: string;
+  plan: PurchasablePlan | "comp";
+  status: OrderStatus;
+  createdAt: string;
+  paidAt: string | null;
+  courseTitle: string | null;
+  invoiceId: string | null;
+  invoiceNumber: string | null;
+}
+
+export interface MyOrdersResponse {
+  orders: MyOrder[];
+}
+
+export interface InvoiceIssuer {
+  name: string;
+  legalName: string;
+  address: string;
+  siret: string;
+  vatNote: string;
+}
+
+export interface InvoiceDetail {
+  id: string;
+  number: string;
+  issuedAt: string;
+  totalCents: number;
+  vatCents: number;
+  vatNote: string | null;
+  plan: PurchasablePlan | "comp";
+  currency: string;
+  studentId: string;
+  courseTitle: string | null;
+  studentFirstName: string | null;
+  studentLastName: string | null;
+  studentEmail: string | null;
+  issuer: InvoiceIssuer;
+}
+
+export interface InvoiceResponse {
+  invoice: InvoiceDetail;
+}

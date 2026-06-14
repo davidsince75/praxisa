@@ -15,7 +15,7 @@ export function LearnShell({ children }: LearnShellProps) {
       <main
         id="contenu"
         tabIndex={-1}
-        className="ml-56 min-h-screen outline-none"
+        className="ml-56 min-h-screen outline-none print:ml-0"
       >
         <div className="max-w-6xl mx-auto px-8 py-8">{children}</div>
       </main>

@@ -1,12 +1,14 @@
 import fp from "fastify-plugin";
 import type { FastifyInstance } from "fastify";
-import type { CommsConfig } from "./service.js";
+import type { CommsConfig, OrderConfirmationArgs } from "./service.js";
 import {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendEnrolmentConfirmation,
   sendCourseCompletionEmail,
   sendCampaignEmail,
+  sendOrderConfirmation,
+  sendDunningNotice,
 } from "./service.js";
 
 export interface CommsPluginOptions {
@@ -39,6 +41,14 @@ export interface CommsService {
     subject: string,
     body: string,
   ) => Promise<void>;
+  sendOrderConfirmation: (
+    to: { email: string; firstName: string },
+    args: OrderConfirmationArgs,
+  ) => Promise<void>;
+  sendDunningNotice: (
+    to: { email: string; firstName: string },
+    args: { courseTitle: string },
+  ) => Promise<void>;
 }
 
 export const commsPlugin = fp(
@@ -65,6 +75,9 @@ export const commsPlugin = fp(
         sendCourseCompletionEmail(config, to, courseTitle),
       sendCampaignEmail: (to, subject, body) =>
         sendCampaignEmail(config, to, subject, body),
+      sendOrderConfirmation: (to, args) =>
+        sendOrderConfirmation(config, to, args),
+      sendDunningNotice: (to, args) => sendDunningNotice(config, to, args),
     };
 
     fastify.decorate("comms", service);

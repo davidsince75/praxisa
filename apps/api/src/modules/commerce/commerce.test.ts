@@ -8,6 +8,7 @@ import {
   pricingOptions,
   shouldRevokeAccess,
 } from "./service.js";
+import { formatInvoiceNumber } from "./invoice.js";
 
 describe("buildInstalmentPlan", () => {
   it("pay-in-full is a single charge of the total", () => {
@@ -108,5 +109,16 @@ describe("isOrderFullyPaid / shouldRevokeAccess", () => {
 
   it("does not revoke on a single failure after a prior success", () => {
     expect(shouldRevokeAccess([p("confirmed"), p("failed")])).toBe(false);
+  });
+});
+
+describe("formatInvoiceNumber", () => {
+  it("zero-pads the sequence to 6 digits with a year prefix", () => {
+    expect(formatInvoiceNumber(2026, 12)).toBe("PSY-2026-000012");
+    expect(formatInvoiceNumber(2026, 1)).toBe("PSY-2026-000001");
+  });
+
+  it("does not truncate sequences longer than 6 digits", () => {
+    expect(formatInvoiceNumber(2026, 1234567)).toBe("PSY-2026-1234567");
   });
 });

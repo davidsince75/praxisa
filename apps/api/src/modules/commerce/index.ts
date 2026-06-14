@@ -4,6 +4,7 @@ import { emitEvent } from "@praxisa/audit-sdk";
 import {
   courses,
   enrolments,
+  invoices,
   orderPayments,
   orders,
   users,
@@ -11,6 +12,7 @@ import {
 import { compOrderSchema, createOrderSchema } from "./types.js";
 import { pricingOptions } from "./service.js";
 import { grantPaidAccess, revokePaidAccess } from "./entitlement.js";
+import { INVOICE_ISSUER } from "./invoice.js";
 import { makeGoCardlessClient, type GoCardlessConfig } from "./gocardless.js";
 import { registerGoCardlessWebhook } from "./webhook.routes.js";
 
@@ -234,8 +236,22 @@ export function commercePlugin(
     async (request, reply) => {
       const { sub } = request.jwtPayload;
       const rows = await fastify.db
-        .select()
+        .select({
+          id: orders.id,
+          courseId: orders.courseId,
+          amountCents: orders.amountCents,
+          currency: orders.currency,
+          plan: orders.plan,
+          status: orders.status,
+          createdAt: orders.createdAt,
+          paidAt: orders.paidAt,
+          courseTitle: courses.title,
+          invoiceId: invoices.id,
+          invoiceNumber: invoices.number,
+        })
         .from(orders)
+        .leftJoin(courses, eq(courses.id, orders.courseId))
+        .leftJoin(invoices, eq(invoices.orderId, orders.id))
         .where(eq(orders.studentId, sub))
         .orderBy(desc(orders.createdAt));
       return reply.send({ orders: rows });
@@ -428,6 +444,49 @@ export function commercePlugin(
       });
 
       return reply.send({ ok: true });
+    },
+  );
+
+  // ── GET /invoices/:invoiceId (owner or admin) — data for the print page ──────
+  fastify.get(
+    "/invoices/:invoiceId",
+    { preHandler: [fastify.authenticate] },
+    async (request, reply) => {
+      const { role, sub } = request.jwtPayload;
+      const { invoiceId } = request.params as { invoiceId: string };
+
+      const rows = await fastify.db
+        .select({
+          id: invoices.id,
+          number: invoices.number,
+          issuedAt: invoices.issuedAt,
+          totalCents: invoices.totalCents,
+          vatCents: invoices.vatCents,
+          vatNote: invoices.vatNote,
+          plan: orders.plan,
+          currency: orders.currency,
+          studentId: orders.studentId,
+          courseTitle: courses.title,
+          studentFirstName: users.firstName,
+          studentLastName: users.lastName,
+          studentEmail: users.email,
+        })
+        .from(invoices)
+        .innerJoin(orders, eq(orders.id, invoices.orderId))
+        .leftJoin(courses, eq(courses.id, orders.courseId))
+        .leftJoin(users, eq(users.id, orders.studentId))
+        .where(eq(invoices.id, invoiceId))
+        .limit(1);
+
+      const inv = rows[0];
+      if (inv === undefined) {
+        return reply.status(404).send({ error: "Facture introuvable" });
+      }
+      if (role !== "admin" && inv.studentId !== sub) {
+        return reply.status(403).send({ error: "Accès interdit" });
+      }
+
+      return reply.send({ invoice: { ...inv, issuer: INVOICE_ISSUER } });
     },
   );
 

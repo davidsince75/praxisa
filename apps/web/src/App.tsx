@@ -16,6 +16,8 @@ import { TeacherCourseBuilderPage } from "@/pages/teacher/TeacherCourseBuilder.j
 import { TeacherLessonEditorPage } from "@/pages/teacher/TeacherLessonEditor.js";
 import { LearnCatalogPage } from "@/pages/learn/LearnCatalog.js";
 import { LearnBuyCoursePage } from "@/pages/learn/LearnBuyCourse.js";
+import { LearnBillingPage } from "@/pages/learn/LearnBilling.js";
+import { LearnInvoicePage } from "@/pages/learn/LearnInvoice.js";
 import { LearnMyCoursesPage } from "@/pages/learn/LearnMyCourses.js";
 import { LearnCoursePlayerPage } from "@/pages/learn/LearnCoursePlayer.js";
 import { LearnCertificatePage } from "@/pages/learn/LearnCertificate.js";
@@ -189,6 +191,11 @@ export function App() {
                   element={<LearnBuyCoursePage />}
                 />
                 <Route path="/courses" element={<LearnMyCoursesPage />} />
+                <Route path="/billing" element={<LearnBillingPage />} />
+                <Route
+                  path="/invoices/:invoiceId"
+                  element={<LearnInvoicePage />}
+                />
                 <Route
                   path="/courses/:enrolmentId"
                   element={<LearnCoursePlayerPage />}
