@@ -137,6 +137,12 @@ export function LearnCatalogPage() {
   // Check if student has an active provisional enrolment
   const hasProvisionalEnrolment = myEnrolments.some((e) => e.isProvisional);
 
+  // A restricted student who has unlocked full access to their course (paid or
+  // admin-granted) should no longer see the account-restriction notice — the
+  // 3-module trial cap no longer applies to them. Mirrors the course player,
+  // which already hides its restriction banner once hasFullAccess is true.
+  const hasFullCourseAccess = myEnrolments.some((e) => e.hasFullAccess);
+
   const enrolledCourseIds = new Set(myEnrolments.map((e) => e.courseId));
 
   const enrolledById = new Map(
@@ -178,7 +184,7 @@ export function LearnCatalogPage() {
         </div>
       )}
 
-      {isRestricted && (
+      {isRestricted && !hasFullCourseAccess && (
         <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-lg px-4 py-3">
           <ShieldAlert size={18} className="text-amber-600 mt-0.5 shrink-0" />
           <div>

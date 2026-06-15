@@ -126,6 +126,24 @@
     background-size: 100% 1px;
   }
 
+  /*
+   * Liens dans le contenu riche injecté (leçons, aperçus IA, e-mails) :
+   * le plugin @tailwindcss/typography n'est pas installé, donc « prose » est
+   * inerte et le reset Tailwind (preflight) rend les <a> comme du texte normal
+   * (color: inherit; text-decoration: inherit). On rétablit une affordance de
+   * lien visible et accessible — teal #4A6F96 (5.24:1 sur blanc), survol
+   * #3E608A (6.47:1). Voir docs/accessibility.md : ne pas éclaircir.
+   */
+  .prose a {
+    color: #4a6f96;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose a:hover {
+    color: #3e608a;
+  }
+
   /* Révélation au défilement (IntersectionObserver ajoute .is-visible).
      Sous reduced-motion la transition est neutralisée : bascule instantanée. */
   .reveal {

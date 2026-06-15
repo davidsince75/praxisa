@@ -50,6 +50,15 @@ function escText(value: string): string {
     .replace(/>/g, "&gt;");
 }
 
+// Reference works carry no canonical URL — the model proposes citations only and
+// we never surface a hallucinated link. A deterministic web-search link (built
+// from the title + author the model returned) keeps the whole further-reading
+// list clickable, mirroring how video search queries resolve to a results page.
+function referenceSearchUrl(ref: { title: string; author?: string }): string {
+  const query = [ref.title, ref.author ?? ""].join(" ").trim();
+  return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+}
+
 interface ResourceSelection {
   articles: AISuggestResourcesResponse["articles"];
   references: AISuggestResourcesResponse["references"];
@@ -72,7 +81,7 @@ function buildResourcesHtml(sel: ResourceSelection): string {
     }
     for (const r of sel.references) {
       parts.push(
-        `<li><em>${escText(r.title)}</em>` +
+        `<li><a href="${escAttr(referenceSearchUrl(r))}" target="_blank" rel="noopener noreferrer"><em>${escText(r.title)}</em></a>` +
           (r.author !== undefined ? `, ${escText(r.author)}` : "") +
           (r.year !== undefined ? ` (${escText(r.year)})` : "") +
           (r.note !== undefined ? ` — ${escText(r.note)}` : "") +
@@ -962,7 +971,16 @@ export function AILessonAssistant({
                             {r.year !== undefined && ` (${r.year})`}
                             {r.note !== undefined && (
                               <span className="text-meta"> — {r.note}</span>
-                            )}
+                            )}{" "}
+                            <a
+                              href={referenceSearchUrl(r)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-0.5 text-teal hover:text-teal-dark"
+                              aria-label={`Rechercher « ${r.title} » sur le Web`}
+                            >
+                              <ExternalLink size={11} />
+                            </a>
                           </span>
                         </label>
                       ))}
